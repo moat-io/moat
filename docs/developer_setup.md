@@ -149,13 +149,13 @@ api.healthcheck.oauth2_read_scope: profile    # change this to test scope access
 
 ```bash
 # should pass
-python moat/src/_scripts/api_oauth2_test.py
+python moat/src/_scripts/api_oauth2_test_script.py
 
 # change config & restart app
 api.healthcheck.oauth2_read_scope: profile-bad
 
 # should fail
-python moat/src/_scripts/api_oauth2_test.py
+python moat/src/_scripts/api_oauth2_test_script.py
 ```
 
 ## SCIM test tool
