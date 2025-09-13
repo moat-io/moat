@@ -630,6 +630,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keycloak
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keycloak">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export-realm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export Realm
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-oauth2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Oauth2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#scim-test-tool" class="md-nav__link">
     <span class="md-ellipsis">
       SCIM test tool
@@ -947,6 +980,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keycloak
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keycloak">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export-realm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export Realm
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-oauth2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Oauth2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#scim-test-tool" class="md-nav__link">
     <span class="md-ellipsis">
       SCIM test tool
@@ -1084,6 +1150,28 @@ mkdocs gh-deploy
 
 # if it fails, try:
 git config http.postBuffer 524288000
+</code></pre>
+<h2 id="keycloak">Keycloak</h2>
+<h3 id="export-realm">Export Realm</h3>
+<pre><code class="language-bash">podman-compose up -d
+podman-compose run keycloak export --file /opt/keycloak/data/export/moat_realm.json --realm moat
+</code></pre>
+<h3 id="testing-oauth2">Testing Oauth2</h3>
+<pre><code class="language-yaml"># config.yaml setup:
+api.healthcheck.auth_method: oauth2
+api.healthcheck.oauth2_issuer: http://localhost:8080/realms/moat
+api.healthcheck.oauth2_audience: account
+api.healthcheck.oauth2_jwks_uri: http://localhost:8080/realms/moat/protocol/openid-connect/certs
+api.healthcheck.oauth2_read_scope: profile    # change this to test scope access
+</code></pre>
+<pre><code class="language-bash"># should pass
+python moat/src/_scripts/api_oauth2_test_script.py
+
+# change config &amp; restart app
+api.healthcheck.oauth2_read_scope: profile-bad
+
+# should fail
+python moat/src/_scripts/api_oauth2_test_script.py
 </code></pre>
 <h2 id="scim-test-tool">SCIM test tool</h2>
 <pre><code class="language-bash">pip install scim2-cli

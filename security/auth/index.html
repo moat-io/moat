@@ -642,6 +642,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scopes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#client-credentials-flow" class="md-nav__link">
     <span class="md-ellipsis">
       Client Credentials Flow
@@ -867,6 +876,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scopes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#client-credentials-flow" class="md-nav__link">
     <span class="md-ellipsis">
       Client Credentials Flow
@@ -943,7 +961,16 @@ In this scenario, moat is acting as a <code>resource server</code> with an exter
 api.resources.auth_method: oauth2
 api.resources.oauth2_issuer: https://&lt;issuer-domain&gt;/oauth2/&lt;auth-server-id&gt;
 api.resources.oauth2_audience: &lt;audience&gt;
+api.resources.oauth2_algorithms: RS256
+api.resources.oauth2_jwks_uri: http://&lt;issuer-domain&gt;/.../certs
+api.resources.oauth2_read_scope: resource_read
+api.resources.oauth2_write_scope: resource_write
 </code></pre>
+<h3 id="scopes">Scopes</h3>
+<p>For all REST apis, the client requires the <code>api.&lt;resource&gt;.oauth2_read_scope</code> to allow <code>GET</code> requests, and 
+<code>api.&lt;resource&gt;.oauth2_write_scope</code> for <code>POST, PUT, DELETE</code>.</p>
+<p>Scope values are up to the implementation, provided the value of <code>api.&lt;resource&gt;.oauth2_read_scope</code> is on the access token,
+then authorisation will be granted.</p>
 <h3 id="client-credentials-flow">Client Credentials Flow</h3>
 <p>The client credentials flow is designed for server-to-server authentication where a client application requests an access token using its client credentials.</p>
 <h4 id="steps">Steps:</h4>
