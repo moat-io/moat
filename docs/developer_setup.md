@@ -130,6 +130,34 @@ git config http.postBuffer 524288000
 ```
 
 
+## Keycloak
+### Export Realm
+```bash
+podman-compose up -d
+podman-compose run keycloak export --file /opt/keycloak/data/export/moat_realm.json --realm moat
+```
+
+### Testing Oauth2
+```yaml
+# config.yaml setup:
+api.healthcheck.auth_method: oauth2
+api.healthcheck.oauth2_issuer: http://localhost:8080/realms/moat
+api.healthcheck.oauth2_audience: account
+api.healthcheck.oauth2_jwks_uri: http://localhost:8080/realms/moat/protocol/openid-connect/certs
+api.healthcheck.oauth2_read_scope: profile    # change this to test scope access
+```
+
+```bash
+# should pass
+python moat/src/_scripts/api_oauth2_test.py
+
+# change config & restart app
+api.healthcheck.oauth2_read_scope: profile-bad
+
+# should fail
+python moat/src/_scripts/api_oauth2_test.py
+```
+
 ## SCIM test tool
 ```bash
 pip install scim2-cli

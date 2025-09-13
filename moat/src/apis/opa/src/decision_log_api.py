@@ -13,7 +13,7 @@ api_config: ApiConfig = ApiConfig.load_by_api_name(api_name="opa")
 
 
 @bp.route("", methods=["POST"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def create():
     body = gzip.decompress(request.data)
     logger.info(f"request: {body}")

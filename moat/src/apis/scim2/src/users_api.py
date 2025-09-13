@@ -2,7 +2,6 @@ from app_logger import Logger, get_logger
 from flask import Blueprint, jsonify, make_response, request, Response, g
 import uuid
 from apis.common import authenticate
-
 from apis.models import ApiConfig
 
 from repositories import PrincipalRepository
@@ -19,7 +18,7 @@ def create_id() -> str:
 
 
 @bp.route("", methods=["GET"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_read_scope)
 def get_users():
     # TODO validate these
     start_index: int = int(request.args.get("startIndex", 1))
@@ -48,7 +47,7 @@ def get_users():
 
 
 @bp.route("/<user_id>", methods=["GET"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_read_scope)
 def get_user(user_id):
     with g.database.Session.begin() as session:
         principal = ScimUsersService.get_user_by_id(session=session, source_uid=user_id)
@@ -73,7 +72,7 @@ def get_user(user_id):
 
 
 @bp.route("", methods=["POST"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def create_user():
     scim_payload = request.json
     source_uid = scim_payload.get(
@@ -105,7 +104,7 @@ def create_user():
 
 
 @bp.route("/<user_id>", methods=["PUT"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def update_user(user_id):
     source_uid = user_id
     scim_payload = request.json | {"id": source_uid}
@@ -141,7 +140,7 @@ def update_user(user_id):
 
 
 @bp.route("/<user_id>", methods=["DELETE"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def delete_user(user_id):
     source_uid = user_id
     with g.database.Session.begin() as session:

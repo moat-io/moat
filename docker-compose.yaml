@@ -114,43 +114,11 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
       - ./docker/keycloak/moat_realm.json:/opt/keycloak/data/import/realm.json:ro
+      - ./instance/keycloak/data/export:/opt/keycloak/data/export
     logging: *logging
     depends_on:
       postgres:
         condition: service_healthy
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '1'
-#          memory: 512M
-#        reservations:
-#          cpus: '0.5'
-#          memory: 256M
-
-
-#  keycloak-realm-export:
-#    profiles:
-#      - keycloak-export
-#    image: keycloak/keycloak:latest
-#    ports:
-#      - "8080:8080"
-#    command: [ "export", "--file", "/opt/keycloak/data/export/moat-realm.json", "--realm", "moat"]
-#    restart: unless-stopped
-#    environment:
-#      KC_DB: postgres
-#      KC_DB_USERNAME: keycloak_user
-#      KC_DB_PASSWORD: keycloak_password
-#      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
-#      KC_METRICS_ENABLED: "true"
-#      KC_LOG_LEVEL: "INFO"
-#      KEYCLOAK_ADMIN: admin
-#      KEYCLOAK_ADMIN_PASSWORD: admin
-#    volumes:
-#      - ./instance/keycloak/data/export:/opt/keycloak/data/export
-#    logging: *logging
-#    depends_on:
-#      keycloak:
-#        condition: service_healthy
 
   trino:
     ports:

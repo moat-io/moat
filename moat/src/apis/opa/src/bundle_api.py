@@ -14,7 +14,7 @@ api_config: ApiConfig = ApiConfig.load_by_api_name(api_name="opa")
 
 @bp.route("/<platform>", methods=["GET"])
 @validate()
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_read_scope)
 def index(platform: str):
     with g.database.Session.begin() as session:
         with BundleGenerator(

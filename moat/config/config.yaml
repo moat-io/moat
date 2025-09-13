@@ -13,7 +13,11 @@ opa_client.timeout_seconds: "0.1"
 
 bundle_generator.temp_directory: /tmp
 
-api.healthcheck.auth_method: none
+api.healthcheck.auth_method: oauth2
+api.healthcheck.oauth2_issuer: http://localhost:8080/realms/moat
+api.healthcheck.oauth2_audience: account
+api.healthcheck.oauth2_jwks_uri: http://localhost:8080/realms/moat/protocol/openid-connect/certs
+api.healthcheck.oauth2_read_scope: profile
 
 api.opa.auth_method: api-key
 api.opa.api_key: bearer-token
