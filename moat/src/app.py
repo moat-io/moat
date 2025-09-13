@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-from apis.data_objects import data_objects_api_bp
 from apis.opa import bundle_api_bp, decision_log_api_bp, status_api_bp
 from apis.healthcheck import healthcheck_bp
 from apis.scim2 import (
@@ -46,7 +45,6 @@ def create_app(database: Database | None = None) -> Flask:
     flask_app.register_blueprint(bundle_api_bp)
     flask_app.register_blueprint(decision_log_api_bp)
     flask_app.register_blueprint(status_api_bp)
-    flask_app.register_blueprint(data_objects_api_bp)
     flask_app.register_blueprint(healthcheck_bp)
 
     # Register SCIM2 blueprints

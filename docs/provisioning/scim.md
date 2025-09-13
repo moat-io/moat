@@ -8,6 +8,7 @@ endpoint has been provided, which allows auto-configuration of clients.
 
 The SCIM2.0 service is available at `/api/scim/v2/`
 
+### Authentication
 See [auth](../security/auth.md) for details of API authentication 
 
 ## Schemas

@@ -7,6 +7,10 @@ class ApiConfig(AppConfigModelBase):
     api_key: str = None
     oauth2_issuer: str = None
     oauth2_audience: str = None
+    oauth2_algorithms: str = "RS256"
+    oauth2_jwks_uri: str = None
+    oauth2_read_scope: str = None
+    oauth2_write_scope: str = None
 
     @classmethod
     def load_by_api_name(cls, api_name: str) -> "ApiConfig":

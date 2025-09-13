@@ -11,7 +11,7 @@ api_config: ApiConfig = ApiConfig.load_by_api_name(api_name="healthcheck")
 
 
 @bp.route("", methods=["GET"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_read_scope)
 def index():
     response: Response = make_response(jsonify({"status": "ok"}))
     return response
