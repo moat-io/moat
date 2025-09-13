@@ -19,3 +19,4 @@ autoflake
 pyuwsgi
 jsonpath-ng
 pyjwt
+cryptography
