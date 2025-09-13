@@ -39,7 +39,18 @@ In this scenario, moat is acting as a `resource server` with an external `author
 api.resources.auth_method: oauth2
 api.resources.oauth2_issuer: https://<issuer-domain>/oauth2/<auth-server-id>
 api.resources.oauth2_audience: <audience>
+api.resources.oauth2_algorithms: RS256
+api.resources.oauth2_jwks_uri: http://<issuer-domain>/.../certs
+api.resources.oauth2_read_scope: resource_read
+api.resources.oauth2_write_scope: resource_write
 ```
+
+### Scopes
+For all REST apis, the client requires the `api.<resource>.oauth2_read_scope` to allow `GET` requests, and 
+`api.<resource>.oauth2_write_scope` for `POST, PUT, DELETE`.
+
+Scope values are up to the implementation, provided the value of `api.<resource>.oauth2_read_scope` is on the access token,
+then authorisation will be granted.
 
 ### Client Credentials Flow
 The client credentials flow is designed for server-to-server authentication where a client application requests an access token using its client credentials.

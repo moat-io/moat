@@ -16,7 +16,7 @@ def create_id() -> str:
 
 
 @bp.route("", methods=["GET"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_read_scope)
 def get_groups():
     # TODO validate these
     start_index: int = int(request.args.get("startIndex", 1))
@@ -45,7 +45,7 @@ def get_groups():
 
 
 @bp.route("/<group_id>", methods=["GET"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_read_scope)
 def get_group(group_id):
     with g.database.Session.begin() as session:
         principal_group: PrincipalGroupDbo = ScimGroupsService.get_group_by_id(
@@ -71,7 +71,7 @@ def get_group(group_id):
 
 
 @bp.route("", methods=["POST"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def create_group():
     scim_payload = request.json
     source_uid = scim_payload.get(
@@ -104,7 +104,7 @@ def create_group():
 
 
 @bp.route("/<group_id>", methods=["PUT"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def update_group(group_id):
     """
     Update a Group.
@@ -144,7 +144,7 @@ def update_group(group_id):
 
 
 @bp.route("/<group_id>", methods=["DELETE"])
-@authenticate(api_config=api_config)
+@authenticate(api_config=api_config, scope=api_config.oauth2_write_scope)
 def delete_group(group_id):
     """
     Delete a Group.
