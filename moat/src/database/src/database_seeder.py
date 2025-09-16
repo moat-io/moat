@@ -141,6 +141,6 @@ class DatabaseSeeder:
             session.commit()
 
     def seed(self):
-        self._ingest_objects("Principal", self._get_principals())
+        # self._ingest_objects("Principal", self._get_principals())
+        # self._ingest_objects("Groups", self._get_groups())
         self._ingest_objects("Resources", self._get_resources())
-        self._ingest_objects("Groups", self._get_groups())

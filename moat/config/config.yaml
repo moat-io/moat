@@ -25,3 +25,5 @@ api.opa.api_key: bearer-token
 
 api.scim.auth_method: api-key
 api.scim.api_key: scim-token
+
+scim.principal_attributes_jsonpath: "$.'urn:ietf:params:scim:custom'"
