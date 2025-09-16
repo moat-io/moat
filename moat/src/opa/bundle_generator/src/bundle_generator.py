@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from app_logger import Logger, get_logger
 from repositories import PrincipalRepository, ResourceRepository
-
+from models import PrincipalAttributeDbo, ResourceAttributeDbo
 from .bundle_generator_config import BundleGeneratorConfig
 
 logger: Logger = get_logger("opa.bundle_generator")
@@ -101,18 +101,21 @@ class BundleGenerator:
 
     @staticmethod
     def _generate_principals_in_data_object(session) -> list[dict]:
-        principal_count, principals = PrincipalRepository.get_all(session=session)
-        logger.info(f"Retrieved {principal_count} principals from the DB")
+        principal_count, principals = PrincipalRepository.get_all_active(
+            session=session
+        )
+        logger.info(f"Retrieved {principal_count} active principals from the DB")
 
         principals_dict: list[dict] = []
         for principal in principals:
             principals_dict.append(
                 {
                     "name": principal.user_name,
-                    "attributes": [
-                        {"key": a.attribute_key, "value": a.attribute_value}
-                        for a in principal.attributes
-                    ],
+                    "attributes": BundleGenerator._flatten_attributes(
+                        principal.attributes
+                    ),
+                    "entitlements": principal.entitlements,
+                    "groups": sorted([g.fq_name for g in principal.groups]),
                 }
             )
         return principals_dict
@@ -140,10 +143,9 @@ class BundleGenerator:
                             "schema": schema,
                             "table": table,
                         },
-                        "attributes": [
-                            {"key": a.attribute_key, "value": a.attribute_value}
-                            for a in resource.attributes
-                        ],
+                        "attributes": BundleGenerator._flatten_attributes(
+                            resource.attributes
+                        ),
                     }
                 )
 
@@ -158,11 +160,21 @@ class BundleGenerator:
                 data_object["columns"].append(
                     {
                         "name": column_name,
-                        "attributes": [
-                            {"key": a.attribute_key, "value": a.attribute_value}
-                            for a in resource.attributes
-                        ],
+                        "attributes": BundleGenerator._flatten_attributes(
+                            resource.attributes
+                        ),
                     }
                 )
 
         return data_objects
+
+    @staticmethod
+    def _flatten_attributes(
+        source_attributes: list[PrincipalAttributeDbo | ResourceAttributeDbo],
+    ) -> list[str]:
+        attributes: list[str] = []
+        for a in source_attributes:
+            # Split attribute values if they contain commas
+            values = [v.strip() for v in a.attribute_value.split(",")]
+            attributes.extend([f"{a.attribute_key}::{value}" for value in values])
+        return attributes

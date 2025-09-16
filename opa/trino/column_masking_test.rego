@@ -70,7 +70,7 @@ test_column_mask_bob_select_hr_employees if {
         }
       }
     }
-  expected := {"expression":"'XXXX'"}
+  expected := {"expression":"NULL"}
   expected == actual
 }
 
@@ -164,7 +164,6 @@ test_batchcolumnmask if {
       }
     }
   }
-  print(actual)
   expected == actual
 }
 

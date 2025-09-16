@@ -28,10 +28,12 @@ def test_get_all_by_platform(database: Database) -> None:
             r for r in resources if r.fq_name == "datalake.logistics.shippers"
         )
         assert shippers_resource.object_type == "table"
-        assert len(shippers_resource.attributes) == 1
+        assert len(shippers_resource.attributes) == 2
         assert isinstance(shippers_resource.attributes[0], ResourceAttributeDbo)
-        assert shippers_resource.attributes[0].attribute_key == "Sales"
-        assert shippers_resource.attributes[0].attribute_value == "Commercial"
+        assert shippers_resource.attributes[0].attribute_key == "Subject"
+        assert shippers_resource.attributes[0].attribute_value == "Sales"
+        assert shippers_resource.attributes[1].attribute_key == "AccessLevel"
+        assert shippers_resource.attributes[1].attribute_value == "Commercial"
 
         # Verify customer_markets.type_name resource
         type_name_resource = next(
@@ -41,7 +43,9 @@ def test_get_all_by_platform(database: Database) -> None:
         )
         assert type_name_resource.object_type == "column"
         # assert type_name_resource.mask == "substring(type_name,1,3)" # TODO
-        assert len(type_name_resource.attributes) == 1
+        assert len(type_name_resource.attributes) == 2
         assert isinstance(type_name_resource.attributes[0], ResourceAttributeDbo)
-        assert type_name_resource.attributes[0].attribute_key == "IT"
-        assert type_name_resource.attributes[0].attribute_value == "Restricted"
+        assert type_name_resource.attributes[0].attribute_key == "Subject"
+        assert type_name_resource.attributes[0].attribute_value == "IT"
+        assert type_name_resource.attributes[1].attribute_key == "AccessLevel"
+        assert type_name_resource.attributes[1].attribute_value == "Restricted"

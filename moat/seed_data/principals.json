@@ -1,4 +1,22 @@
-[
+[{
+    "username": "admin",
+    "first_name": "Ad",
+    "last_name": "Min",
+    "email": "admin@moat.io",
+    "groups": [
+      "ADMINISTRATORS"
+    ],
+    "entitlements": [
+      "admin_access",
+      "system_configuration",
+      "user_management"
+    ],
+    "attributes": {
+      "Employee": "True",
+      "Redact": "None",
+      "Department": "Administration"
+    }
+  },
   {
     "username": "bob",
     "first_name": "Bob",
@@ -6,8 +24,21 @@
     "email": "bob.dylan@moat.io",
     "groups": [
       "SALES_DIRECTORS_GL",
-      "HR_SUPERVISORS_GL"
-    ]
+      "HR_SUPERVISORS_GL",
+      "IT_ANALYSTS_GL"
+    ],
+    "entitlements": [
+      "sales_reporting",
+      "hr_team_management",
+      "it_systems_analysis"
+    ],
+    "attributes": {
+      "Employee": "True",
+      "Redact": "PII",
+      "Privacy": ["Sales"],
+      "Restricted": ["Sales", "HR"],
+      "Commercial": ["Sales", "HR", "IT"]
+    }
   },
   {
     "username": "alice",
@@ -17,8 +48,22 @@
     "groups": [
       "SALES_ANALYSTS_GL",
       "MARKETING_DIRECTORS_GL",
+      "IT_SUPERVISORS_GL",
       "DEVELOPERS"
-    ]
+    ],
+    "entitlements": [
+      "sales_data_analysis",
+      "marketing_strategy",
+      "it_team_supervision",
+      "code_repository_access"
+    ],
+    "attributes": {
+      "Employee": "True",
+      "Redact": "PII",
+      "Privacy": ["Marketing"],
+      "Restricted": ["Marketing", "IT"],
+      "Commercial": ["Marketing", "IT", "Sales"]
+    }
   },
   {
     "username": "frank",
@@ -27,8 +72,21 @@
     "email": "frank.zappa@moat.io",
     "groups": [
       "SALES_SUPERVISORS_GL",
+      "MARKETING_ANALYSTS_GL",
       "HR_DIRECTORS_GL"
-    ]
+    ],
+    "entitlements": [
+      "sales_team_supervision",
+      "marketing_data_analysis",
+      "hr_policy_management"
+    ],
+    "attributes": {
+      "Employee": "True",
+      "Redact": "PII",
+      "Privacy": ["HR"],
+      "Restricted": ["HR", "Sales"],
+      "Commercial": ["HR", "Sales", "Marketing"]
+    }
   },
   {
     "username": "anne",
@@ -37,17 +95,20 @@
     "email": "anne.murray@moat.io",
     "groups": [
       "MARKETING_SUPERVISORS_GL",
-      "HR_ANALYSTS_GL"
-    ]
-  },
-  {
-    "username": "janis",
-    "first_name": "Janis",
-    "last_name": "Joplin",
-    "email": "janis.joplin@moat.io",
-    "groups": [
-      "IT_SUPERVISORS_GL",
-      "ADMINISTRATORS"
-    ]
+      "HR_ANALYSTS_GL",
+      "IT_DIRECTORS_GL"
+    ],
+    "entitlements": [
+      "marketing_team_supervision",
+      "hr_data_analysis",
+      "it_strategy_planning"
+    ],
+    "attributes": {
+      "Employee": "True",
+      "Redact": "PII",
+      "Privacy": ["IT"],
+      "Restricted": ["IT", "Marketing"],
+      "Commercial": ["IT", "Marketing", "HR"]
+    }
   }
 ]

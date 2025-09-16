@@ -297,7 +297,7 @@ test_alice_filter_schemas_in_datalake if {
 }
 
 test_anne_filter_schemas_in_datalake if {
-  not allow with input as {
+  allow with input as {
     "action": {
       "operation": "FilterSchemas",
       "resource": {
@@ -357,15 +357,15 @@ test_filter_tables_alice_logistics_shippers if {
   }
 }
 
-test_filter_tables_alice_logistics_suppliers if {
+test_filter_tables_alice_hr_employees if {
   not allow with input as {
     "action": {
       "operation": "FilterTables",
       "resource": {
         "table": {
           "catalogName": "datalake",
-          "schemaName": "logistics",
-          "tableName": "suppliers"
+          "schemaName": "hr",
+          "tableName": "employees"
         }
       }
     },
@@ -600,48 +600,3 @@ test_alice_selects_hr_employees_column_a_and_column_c if {
       }
   }
 }
-
-
-# classified_columns
-test_classified_columns if {
-  actual := classified_columns with input as {
-    "context": {
-        "identity": {
-            "user": "bob"
-        }
-    },
-    "action": {
-        "operation": "SelectFromColumns",
-        "resource": {
-            "table": {
-                "catalogName": "datalake",
-                "schemaName": "hr",
-                "tableName": "employees",
-                "columns": [
-                    "a",
-                    "phonenumber",
-                    "c"
-                ]
-            }
-        }
-    }
-  }
-  expected := {{"attributes": [{"key": "HR", "value": "Privacy"}], "mask": "'XXXX'", "name": "phonenumber"}}
-  actual == expected
-}
-
-# ----------------------- insert -----------------------
-#import data.input.insert_into_table
-#test_input_insert_into_table if {
-#  allow with input as insert_into_table
-#}
-
-# insert into table i cant acess
-
-# insert into table i have readonly on
-
-
-#test_input_filter_cols if {
-#  batch with input as input_filter_cols
-#  print(batch)
-#}

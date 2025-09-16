@@ -3,6 +3,7 @@ import os
 import subprocess
 
 from database import Database
+from sqlalchemy import text
 
 from ..src.bundle_generator import BundleGenerator
 
@@ -45,6 +46,28 @@ def test_generate_principals_in_data_object(database: Database):
         "moat/src/opa/bundle_generator/test/bundle_generator_test_data.json"
     ) as f:
         expected: dict = json.load(f).get("principals")
+
+    with database.Session() as session:
+        actual = BundleGenerator._generate_principals_in_data_object(session=session)
+
+    assert sorted(actual, key=lambda e: e["name"]) == sorted(
+        expected, key=lambda e: e["name"]
+    )
+
+
+def test_generate_principals_in_data_object_with_deactivation(database: Database):
+    with database.Session() as session:
+        session.execute(
+            text("UPDATE principals SET active = false WHERE user_name = 'alice'")
+        )
+        session.commit()
+
+    with open(
+        "moat/src/opa/bundle_generator/test/bundle_generator_test_data.json"
+    ) as f:
+        expected: list[dict] = [
+            p for p in json.load(f).get("principals") if p.get("name") != "alice"
+        ]
 
     with database.Session() as session:
         actual = BundleGenerator._generate_principals_in_data_object(session=session)

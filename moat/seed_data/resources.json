@@ -2,71 +2,213 @@
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.hr.employees"
+    "fq_name": "datalake.hr.employees",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "HR"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Restricted"
+      }
+    ]
   },
   {
     "object_type": "column",
     "platform":"trino",
-    "fq_name": "datalake.hr.employees.phonenumber"
+    "fq_name": "datalake.hr.employees.phonenumber",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "HR"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Privacy"
+      }
+    ],
+    "mask": "'XXXX'"
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.hr.employee_territories"
+    "fq_name": "datalake.hr.employee_territories",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "HR"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.logistics.shippers"
+    "fq_name": "datalake.logistics.shippers",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "column",
     "platform":"trino",
-    "fq_name": "datalake.logistics.shippers.phone"
+    "fq_name": "datalake.logistics.shippers.phone",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Privacy"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.logistics.territories"
+    "fq_name": "datalake.logistics.territories",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.logistics.regions"
+    "fq_name": "datalake.logistics.regions",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Marketing"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.logistics.suppliers"
+    "fq_name": "datalake.logistics.suppliers",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Marketing"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Restricted"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.sales.orders"
+    "fq_name": "datalake.sales.orders",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Marketing"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Privacy"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.sales.products"
+    "fq_name": "datalake.sales.products",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.sales.customers"
+    "fq_name": "datalake.sales.customers",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Restricted"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.sales.customer_demographics"
+    "fq_name": "datalake.sales.customer_demographics",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Privacy"
+      }
+    ]
   },
   {
     "object_type": "table",
     "platform":"trino",
-    "fq_name": "datalake.sales.customer_markets"
+    "fq_name": "datalake.sales.customer_markets",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "IT"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "column",
     "platform":"trino",
-    "fq_name": "datalake.sales.customer_markets.type_name"
+    "fq_name": "datalake.sales.customer_markets.type_name",
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "IT"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Restricted"
+      }
+    ],
+    "mask": "substring(type_name,1,3)"
   }
 ]
