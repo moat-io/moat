@@ -3,7 +3,16 @@
     "object_type": "table",
     "platform":"trino",
     "fq_name": "datalake.hr.employees",
-    "attributes": []
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "HR"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Restricted"
+      }
+    ]
   },
   {
     "object_type": "column",
@@ -11,7 +20,11 @@
     "fq_name": "datalake.hr.employees.phonenumber",
     "attributes": [
       {
-        "key": "HR",
+        "key": "Subject",
+        "value": "HR"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Privacy"
       }
     ],
@@ -21,7 +34,16 @@
     "object_type": "table",
     "platform":"trino",
     "fq_name": "datalake.hr.employee_territories",
-    "attributes": []
+    "attributes": [
+      {
+        "key": "Subject",
+        "value": "HR"
+      },
+      {
+        "key": "AccessLevel",
+        "value": "Commercial"
+      }
+    ]
   },
   {
     "object_type": "table",
@@ -29,7 +51,11 @@
     "fq_name": "datalake.logistics.shippers",
     "attributes": [
       {
-        "key": "Sales",
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Commercial"
       }
     ]
@@ -40,7 +66,11 @@
     "fq_name": "datalake.logistics.shippers.phone",
     "attributes": [
       {
-        "key": "Sales",
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Privacy"
       }
     ]
@@ -51,7 +81,11 @@
     "fq_name": "datalake.logistics.territories",
     "attributes": [
       {
-        "key": "Sales",
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Commercial"
       }
     ]
@@ -62,7 +96,11 @@
     "fq_name": "datalake.logistics.regions",
     "attributes": [
       {
-        "key": "Marketing",
+        "key": "Subject",
+        "value": "Marketing"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Commercial"
       }
     ]
@@ -73,7 +111,11 @@
     "fq_name": "datalake.logistics.suppliers",
     "attributes": [
       {
-        "key": "Marketing",
+        "key": "Subject",
+        "value": "Marketing"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Restricted"
       }
     ]
@@ -84,7 +126,11 @@
     "fq_name": "datalake.sales.orders",
     "attributes": [
       {
-        "key": "Marketing",
+        "key": "Subject",
+        "value": "Marketing"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Privacy"
       }
     ]
@@ -95,7 +141,11 @@
     "fq_name": "datalake.sales.products",
     "attributes": [
       {
-        "key": "Sales",
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Commercial"
       }
     ]
@@ -106,7 +156,11 @@
     "fq_name": "datalake.sales.customers",
     "attributes": [
       {
-        "key": "Sales",
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Restricted"
       }
     ]
@@ -117,7 +171,11 @@
     "fq_name": "datalake.sales.customer_demographics",
     "attributes": [
       {
-        "key": "Sales",
+        "key": "Subject",
+        "value": "Sales"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Privacy"
       }
     ]
@@ -128,12 +186,12 @@
     "fq_name": "datalake.sales.customer_markets",
     "attributes": [
       {
-        "key": "Sales",
-        "value": "Privacy"
+        "key": "Subject",
+        "value": "IT"
       },
       {
-        "key": "Marketing",
-        "value": "Privacy"
+        "key": "AccessLevel",
+        "value": "Commercial"
       }
     ]
   },
@@ -143,7 +201,11 @@
     "fq_name": "datalake.sales.customer_markets.type_name",
     "attributes": [
       {
-        "key": "IT",
+        "key": "Subject",
+        "value": "IT"
+      },
+      {
+        "key": "AccessLevel",
         "value": "Restricted"
       }
     ],

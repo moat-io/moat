@@ -33,6 +33,14 @@ class PrincipalDbo(IngestionDboMixin, BaseModel):
         uselist=True,
     )
 
+    groups: Mapped[list["PrincipalGroupDbo"]] = relationship(
+        argument="PrincipalGroupDbo",
+        primaryjoin="PrincipalGroupDbo.members.any(PrincipalDbo.fq_name)",
+        foreign_keys=fq_name,
+        remote_side="PrincipalGroupDbo.members",
+        uselist=True,
+    )
+
 
 class PrincipalGroupDbo(IngestionDboMixin, BaseModel):
     __tablename__ = "principal_groups"

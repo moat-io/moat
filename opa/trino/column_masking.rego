@@ -7,11 +7,9 @@ import data.trino
 # the mask value should be applied when a user doesnt have access to it
 # when a user doesn't have access, they will still get a true on the column
 # if that column doesnt have a defined mask
+
 principal_has_access_to_column(attributes) if {
-  every attribute in attributes {
-    # all attrs must be on the principal
-    attribute == principal_attributes[_]
-  }
+  principal_has_all_required_attributes(attributes)
 }
 
 columnmask := {"expression": mask} if {

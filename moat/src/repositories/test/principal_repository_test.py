@@ -3,6 +3,7 @@ from models import (
     PrincipalAttributeStagingDbo,
     PrincipalDbo,
     PrincipalStagingDbo,
+    PrincipalAttributeDbo,
 )
 
 from ..src.principal_repository import PrincipalRepository
@@ -40,9 +41,11 @@ def test_get_all(database: Database) -> None:
         assert all([isinstance(p, PrincipalDbo) for p in principals])
         assert len(principals) == 5
 
-        # TODO check attributes - each should have > 1 ad groups
+        # entitlements
+        assert all([len(p.entitlements) >= 1 for p in principals])
+
+        # attributes
         assert all([len(p.attributes) >= 1 for p in principals])
-        assert all([p.attributes[0].attribute_key == "ad_group" for p in principals])
 
 
 def test_get_by_username(database: Database) -> None:
@@ -56,3 +59,20 @@ def test_get_by_username(database: Database) -> None:
         assert principal.user_name == "alice"
         assert principal.first_name == "Alice"
         assert principal.last_name == "Cooper"
+
+        assert principal.entitlements == [
+            "sales_data_analysis",
+            "marketing_strategy",
+            "it_team_supervision",
+            "code_repository_access",
+        ]
+
+        assert {
+            attr.attribute_key: attr.attribute_value for attr in principal.attributes
+        } == {
+            "Commercial": "Marketing,IT,Sales",
+            "Employee": "True",
+            "Privacy": "Marketing",
+            "Redact": "PII",
+            "Restricted": "Marketing,IT",
+        }

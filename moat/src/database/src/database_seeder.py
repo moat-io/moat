@@ -7,6 +7,7 @@ from database import Database
 from models import (
     IngestionProcessDbo,
     PrincipalAttributeDbo,
+    PrincipalGroupDbo,
     PrincipalDbo,
     ResourceDbo,
     ResourceAttributeDbo,
@@ -29,24 +30,61 @@ class DatabaseSeeder:
 
             for mock_user in mock_users:
                 principal_dbo: PrincipalDbo = PrincipalDbo()
-                principal_dbo.fq_name = str(uuid.uuid4())
+                principal_dbo.fq_name = mock_user.get("username")
                 principal_dbo.activated_at = datetime.now()
                 principal_dbo.deactivated_at = None
                 principal_dbo.first_name = mock_user.get("first_name")
                 principal_dbo.last_name = mock_user.get("last_name")
                 principal_dbo.user_name = mock_user.get("username")
+                principal_dbo.email = mock_user.get("email")
+                principal_dbo.source_type = "seeder"
+                principal_dbo.source_uid = mock_user.get("username")
+                principal_dbo.entitlements = mock_user.get("entitlements")
 
-                # apply groups
-                for group in mock_user.get("groups"):
+                # apply attributes to principal
+                for k, v in mock_user.get("attributes").items():
+                    if isinstance(v, list):
+                        v = ",".join(v)
+
                     principal_attribute_dbo = PrincipalAttributeDbo()
                     principal_attribute_dbo.fq_name = principal_dbo.fq_name
-                    principal_attribute_dbo.attribute_key = "ad_group"
-                    principal_attribute_dbo.attribute_value = group
+                    principal_attribute_dbo.attribute_key = k
+                    principal_attribute_dbo.attribute_value = v
                     principal_attribute_dbo.activated_at = datetime.utcnow()
                     principal_dbo.attributes.append(principal_attribute_dbo)
 
                 principals.append(principal_dbo)
             return principals
+
+    @staticmethod
+    def _get_groups() -> list[PrincipalGroupDbo]:
+        with open(
+            os.path.join(DatabaseConfig.load().seed_data_path, "principals.json")
+        ) as json_file:
+            mock_users: list[dict] = json.load(json_file)
+            groups: list[PrincipalGroupDbo] = []
+
+            unique_groups = set(
+                [
+                    g
+                    for sublist in [u.get("groups", []) for u in mock_users]
+                    for g in sublist
+                ]
+            )
+
+            for group in unique_groups:
+                principal_group_dbo = PrincipalGroupDbo()
+                principal_group_dbo.fq_name = group
+                principal_group_dbo.source_type = "seeder"
+                principal_group_dbo.source_uid = group
+                principal_group_dbo.members = []
+
+                for mock_user in mock_users:
+                    if group in mock_user.get("groups", []):
+                        principal_group_dbo.members.append(mock_user.get("username"))
+
+                groups.append(principal_group_dbo)
+            return groups
 
     @staticmethod
     def _get_resources() -> list[ResourceDbo]:
@@ -105,3 +143,4 @@ class DatabaseSeeder:
     def seed(self):
         self._ingest_objects("Principal", self._get_principals())
         self._ingest_objects("Resources", self._get_resources())
+        self._ingest_objects("Groups", self._get_groups())

@@ -1,289 +1,264 @@
 {
   "data_objects": [
     {
-      "object": {
-        "database": "datalake",
-        "schema": "hr",
-        "table": "employees"
-      },
       "attributes": [
-        {
-          "key": "HR",
-          "value": "Commercial"
-        }
+        "Subject::Sales",
+        "AccessLevel::Privacy"
       ],
-      "columns": [
-        {
-          "name": "phonenumber",
-          "attributes": [
-            {
-              "key": "HR",
-              "value": "Privacy"
-            }
-          ],
-          "mask": "'XXXX'"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "hr",
-        "table": "employee_territories"
-      },
-      "attributes": [
-        {
-          "key": "HR",
-          "value": "Commercial"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "shippers"
-      },
-      "attributes": [
-        {
-          "key": "Sales",
-          "value": "Commercial"
-        }
-      ],
-      "columns": [
-        {
-          "name": "phone",
-          "attributes": [
-            {
-              "key": "Sales",
-              "value": "Privacy"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "territories"
-      },
-      "attributes": [
-        {
-          "key": "Sales",
-          "value": "Commercial"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "regions"
-      },
-      "attributes": [
-        {
-          "key": "Marketing",
-          "value": "Commercial"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "suppliers"
-      },
-      "attributes": [
-        {
-          "key": "Marketing",
-          "value": "Restricted"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "orders"
-      },
-      "attributes": [
-        {
-          "key": "Marketing",
-          "value": "Privacy"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "products"
-      },
-      "attributes": [
-        {
-          "key": "Sales",
-          "value": "Commercial"
-        }
-      ]
-    },
-    {
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "customers"
-      },
-      "attributes": [
-        {
-          "key": "Sales",
-          "value": "Restricted"
-        }
-      ]
-    },
-    {
       "object": {
         "database": "datalake",
         "schema": "sales",
         "table": "customer_demographics"
-      },
-      "attributes": [
-        {
-          "key": "Sales",
-          "value": "Privacy"
-        }
-      ]
+      }
     },
     {
+      "attributes": [
+        "Subject::IT",
+        "AccessLevel::Commercial"
+      ],
+      "columns": [
+        {
+          "attributes": [
+            "Subject::IT",
+            "AccessLevel::Restricted"
+          ],
+          "name": "type_name"
+        }
+      ],
       "object": {
         "database": "datalake",
         "schema": "sales",
         "table": "customer_markets"
-      },
+      }
+    },
+    {
       "attributes": [
-        {
-          "key": "Sales",
-          "value": "Privacy"
-        },
-        {
-          "key": "Marketing",
-          "value": "Privacy"
-        }
+        "Subject::Sales",
+        "AccessLevel::Restricted"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "sales",
+        "table": "customers"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::HR",
+        "AccessLevel::Commercial"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "hr",
+        "table": "employee_territories"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::HR",
+        "AccessLevel::Restricted"
       ],
       "columns": [
         {
-          "name": "type_name",
           "attributes": [
-            {
-              "key": "IT",
-              "value": "Restricted"
-            }
+            "Subject::HR",
+            "AccessLevel::Privacy"
           ],
-          "mask": "substring(type_name,1,3)"
+          "name": "phonenumber"
         }
-      ]
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "hr",
+        "table": "employees"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::Marketing",
+        "AccessLevel::Privacy"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "sales",
+        "table": "orders"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::Sales",
+        "AccessLevel::Commercial"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "sales",
+        "table": "products"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::Marketing",
+        "AccessLevel::Commercial"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "logistics",
+        "table": "regions"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::Sales",
+        "AccessLevel::Commercial"
+      ],
+      "columns": [
+        {
+          "attributes": [
+            "Subject::Sales",
+            "AccessLevel::Privacy"
+          ],
+          "name": "phone"
+        }
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "logistics",
+        "table": "shippers"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::Marketing",
+        "AccessLevel::Restricted"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "logistics",
+        "table": "suppliers"
+      }
+    },
+    {
+      "attributes": [
+        "Subject::Sales",
+        "AccessLevel::Commercial"
+      ],
+      "object": {
+        "database": "datalake",
+        "schema": "logistics",
+        "table": "territories"
+      }
     }
   ],
   "principals": [
     {
-      "name": "bob",
+      "groups": [
+        "ADMINISTRATORS"
+      ],
+      "entitlements": [
+        "admin_access",
+        "system_configuration",
+        "user_management"
+      ],
       "attributes": [
-        {
-          "key": "Sales",
-          "value": "Commercial"
-        },
-        {
-          "key": "Sales",
-          "value": "Privacy"
-        },
-        {
-          "key": "HR",
-          "value": "Commercial"
-        },
-        {
-          "key": "HR",
-          "value": "Restricted"
-        }
-      ]
+        "Employee::True",
+        "Redact::None",
+        "Department::Administration"
+      ],
+      "name": "admin"
     },
     {
-      "name": "alice",
+      "groups": [
+        "DEVELOPERS",
+        "IT_SUPERVISORS_GL",
+        "MARKETING_DIRECTORS_GL",
+        "SALES_ANALYSTS_GL"
+      ],
+      "entitlements": [
+        "sales_data_analysis",
+        "marketing_strategy",
+        "it_team_supervision",
+        "code_repository_access"
+      ],
       "attributes": [
-        {
-          "key": "Sales",
-          "value": "Commercial"
-        },
-        {
-          "key": "Marketing",
-          "value": "Commercial"
-        },
-        {
-          "key": "Marketing",
-          "value": "Privacy"
-        }
-      ]
+        "Employee::True",
+        "Redact::PII",
+        "Privacy::Marketing",
+        "Restricted::Marketing",
+        "Restricted::IT",
+        "Commercial::Marketing",
+        "Commercial::IT",
+        "Commercial::Sales"
+      ],
+      "name": "alice"
     },
     {
-      "name": "frank",
+      "groups": [
+        "HR_ANALYSTS_GL",
+        "IT_DIRECTORS_GL",
+        "MARKETING_SUPERVISORS_GL"
+      ],
+      "entitlements": [
+        "marketing_team_supervision",
+        "hr_data_analysis",
+        "it_strategy_planning"
+      ],
       "attributes": [
-        {
-          "key": "Sales",
-          "value": "Commercial"
-        },
-        {
-          "key": "Sales",
-          "value": "Restricted"
-        },
-        {
-          "key": "HR",
-          "value": "Commercial"
-        },
-        {
-          "key": "HR",
-          "value": "Privacy"
-        }
-      ]
+        "Employee::True",
+        "Redact::PII",
+        "Privacy::IT",
+        "Restricted::IT",
+        "Restricted::Marketing",
+        "Commercial::IT",
+        "Commercial::Marketing",
+        "Commercial::HR"
+      ],
+      "name": "anne"
     },
     {
-      "name": "anne",
+      "groups": [
+        "HR_SUPERVISORS_GL",
+        "IT_ANALYSTS_GL",
+        "SALES_DIRECTORS_GL"
+      ],
+      "entitlements": [
+        "sales_reporting",
+        "hr_team_management",
+        "it_systems_analysis"
+      ],
       "attributes": [
-        {
-          "key": "Marketing",
-          "value": "Commercial"
-        },
-        {
-          "key": "Marketing",
-          "value": "Restricted"
-        },
-        {
-          "key": "HR",
-          "value": "Commercial"
-        }
-      ]
+        "Employee::True",
+        "Redact::PII",
+        "Privacy::Sales",
+        "Restricted::Sales",
+        "Restricted::HR",
+        "Commercial::Sales",
+        "Commercial::HR",
+        "Commercial::IT"
+      ],
+      "name": "bob"
     },
     {
-      "name": "janis",
+      "groups": [
+        "HR_DIRECTORS_GL",
+        "MARKETING_ANALYSTS_GL",
+        "SALES_SUPERVISORS_GL"
+      ],
+      "entitlements": [
+        "sales_team_supervision",
+        "marketing_data_analysis",
+        "hr_policy_management"
+      ],
       "attributes": [
-        {
-          "key": "IT",
-          "value": "Commercial"
-        },
-        {
-          "key": "IT",
-          "value": "Privacy"
-        }
-      ]
+        "Employee::True",
+        "Redact::PII",
+        "Privacy::HR",
+        "Restricted::HR",
+        "Restricted::Sales",
+        "Commercial::HR",
+        "Commercial::Sales",
+        "Commercial::Marketing"
+      ],
+      "name": "frank"
     }
-  ],
-  "actions": {
-    "read": [
-      "ExecuteQuery",
-      "AccessCatalog",
-      "SelectFromColumns",
-      "FilterCatalogs",
-      "FilterSchemas"
-    ],
-    "write": [
-      "InsertIntoTable"
-    ]
-  }
+  ]
 }
