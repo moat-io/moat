@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+from models import ObjectTypeEnum
 from moat.src._scripts.create_db import create_db
 from moat.src.cli.src.cli import ingest
 from click.testing import CliRunner
@@ -47,7 +48,7 @@ populate_users()
 db: Database = Database()
 db.connect(echo_statements=True)
 database_seeder: DatabaseSeeder = DatabaseSeeder(db=db)
-database_seeder.seed()
+database_seeder.seed(object_types=[ObjectTypeEnum.RESOURCE])
 
 # os.environ["CONFIG_FILE_PATH"] = "moat/config/config.resource_ingestion.yaml"
 # runner = CliRunner()

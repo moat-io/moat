@@ -5,6 +5,7 @@ from datetime import datetime
 
 from database import Database
 from models import (
+    ObjectTypeEnum,
     IngestionProcessDbo,
     PrincipalAttributeDbo,
     PrincipalGroupDbo,
@@ -140,7 +141,19 @@ class DatabaseSeeder:
             ingestion_process_dbo.status = "completed"
             session.commit()
 
-    def seed(self):
-        # self._ingest_objects("Principal", self._get_principals())
-        # self._ingest_objects("Groups", self._get_groups())
-        self._ingest_objects("Resources", self._get_resources())
+    def seed(self, object_types: list[ObjectTypeEnum] | None = None):
+        if not object_types:
+            object_types = [
+                ObjectTypeEnum.PRINCIPAL,
+                ObjectTypeEnum.RESOURCE,
+                ObjectTypeEnum.PRINCIPAL_GROUP,
+            ]
+
+        if ObjectTypeEnum.PRINCIPAL in object_types:
+            self._ingest_objects("Principal", self._get_principals())
+
+        if ObjectTypeEnum.PRINCIPAL_GROUP in object_types:
+            self._ingest_objects("Groups", self._get_groups())
+
+        if ObjectTypeEnum.RESOURCE in object_types:
+            self._ingest_objects("Resources", self._get_resources())
