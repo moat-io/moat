@@ -8,6 +8,7 @@ database.password: "test_password"
 database.host: "localhost"
 database.port: "5432"
 database.database: "testdb"
+database.seed_data_path: "moat/test/seed_data"
 
 opa_client.timeout_seconds: "0.1"
 
@@ -24,3 +25,5 @@ api.opa.api_key: bearer-token
 
 api.scim.auth_method: api-key
 api.scim.api_key: scim-token
+
+scim.principal_attributes_jsonpath: "$.'urn:ietf:params:scim:custom'"

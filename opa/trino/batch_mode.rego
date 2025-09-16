@@ -20,6 +20,5 @@ batch contains i if {
 	new_resources := [
     object.union(raw_resource, {"table": {"column": column_name}}) | column_name := raw_resource.table.columns[_]
 	]
-	print(new_resources)
 	allow with input.action.resource as new_resources[i]
 }

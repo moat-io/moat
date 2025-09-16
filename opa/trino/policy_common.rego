@@ -19,21 +19,18 @@ allow if {
 allow if {
   input.action.resource.catalog.name == "system"
   input.action.operation in ["AccessCatalog", "FilterCatalogs"]
-  principal_exists(input_principal_name)
 }
 
 # All valid users should have SelectFromColumns on information_schema in all catalogs
 allow if {
   input.action.resource.table.schemaName == "information_schema"
   input.action.operation in ["SelectFromColumns", "FilterTables"]
-  principal_exists(input_principal_name)
 }
 
 # All valid users should have SelectFromColumns and FilterTables on all tables in system
 allow if {
   input.action.resource.table.catalogName == "system"
   input.action.operation in ["SelectFromColumns", "FilterTables"]
-  principal_exists(input_principal_name)
 }
 
 
@@ -80,21 +77,14 @@ allow if {
 # filter columns - all allowed as masking is default when inaccessible
 allow if {
   input.action.operation == "FilterColumns"
-#  some data_object in data_objects
-#	data_object.object.database == input.action.resource.table.catalogName
-#	data_object.object.schema == input.action.resource.table.schemaName
-#	data_object.object.table == input.action.resource.table.tableName
-#	principal_has_all_required_attributes(data_object.attributes)
-#	all_classified_column_attrs_exist_on_principal
 }
 
 # running the select
+# we know the user exists from ExecuteQuery
 allow if {
   input.action.operation == "SelectFromColumns"
-  # ensure we have a valid user
-  principal_exists(input_principal_name)
 
-  # ensure the object is tagged - is this redundant? they wont see it anyway
+  # ensure the object is tagged - untagged is otherwise free-for-all
   some data_object in data_objects
 	data_object.object == input_table
   data_object_is_tagged(data_object)

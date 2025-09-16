@@ -28,46 +28,46 @@ def ingest(connector_name: str, object_type: str, platform: str):
     )
 
 
-@cli.command()
-def ingest_all():
-    """
-    This is a temporary hack to ingest all data from LDAP and DBAPI sources.
-    """
-    import os
-
-    # create_db()
-
-    ingestion_controller = IngestionController()
-
-    os.environ["CONFIG_FILE_PATH"] = "moat/config/config.principal_ingestion.yaml"
-    ingestion_controller.ingest(
-        connector_name="ldap",
-        platform="ad",
-        object_type=ObjectTypeEnum.PRINCIPAL,
-    )
-
-    os.environ["CONFIG_FILE_PATH"] = "moat/config/config.principal_ingestion.yaml"
-    ingestion_controller.ingest(
-        connector_name="ldap",
-        platform="ad",
-        object_type=ObjectTypeEnum.PRINCIPAL_ATTRIBUTE,
-    )
-
-    os.environ["CONFIG_FILE_PATH"] = "moat/config/config.resource_ingestion.yaml"
-    ingestion_controller.ingest(
-        connector_name="dbapi",
-        platform="trino",
-        object_type=ObjectTypeEnum.RESOURCE,
-    )
-
-    os.environ["CONFIG_FILE_PATH"] = (
-        "moat/config/config.resource_attribute_ingestion.yaml"
-    )
-    ingestion_controller.ingest(
-        connector_name="dbapi",
-        platform="trino",
-        object_type=ObjectTypeEnum.RESOURCE_ATTRIBUTE,
-    )
+# @cli.command()
+# def ingest_all():
+#     """
+#     This is a temporary hack to ingest all data from LDAP and DBAPI sources.
+#     """
+#     import os
+#
+#     # create_db()
+#
+#     ingestion_controller = IngestionController()
+#
+#     # os.environ["CONFIG_FILE_PATH"] = "moat/config/config.principal_ingestion.yaml"
+#     # ingestion_controller.ingest(
+#     #     connector_name="ldap",
+#     #     platform="ad",
+#     #     object_type=ObjectTypeEnum.PRINCIPAL,
+#     # )
+#     #
+#     # os.environ["CONFIG_FILE_PATH"] = "moat/config/config.principal_ingestion.yaml"
+#     # ingestion_controller.ingest(
+#     #     connector_name="ldap",
+#     #     platform="ad",
+#     #     object_type=ObjectTypeEnum.PRINCIPAL_ATTRIBUTE,
+#     # )
+#
+#     os.environ["CONFIG_FILE_PATH"] = "moat/config/config.resource_ingestion.yaml"
+#     ingestion_controller.ingest(
+#         connector_name="dbapi",
+#         platform="trino",
+#         object_type=ObjectTypeEnum.RESOURCE,
+#     )
+#
+#     os.environ["CONFIG_FILE_PATH"] = (
+#         "moat/config/config.resource_attribute_ingestion.yaml"
+#     )
+#     ingestion_controller.ingest(
+#         connector_name="dbapi",
+#         platform="trino",
+#         object_type=ObjectTypeEnum.RESOURCE_ATTRIBUTE,
+#     )
 
 
 if __name__ == "__main__":

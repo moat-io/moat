@@ -39,12 +39,12 @@ class ResourceIngestionController(BaseIngestionController):
     def merge(
         self, session, ingestion_process_id: int, deactivate_omitted: bool = False
     ) -> None:
-        logger.info("Starting merge process for principals")
+        logger.info("Starting merge process for resources")
         ResourceRepository.merge_staging(
             session=session, ingestion_process_id=ingestion_process_id
         )
 
-        logger.info(f"Starting merge deactivate process for principals")
+        logger.info(f"Starting merge deactivate process for resources")
         if deactivate_omitted:
             ResourceRepository.merge_deactivate_staging(
                 session=session, ingestion_process_id=ingestion_process_id

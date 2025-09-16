@@ -41,36 +41,14 @@ data_object_is_tagged(data_object) if {
 }
 
 principal_has_all_required_attributes(required_principal_attributes) if {
-  # assert that the principal has all required_principal_attributes
-  every required_principal_attribute in required_principal_attributes {
-    required_principal_attribute == principal_attributes[_]
-  }
-}
+  some required_attr_subject in required_principal_attributes
+      startswith(required_attr_subject, "Subject::")
+      subject := split(required_attr_subject, "::")[1]
 
-# if columns are specified on the data object, they they have their
-# own classification, we need to test them here
-# if a column is selected then we need to check it on the object
-classified_columns contains classified_column if {
-  # get the table from the data
-  some data_object in data_objects
-	data_object.object == input_table
+  some required_attr_access_level in required_principal_attributes
+    startswith(required_attr_access_level, "AccessLevel::")
+    access_level := split(required_attr_access_level, "::")[1]
 
-  # get the set of columns in the input which match the data
-  some input_column in input_columns
-  input_column == data_object.columns[i].name
-
-  # get the full column object from the data
-  some classified_column in data_object.columns
-  classified_column.name == input_column
-}
-
-all_classified_column_attrs_exist_on_principal if {
-  # for all columns which are in both the input and data
-  every classified_column in classified_columns {
-    # for every attribute on each of the columns
-    every column_attribute in classified_column.attributes {
-      # all attrs on the column must be on the principal
-      column_attribute == principal_attributes[_]
-    }
-  }
+  # check principal has subject and access level
+  concat("", [access_level, "::", subject]) in principal_attributes
 }
