@@ -466,6 +466,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-server" class="md-nav__link">
     <span class="md-ellipsis">
       API Server
@@ -809,6 +818,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-server" class="md-nav__link">
     <span class="md-ellipsis">
       API Server
@@ -923,6 +941,14 @@
 <h1 id="deployment">Deployment</h1>
 <p>It is recommended to deploy <code>moat</code> in a containerised environment (e.g Kubernetes). A moat deployment consists of
 an api server and a number of cronjobs.</p>
+<h2 id="database">Database</h2>
+<p>Moat relies on a postgres database, it can be created with <code>psql</code> with the following script</p>
+<pre><code class="language-sql">create user moat_user with password '&lt;password&gt;&gt;';
+CREATE DATABASE moat;
+GRANT ALL PRIVILEGES ON DATABASE moat TO moat_user;
+\c moat;
+GRANT ALL PRIVILEGES ON SCHEMA public TO moat_user;
+</code></pre>
 <h2 id="api-server">API Server</h2>
 <p>The API server should be deployed using a k8s <code>kind: Deployment</code> with optional replication. The API service is not required to be
 highly-available so a single replica is fine for most purposes.</p>

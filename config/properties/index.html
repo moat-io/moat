@@ -1059,15 +1059,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#trino_clientpassword" class="md-nav__link">
-    <span class="md-ellipsis">
-      trino_client.password
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#trino_clientport" class="md-nav__link">
     <span class="md-ellipsis">
       trino_client.port
@@ -1080,6 +1071,33 @@
   <a href="#trino_clientusername" class="md-nav__link">
     <span class="md-ellipsis">
       trino_client.username
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trino_clientpassword" class="md-nav__link">
+    <span class="md-ellipsis">
+      trino_client.password
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trino_clientjwt_token" class="md-nav__link">
+    <span class="md-ellipsis">
+      trino_client.jwt_token
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trino_clientssl_verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      trino_client.ssl_verify
     </span>
   </a>
   
@@ -1515,15 +1533,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#trino_clientpassword" class="md-nav__link">
-    <span class="md-ellipsis">
-      trino_client.password
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#trino_clientport" class="md-nav__link">
     <span class="md-ellipsis">
       trino_client.port
@@ -1536,6 +1545,33 @@
   <a href="#trino_clientusername" class="md-nav__link">
     <span class="md-ellipsis">
       trino_client.username
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trino_clientpassword" class="md-nav__link">
+    <span class="md-ellipsis">
+      trino_client.password
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trino_clientjwt_token" class="md-nav__link">
+    <span class="md-ellipsis">
+      trino_client.jwt_token
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trino_clientssl_verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      trino_client.ssl_verify
     </span>
   </a>
   
@@ -1866,13 +1902,6 @@
 <li>Example: <code>trino.example.com</code></li>
 </ul>
 <p>The Trino server host.</p>
-<h2 id="trino_clientpassword"><code>trino_client.password</code></h2>
-<ul>
-<li>Type: <code>string</code></li>
-<li>Default: <code>&lt;none&gt;</code></li>
-<li>Example: <code>password</code></li>
-</ul>
-<p>The Trino password.</p>
 <h2 id="trino_clientport"><code>trino_client.port</code></h2>
 <ul>
 <li>Type: <code>integer</code></li>
@@ -1887,6 +1916,27 @@
 <li>Example: <code>trino</code></li>
 </ul>
 <p>The Trino username.</p>
+<h2 id="trino_clientpassword"><code>trino_client.password</code></h2>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>&lt;none&gt;</code></li>
+<li>Example: <code>password</code></li>
+</ul>
+<p>A password used when connecting to Trino with basic auth.</p>
+<h2 id="trino_clientjwt_token"><code>trino_client.jwt_token</code></h2>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>&lt;none&gt;</code></li>
+<li>Example: <code>rbg...dnc</code></li>
+</ul>
+<p>A JWT token used to authenticate with Trino. If this is supplied, then password is ignored</p>
+<h2 id="trino_clientssl_verify"><code>trino_client.ssl_verify</code></h2>
+<ul>
+<li>Type: <code>bool</code></li>
+<li>Default: <code>true</code></li>
+<li>Example: <code>true|false</code></li>
+</ul>
+<p>If set to false, disables SSL hostname verification</p>
 
 
 
