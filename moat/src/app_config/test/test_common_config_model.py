@@ -38,3 +38,13 @@ def test_get_value():
 
     # missing item
     assert TestConfigModel.get_value("logger.thing_that_isnt_there", "DEBUG") == "DEBUG"
+
+
+def test_boolean_value():
+    common_config_model: TestConfigModel = TestConfigModel()
+    assert common_config_model.boolean_value == False
+
+    common_config_model: TestConfigModel = TestConfigModel.load(
+        config_file_path="moat/src/app_config/test/config.test.yaml"
+    )
+    assert common_config_model.boolean_value == True

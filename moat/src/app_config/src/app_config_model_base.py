@@ -65,5 +65,8 @@ class AppConfigModelBase:
                 value = value.replace(match, os.getenv(match[1:], ""))
 
             if hasattr(instance, attr_name):
+                if isinstance(getattr(instance, attr_name), bool):
+                    value = value.lower() == "true"
+
                 setattr(instance, attr_name, value)
         return instance
