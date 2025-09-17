@@ -29,6 +29,7 @@ class TrinoClient:
             port=config.port,
             user=config.username,
             auth=auth,
+            http_scheme=config.http_scheme,
             verify=config.ssl_verify,
         )
 

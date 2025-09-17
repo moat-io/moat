@@ -8,4 +8,5 @@ class TrinoClientConfig(AppConfigModelBase):
     username: str = None
     password: str = None
     jwt_token: str = None
+    http_scheme: str = "https"
     ssl_verify: bool = True
