@@ -16,7 +16,7 @@ elif [ "$1" = "test" ]; then
 # DB migrations
 elif [ "$1" = "migrate" ]; then
   if [ "$2" = "upgrade" ]; then
-    alembic -c moat/alembic.ini upgrade head
+    alembic -c /app/moat/alembic.ini upgrade head
   elif [ $2 == 'revision' ]; then
     alembic -c moat/alembic.ini revision --autogenerate -m "$3"
   fi

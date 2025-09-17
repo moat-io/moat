@@ -7,3 +7,5 @@ class TrinoClientConfig(AppConfigModelBase):
     port: int = None
     username: str = None
     password: str = None
+    jwt_token: str = None
+    ssl_verify: bool = True
