@@ -7,3 +7,4 @@ class TestConfigModel(AppConfigModelBase):
     super_secret: str = None
     overridden: str = None
     new_in_layer_2: str = None
+    boolean_value: bool = False
