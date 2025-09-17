@@ -306,13 +306,6 @@ The timeout in seconds for OPA client requests.
 
 The Trino server host.
 
-## `trino_client.password`
-* Type: `string`
-* Default: `<none>`
-* Example: `password`
-
-The Trino password.
-
 ## `trino_client.port`
 * Type: `integer`
 * Default: `<none>`
@@ -326,3 +319,24 @@ The Trino server port.
 * Example: `trino`
 
 The Trino username.
+
+## `trino_client.password`
+* Type: `string`
+* Default: `<none>`
+* Example: `password`
+
+A password used when connecting to Trino with basic auth.
+
+## `trino_client.jwt_token`
+* Type: `string`
+* Default: `<none>`
+* Example: `rbg...dnc`
+
+A JWT token used to authenticate with Trino. If this is supplied, then password is ignored
+
+## `trino_client.ssl_verify`
+* Type: `bool`
+* Default: `true`
+* Example: `true|false`
+
+If set to false, disables SSL hostname verification
