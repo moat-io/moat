@@ -2,6 +2,17 @@
 It is recommended to deploy `moat` in a containerised environment (e.g Kubernetes). A moat deployment consists of
 an api server and a number of cronjobs.
 
+## Database
+Moat relies on a postgres database, it can be created with `psql` with the following script
+
+```sql
+create user moat_user with password '<password>>';
+CREATE DATABASE moat;
+GRANT ALL PRIVILEGES ON DATABASE moat TO moat_user;
+\c moat;
+GRANT ALL PRIVILEGES ON SCHEMA public TO moat_user;
+```
+
 ## API Server
 The API server should be deployed using a k8s `kind: Deployment` with optional replication. The API service is not required to be
 highly-available so a single replica is fine for most purposes.

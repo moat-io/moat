@@ -2,6 +2,7 @@ from typing import Any, Generator
 
 from app_logger import Logger, get_logger
 from trino.dbapi import Cursor, connect
+from trino.auth import BasicAuthentication, JWTAuthentication
 
 from .trino_client_config import TrinoClientConfig
 
@@ -13,11 +14,22 @@ class TrinoClient:
 
     def __init__(self):
         config: TrinoClientConfig = TrinoClientConfig.load()
+
+        if config.jwt_token:
+            auth = JWTAuthentication(token=config.jwt_token)
+        elif config.password:
+            auth = BasicAuthentication(
+                username=config.username, password=config.password
+            )
+        else:
+            auth = None
+
         self.trino_connection = connect(
             host=config.host,
             port=config.port,
             user=config.username,
-            # auth=BasicAuthentication(config.username, config.password),
+            auth=auth,
+            verify=config.ssl_verify,
         )
 
     def select_async(
