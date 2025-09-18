@@ -2,6 +2,7 @@ flask==3.1.2
 flask-pydantic==0.13.2
 black==25.1.0
 psycopg[binary]==3.2.10
+greenlet==3.2.4
 sqlalchemy==2.0.43
 alembic==1.16.5
 pytest-postgresql==7.0.2
