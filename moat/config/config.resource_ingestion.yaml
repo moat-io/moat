@@ -10,6 +10,7 @@ database.database: "testdb"
 trino_client.host: localhost
 trino_client.port: "8081"
 trino_client.username: admin
+trino_client.http_scheme: http
 
 dbapi_connector.client_type: trino
 dbapi_connector.data_object_table_column_query: |-
