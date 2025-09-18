@@ -11,38 +11,21 @@ def config() -> TrinoClientConfig:
     return TrinoClientConfig.load()
 
 
-def mock_fetchmany_single_column(cursor, batch_size):
-    yield ["datalake.information_schema.columns"]
-    yield [
-        ["datalake.information_schema.tables"],
-        ["datalake.information_schema.views"],
-        ["datalake.information_schema.schemata"],
-    ]
-
-
-def mock_fetchmany_multi_column(cursor, batch_size):
-    yield [
-        "datalake.logistics.shippers",
-        "it",
-        "commercial",
-    ]
-    yield [
-        [
-            "datalake.logistics.regions",
-            "finance",
-            "restricted",
-        ],
-        [
-            "datalake.logistics.territories",
-            "finance",
-            "commercial",
-        ],
-    ]
-
-
 @mock.patch.object(TrinoClient, "_get_cursor")
 @mock.patch.object(TrinoClient, "_execute")
-@mock.patch.object(TrinoClient, "_fetchmany", side_effect=mock_fetchmany_single_column)
+@mock.patch.object(
+    TrinoClient,
+    "_fetchmany",
+    side_effect=[
+        ["datalake.information_schema.columns"],
+        [
+            ["datalake.information_schema.tables"],
+            ["datalake.information_schema.views"],
+            ["datalake.information_schema.schemata"],
+        ],
+        [],
+    ],
+)
 @mock.patch.object(TrinoClient, "_get_schema", return_value=["fq_name"])
 def test_execute_query_single_column(
     mock_get_schema: mock.MagicMock,
@@ -75,12 +58,35 @@ def test_execute_query_single_column(
     mock_execute.assert_called_once()
     mock_get_cursor.assert_called_once()
     mock_get_schema.assert_called_once()
-    mock_fetchmany.assert_called_once()
+    assert mock_fetchmany.call_count == 3
 
 
 @mock.patch.object(TrinoClient, "_get_cursor")
 @mock.patch.object(TrinoClient, "_execute")
-@mock.patch.object(TrinoClient, "_fetchmany", side_effect=mock_fetchmany_multi_column)
+@mock.patch.object(
+    TrinoClient,
+    "_fetchmany",
+    side_effect=[
+        [
+            "datalake.logistics.shippers",
+            "it",
+            "commercial",
+        ],
+        [
+            [
+                "datalake.logistics.regions",
+                "finance",
+                "restricted",
+            ],
+            [
+                "datalake.logistics.territories",
+                "finance",
+                "commercial",
+            ],
+        ],
+        [],
+    ],
+)
 @mock.patch.object(
     TrinoClient,
     "_get_schema",
@@ -128,4 +134,4 @@ def test_execute_query_multi_column(
     mock_execute.assert_called_once()
     mock_get_cursor.assert_called_once()
     mock_get_schema.assert_called_once()
-    mock_fetchmany.assert_called_once()
+    assert mock_fetchmany.call_count == 3

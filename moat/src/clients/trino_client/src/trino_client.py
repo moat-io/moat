@@ -1,3 +1,4 @@
+import urllib3
 from typing import Any, Generator
 
 from app_logger import Logger, get_logger
@@ -7,6 +8,7 @@ from trino.auth import BasicAuthentication, JWTAuthentication
 from .trino_client_config import TrinoClientConfig
 
 logger: Logger = get_logger("clients.trino_client")
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class TrinoClient:
@@ -34,7 +36,7 @@ class TrinoClient:
         )
 
     def select_async(
-        self, query: str, batch_size: int = 1000
+        self, query: str, batch_size: int = 5000
     ) -> Generator[list[dict[str, Any]], Any, None]:
         cursor: Cursor = self._get_cursor()
         self._execute(cursor=cursor, query=query)
@@ -43,7 +45,14 @@ class TrinoClient:
         schema: list[str] = self._get_schema(cursor=cursor)
 
         # Process each batch of results
-        for batch in self._fetchmany(cursor=cursor, batch_size=batch_size):
+        while True:
+            batch = self._fetchmany(cursor=cursor, batch_size=batch_size)
+            logger.info(
+                f"Retrieved {len(batch)} records with query id: {cursor.query_id}"
+            )
+            if len(batch) == 0:
+                break
+
             # a single column record or row gives us a stupid result
             if not isinstance(batch[0], list):
                 batch = [batch]
