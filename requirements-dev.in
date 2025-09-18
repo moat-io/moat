@@ -1,0 +1,10 @@
+-r requirements.in
+pre-commit==4.3.0
+black==25.1.0
+isort==6.0.1
+autoflake==2.3.1
+pytest==8.4.2
+pytest-postgresql==7.0.2
+responses==0.25.8
+mkdocs==1.6.1
+mkdocs-material==9.6.20

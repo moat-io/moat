@@ -1,0 +1,2 @@
+-r requirements.in
+pyuwsgi==2.0.30
