@@ -37,20 +37,15 @@ class ResourceRepository(RepositoryBase):
         )
         return resource
 
-    # TODO base class
     @staticmethod
-    def truncate_staging_tables(session) -> None:
-        models: list[type[BaseModel]] = [
-            ResourceStagingDbo,
-            ResourceAttributeStagingDbo,
-        ]
-        session.execute(
-            text(f"truncate {','.join([model.__tablename__ for model in models])}")
+    def truncate_resource_staging_table(session) -> None:
+        RepositoryBase.truncate_tables(session=session, models=[ResourceStagingDbo])
+
+    @staticmethod
+    def truncate_resource_attribute_staging_table(session) -> None:
+        RepositoryBase.truncate_tables(
+            session=session, models=[ResourceAttributeStagingDbo]
         )
-        for model in models:
-            session.execute(
-                text(f"alter sequence {model.__tablename__}_id_seq restart with 1")
-            )
 
     @staticmethod
     def merge_staging(session, ingestion_process_id: int) -> int:
