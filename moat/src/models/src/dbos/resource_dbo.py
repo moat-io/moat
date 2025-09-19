@@ -1,16 +1,16 @@
 from database import BaseModel
-from models.src.dbos.common_mixin_dbo import IngestionDboMixin
+from . import IngestionDboMixin, MetadataDboMixin
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 
-class ResourceDbo(IngestionDboMixin, BaseModel):
+class ResourceDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "resources"
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: str = Column(String)
-    platform: str = Column(String)
-    object_type: str = Column(String)
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    fq_name: Mapped[str] = Column(String)
+    platform: Mapped[str] = Column(String)
+    object_type: Mapped[str] = Column(String)
 
     attributes: Mapped[list["ResourceAttributeDbo"]] = relationship(
         "ResourceAttributeDbo",
@@ -21,14 +21,10 @@ class ResourceDbo(IngestionDboMixin, BaseModel):
     )
 
 
-class ResourceAttributeDbo(IngestionDboMixin, BaseModel):
+class ResourceAttributeDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "resource_attributes"
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: str = Column(String)
-    attribute_key: str = Column(String)
-    attribute_value: str = Column(String)
-
-    #  FK
-    # resource_id: Mapped[int] = mapped_column(ForeignKey("resources.id"), nullable=True)
-    # resource: Mapped["ResourceDbo"] = relationship(back_populates="attributes")
+    id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    fq_name: Mapped[str] = Column(String)
+    attribute_key: Mapped[str] = Column(String)
+    attribute_value: Mapped[str] = Column(String)

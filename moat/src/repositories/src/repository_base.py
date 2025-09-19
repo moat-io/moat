@@ -4,6 +4,7 @@ from typing import Tuple, Type
 from database import BaseModel
 from models import AttributeDto
 from sqlalchemy import desc, or_
+from sqlalchemy.sql import text
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.orm import ColumnProperty, Query, class_mapper
@@ -14,6 +15,14 @@ class RepositoryBase:
 
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def truncate_tables(session, models: list[type[BaseModel]]) -> None:
+        for model in models:
+            session.execute(text(f"truncate {model.__tablename__}"))
+            session.execute(
+                text(f"alter sequence {model.__tablename__}_id_seq restart with 1")
+            )
 
     @staticmethod
     def get_attribute_dtos(
@@ -151,7 +160,6 @@ class RepositoryBase:
         update_cols: list[str],
         ingestion_process_id: int,
     ) -> str:
-        merge_key: str = merge_keys[0]  # HACK
 
         matched_and_stmt: str = "and " + " or ".join(
             [f"src.{c} <> tgt.{c}" for c in update_cols]
@@ -164,15 +172,15 @@ class RepositoryBase:
         )
 
         insert_stmt: str = (
-            "insert ("
-            + ", ".join([merge_key] + update_cols)
-            + ", ingestion_process_id)"
+            "insert (" + ", ".join(merge_keys + update_cols) + ", ingestion_process_id)"
         )
         values_stmt: str = (
             "values ("
-            + ", ".join([f"src.{c}" for c in [merge_key] + update_cols])
+            + ", ".join([f"src.{c}" for c in merge_keys + update_cols])
             + f", {ingestion_process_id})"
         )
+
+        on_clause: str = " and ".join([f"src.{c} = tgt.{c}" for c in merge_keys])
 
         merge_statement: str = dedent(
             f"""
@@ -180,7 +188,7 @@ class RepositoryBase:
                         using (
                             select * from {source_model.__tablename__}
                         ) src
-                        on src.{merge_key} = tgt.{merge_key}
+                        on {on_clause}
                         when matched 
                             {matched_and_stmt}
                         then
