@@ -2,6 +2,7 @@ from datetime import datetime
 
 from database import BaseModel
 from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy.orm import Mapped
 
 
 class DecisionLogDbo(BaseModel):
@@ -13,14 +14,14 @@ class DecisionLogDbo(BaseModel):
             f for f in [self.database, self.schema, self.table, self.column] if f
         )
 
-    decision_log_id: str = Column(String, primary_key=True)
-    path: str = Column(String)
-    operation: str = Column(String)
-    username: str = Column(String)
-    database: str = Column(String)
-    schema: str = Column(String)
-    table: str = Column(String)
-    column: str = Column(String)
-    permitted: bool = Column(Boolean)
-    expression: str = Column(String)
-    timestamp: datetime = Column(DateTime(timezone=True))
+    decision_log_id: Mapped[str] = Column(String, primary_key=True)
+    path: Mapped[str] = Column(String)
+    operation: Mapped[str] = Column(String)
+    username: Mapped[str] = Column(String)
+    database: Mapped[str] = Column(String)
+    schema: Mapped[str] = Column(String)
+    table: Mapped[str] = Column(String)
+    column: Mapped[str] = Column(String)
+    permitted: Mapped[bool] = Column(Boolean)
+    expression: Mapped[str] = Column(String)
+    timestamp: Mapped[datetime] = Column(DateTime(timezone=True))

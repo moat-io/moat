@@ -90,7 +90,7 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert principal.first_name == "Abigail"
 
         # truncate staging table
-        repo.truncate_staging_tables(session=session)
+        repo.truncate_principal_staging_table(session=session)
 
         # populate staging table
         ps: PrincipalStagingDbo = PrincipalStagingDbo()

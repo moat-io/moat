@@ -32,7 +32,7 @@ def authenticate(api_config: ApiConfig, scope: str = None):
     def api_key_auth_decorator(func):
         def wrapper(*args, **kwargs):
             if _get_bearer_token(request) == api_config.api_key:
-                logger.info(f"Authenticated request from with api-key")
+                logger.info(f"Authenticated request with api-key")
                 return func(*args, **kwargs)
 
             logger.info(f"Unauthorized request - api-key did not match")

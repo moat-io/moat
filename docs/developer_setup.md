@@ -101,13 +101,10 @@ docker run moat ingest --connector-name=ldap --object-type=principal
 # create a new revision (in project root)
 export PYTHONPATH=./moat/src
 alembic -c moat/alembic.ini revision --autogenerate -m "message about the revision"
-# or
-./entrypoint.sh migrate revision "message about the revision"
+
 
 # upgrade
-alembic upgrade head
-# or
-./entrypoint.sh migrate upgrade
+alembic -c moat/alembic.ini upgrade head
 ```
 
 ## Documentation

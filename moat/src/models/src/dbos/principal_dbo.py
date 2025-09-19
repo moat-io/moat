@@ -1,29 +1,23 @@
 from database import BaseModel
 from sqlalchemy import Column, DateTime, Integer, String, JSON
 from sqlalchemy.orm import Mapped, relationship
-from sqlalchemy.sql.functions import current_timestamp
+from . import IngestionDboMixin, MetadataDboMixin
 from sqlalchemy.dialects.postgresql import ARRAY
-from .common_mixin_dbo import IngestionDboMixin
 
 
-class PrincipalDbo(IngestionDboMixin, BaseModel):
+class PrincipalDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "principals"
 
-    principal_id: int = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: str = Column(String)
-    first_name: str = Column(String)
-    last_name: str = Column(String)
-    user_name: str = Column(String)
-    email: str = Column(String)
-    source_type: str = Column(String)
-    source_uid: str = Column(String)
-    scim_payload: dict = Column(JSON)
-    entitlements: list[str] = Column(ARRAY(String()))
-
-    record_updated_date: str = Column(
-        DateTime(timezone=True), server_default=current_timestamp()
-    )
-    record_updated_by: str = Column(String)
+    principal_id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    fq_name: Mapped[str] = Column(String)
+    first_name: Mapped[str] = Column(String)
+    last_name: Mapped[str] = Column(String)
+    user_name: Mapped[str] = Column(String)
+    email: Mapped[str] = Column(String)
+    source_type: Mapped[str] = Column(String)
+    source_uid: Mapped[str] = Column(String)
+    scim_payload: Mapped[dict] = Column(JSON)
+    entitlements: Mapped[list[str]] = Column(ARRAY(String()))
 
     attributes: Mapped[list["PrincipalAttributeDbo"]] = relationship(
         argument="PrincipalAttributeDbo",
@@ -42,21 +36,21 @@ class PrincipalDbo(IngestionDboMixin, BaseModel):
     )
 
 
-class PrincipalGroupDbo(IngestionDboMixin, BaseModel):
+class PrincipalGroupDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "principal_groups"
 
-    principal_group_id = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name = Column(String())
-    members = Column(ARRAY(String()))
-    source_type: str = Column(String)
-    source_uid: str = Column(String)
-    scim_payload: dict = Column(JSON)
+    principal_group_id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    fq_name: Mapped[str] = Column(String())
+    members: Mapped[list[str]] = Column(ARRAY(String()))
+    source_type: Mapped[str] = Column(String)
+    source_uid: Mapped[str] = Column(String)
+    scim_payload: Mapped[dict] = Column(JSON)
 
 
-class PrincipalAttributeDbo(IngestionDboMixin, BaseModel):
+class PrincipalAttributeDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "principal_attributes"
 
-    principal_attribute_id: int = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: str = Column(String)
-    attribute_key: str = Column(String)
-    attribute_value: str = Column(String)
+    principal_attribute_id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
+    fq_name: Mapped[str] = Column(String)
+    attribute_key: Mapped[str] = Column(String)
+    attribute_value: Mapped[str] = Column(String)

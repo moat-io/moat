@@ -21,7 +21,8 @@ def test_truncate_staging(database: Database) -> None:
         assert session.query(PrincipalStagingDbo).count() == 1
         assert session.query(PrincipalAttributeStagingDbo).count() == 1
 
-        repo.truncate_staging_tables(session=session)
+        repo.truncate_principal_staging_table(session=session)
+        repo.truncate_principal_attribute_staging_table(session=session)
         session.commit()
 
     with database.Session.begin() as session:

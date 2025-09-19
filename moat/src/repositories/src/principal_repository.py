@@ -15,12 +15,14 @@ from .repository_base import RepositoryBase
 class PrincipalRepository(RepositoryBase):
 
     @staticmethod
-    def truncate_staging_tables(session) -> None:
-        for model in [PrincipalStagingDbo, PrincipalAttributeStagingDbo]:
-            session.execute(text(f"truncate {model.__tablename__}"))
-            session.execute(
-                text(f"alter sequence {model.__tablename__}_id_seq restart with 1")
-            )
+    def truncate_principal_staging_table(session) -> None:
+        RepositoryBase.truncate_tables(session=session, models=[PrincipalStagingDbo])
+
+    @staticmethod
+    def truncate_principal_attribute_staging_table(session) -> None:
+        RepositoryBase.truncate_tables(
+            session=session, models=[PrincipalAttributeStagingDbo]
+        )
 
     @staticmethod
     def get_all(session) -> Tuple[int, list[PrincipalDbo]]:

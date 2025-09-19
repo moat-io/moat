@@ -43,12 +43,12 @@ def populate_users():
             response.raise_for_status()
 
 
-populate_users()
-
 db: Database = Database()
 db.connect(echo_statements=True)
 database_seeder: DatabaseSeeder = DatabaseSeeder(db=db)
 database_seeder.seed(object_types=[ObjectTypeEnum.RESOURCE])
+
+populate_users()
 
 # os.environ["CONFIG_FILE_PATH"] = "moat/config/config.resource_ingestion.yaml"
 # runner = CliRunner()

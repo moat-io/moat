@@ -154,8 +154,18 @@ class IngestionController:
         database: Database, connector_name: str, object_types: list[ObjectTypeEnum]
     ) -> int:
         with database.Session.begin() as session:
-            PrincipalRepository.truncate_staging_tables(session=session)
-            ResourceRepository.truncate_staging_tables(session=session)
+            if ObjectTypeEnum.PRINCIPAL in object_types:
+                PrincipalRepository.truncate_principal_staging_table(session=session)
+            if ObjectTypeEnum.PRINCIPAL_ATTRIBUTE in object_types:
+                PrincipalRepository.truncate_principal_attribute_staging_table(
+                    session=session
+                )
+            if ObjectTypeEnum.RESOURCE in object_types:
+                ResourceRepository.truncate_resource_staging_table(session=session)
+            if ObjectTypeEnum.RESOURCE_ATTRIBUTE in object_types:
+                ResourceRepository.truncate_resource_attribute_staging_table(
+                    session=session
+                )
 
             process_id: int = IngestionProcessRepository.create(
                 session=session,
@@ -168,61 +178,3 @@ class IngestionController:
             f"Created ingestion process with id: {process_id} for object types: {object_types}"
         )
         return process_id
-
-    # def _ingest_principal_attributes(self, session, connector: ConnectorBase) -> int:
-    #     principal_attribute_dios: list[PrincipalAttributeDio] = (
-    #         connector.get_principal_attributes()
-    #     )
-    #     principal_attribute_count: int = self._stage_principal_attributes(
-    #         session=session, principal_attribute_dios=principal_attribute_dios
-    #     )
-    #     logger.info(f"Retrieved {principal_attribute_count} principal attributes")
-    #     return principal_attribute_count
-    #
-    # def _ingest_resource_attributes(self, session, connector: ConnectorBase) -> int:
-    #     resource_attribute_dios: list[ResourceAttributeDio] = (
-    #         connector.get_resource_attributes()
-    #     )
-    #     resource_attribute_count: int = self._stage_resource_attributes(
-    #         session=session, resource_attribute_dios=resource_attribute_dios
-    #     )
-    #     logger.info(f"Retrieved {resource_attribute_count} resources")
-    #     return resource_attribute_count
-    #
-    # @staticmethod
-    # def _stage_principal_attributes(
-    #     session, principal_attribute_dios: list[PrincipalAttributeDio]
-    # ) -> int:
-    #     principal_attribute_stgs: list[PrincipalAttributeStagingDbo] = []
-    #     for principal_attribute_dio in principal_attribute_dios:
-    #         principal_attribute_stg: PrincipalAttributeStagingDbo = (
-    #             PrincipalAttributeStagingDbo()
-    #         )
-    #         principal_attribute_stg.source_uid = principal_attribute_dio.source_uid
-    #         principal_attribute_stg.attribute_key = (
-    #             principal_attribute_dio.attribute_key
-    #         )
-    #         principal_attribute_stg.attribute_value = (
-    #             principal_attribute_dio.attribute_value
-    #         )
-    #         principal_attribute_stgs.append(principal_attribute_stg)
-    #     session.add_all(principal_attribute_stgs)
-    #     return len(principal_attribute_stgs)
-    #
-    # @staticmethod
-    # def _stage_resource_attributes(
-    #     session, resource_attribute_dios: list[ResourceAttributeDio]
-    # ) -> int:
-    #     resource_attribute_stgs: list[ResourceAttributeDio] = []
-    #
-    #     for resource_attribute_dio in resource_attribute_dios:
-    #         resource_attribute_dio_stg: ResourceAttributeStagingDbo = (
-    #             ResourceAttributeStagingDbo(
-    #                 fq_name=resource_attribute_dio.fq_name,
-    #                 attribute_key=resource_attribute_dio.attribute_key,
-    #                 attribute_value=resource_attribute_dio.attribute_value,
-    #             )
-    #         )
-    #         resource_attribute_stgs.append(resource_attribute_dio_stg)
-    #     session.add_all(resource_attribute_stgs)
-    #     return len(resource_attribute_stgs)
