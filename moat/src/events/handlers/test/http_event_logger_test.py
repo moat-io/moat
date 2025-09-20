@@ -54,6 +54,6 @@ def test_log_event():
         "log": "Test log message",
         "key1": "value1",
         "key2": "value2",
-        "actions__sub_key": "sub_value",
-        "actions__sub_key__sub_key3": "sub_value3",
+        "actions__sub_key1": "sub_value",
+        "actions__sub_key2__sub_key3": "sub_value3",
     }
