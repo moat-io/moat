@@ -58,3 +58,10 @@ api.scim.auth_method: api-key
 api.scim.api_key: scim-token
 
 scim.principal_attributes_jsonpath: "$.'urn:ietf:params:scim:custom'"
+
+event_logger.type: http
+event_logger.http.url: https://localhost:9000/event
+event_logger.http.headers: "Api-Key=API_KEY,content-type=application/json"
+event_logger.http.extra_args: "eventType=MoatEvent"
+event_logger.http.ssl_verify: "true"
+event_logger.http.flatten_payload: "true"

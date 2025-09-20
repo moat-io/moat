@@ -7,7 +7,7 @@ OPA expects a bundle file (a tarball) comprised of:
 * `rego` policy documents defining the policies to be applied
 * A data object - a `json` file containing:
   * User metadata - e.g username, groups, attributes, tags
-  * Object (tables/views) metadata - e.g database, schema, table name and tags (usually from a data catalog)
+  * Resource (tables/views) metadata - e.g database, schema, table name and tags (usually from a data catalog)
 
 OPA periodically requests this data via an HTTP(S) API.
 

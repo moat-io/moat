@@ -2,7 +2,7 @@
 
 Moat is designed to be extended in various ways to meet your specific needs.
 
-## Custom Ingestions
+## Custom Ingestion
 
 Moat allows you to create custom ingestion connectors to import data from various sources. This is done by creating subclasses of the `ConnectorBase` class.
 Subclasses have a `CONNECTOR_NAME` property which allows the moat to select it at runtime 
