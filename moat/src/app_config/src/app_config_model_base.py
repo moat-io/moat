@@ -70,3 +70,15 @@ class AppConfigModelBase:
 
                 setattr(instance, attr_name, value)
         return instance
+
+    @staticmethod
+    def split_key_value_pairs(kvps: str) -> dict:
+        if not kvps:
+            return {}
+
+        args: dict = {
+            a[0]: a[1]
+            for a in (arg_str.split("=") for arg_str in kvps.split(","))
+            if len(a) % 2 == 0
+        }
+        return args or {}

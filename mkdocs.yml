@@ -15,13 +15,15 @@ nav:
   - How it works: how_it_works.md
   - Provisioning:
       - SCIM2.0: provisioning/scim.md
-  - Extending: extensions.md
+      - Resources:  provisioning/resource_ingestion.md
+  - Security:
+      - API Authentication: security/auth.md
+      - Audit: security/audit.md
   - Deployment:
       - Application: deployment/deployment.md
       - OPA: deployment/opa_setup.md
-  - Developer Setup: developer_setup.md
-  - Security:
-      - API Authentication: security/auth.md
-  - Configuration:
       - Configuration File: config/configuration.md
       - Configuration Properties: config/properties.md
+      - Monitoring, Events & Webhooks: deployment/monitoring.md
+  - Developer Setup: developer_setup.md
+  - Extending Moat: extensions.md

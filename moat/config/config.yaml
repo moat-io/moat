@@ -14,7 +14,7 @@ opa_client.timeout_seconds: "0.1"
 
 bundle_generator.temp_directory: /tmp
 
-api.healthcheck.auth_method: oauth2
+api.healthcheck.auth_method: none
 api.healthcheck.oauth2_issuer: http://localhost:8080/realms/moat
 api.healthcheck.oauth2_audience: account
 api.healthcheck.oauth2_jwks_uri: http://localhost:8080/realms/moat/protocol/openid-connect/certs
@@ -27,3 +27,9 @@ api.scim.auth_method: api-key
 api.scim.api_key: scim-token
 
 scim.principal_attributes_jsonpath: "$.'urn:ietf:params:scim:custom'"
+
+event_logger.type: http
+event_logger.http.url: http://localhost:9000/event
+event_logger.http.headers: "Api-Key=API_KEY,content-type=application/json"
+event_logger.http.extra_args: "eventType=MoatEvent"
+event_logger.http.flatten_payload: "true"
