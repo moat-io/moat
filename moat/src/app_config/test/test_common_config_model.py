@@ -48,3 +48,21 @@ def test_boolean_value():
         config_file_path="moat/src/app_config/test/config.test.yaml"
     )
     assert common_config_model.boolean_value == True
+
+
+def test_split_key_value_pairs():
+    assert TestConfigModel.split_key_value_pairs(None) == {}
+
+    assert TestConfigModel.split_key_value_pairs(
+        "Api-Key=API_KEY,content-type=application/json"
+    ) == {"Api-Key": "API_KEY", "content-type": "application/json"}
+
+    assert TestConfigModel.split_key_value_pairs("eventType=MoatEvent") == {
+        "eventType": "MoatEvent"
+    }
+
+    assert TestConfigModel.split_key_value_pairs("eventType") == {}
+
+    assert TestConfigModel.split_key_value_pairs("eventType=MoatEvent,hello") == {
+        "eventType": "MoatEvent"
+    }

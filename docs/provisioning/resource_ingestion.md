@@ -1,5 +1,5 @@
 # Resource Metadata Ingestion
-Moat currently supports loading resource metadata from `trino` via SQL/DBAPI.
+Moat currently supports loading resource metadata from `trino` using SQL.
 Resources are ingested separately to their attributes to allow flexibility of loading from different sources.
 For example, resources could be retrieved from an `information_schema` and the resource attributes from a data catalog.
 
@@ -16,6 +16,7 @@ The resource ingestion query must return a full set of resources with the follow
 | object_type | varchar | The type of the object                 | `table` or `column`                                      |
 
 It is preferred to limit this dataset to only include the objects for which OPA should provide access control.
+
 * Avoid adding all columns to tables which do not have column-level access control
 * Avoid adding tables which are not exposed to users
 

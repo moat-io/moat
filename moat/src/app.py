@@ -11,6 +11,7 @@ from apis.scim2 import (
 )
 from app_config import AppConfigModelBase
 from app_logger import Logger, get_logger
+from events import EventLogger, EventDto
 from database import Database
 from flask import Flask, g, request, jsonify
 from werkzeug.exceptions import HTTPException
@@ -54,6 +55,9 @@ def create_app(database: Database | None = None) -> Flask:
     flask_app.register_blueprint(scim2_users_bp)
     flask_app.register_blueprint(scim2_groups_bp)
 
+    # event logger
+    event_logger: EventLogger = EventLogger()
+
     @flask_app.errorhandler(HTTPException)
     def handle_exception(e):
         api_error: dict = {
@@ -73,6 +77,7 @@ def create_app(database: Database | None = None) -> Flask:
     def before_request():
         # connect DB
         g.database = database
+        g.event_logger = event_logger
 
     @flask_app.after_request
     def after_request(response):

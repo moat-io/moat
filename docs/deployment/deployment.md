@@ -6,7 +6,7 @@ an api server and a number of cronjobs.
 Moat relies on a postgres database, it can be created with `psql` with the following script
 
 ```sql
-create user moat_user with password '<password>>';
+CREATE USER moat_user WITH PASSWORD '<password>>';
 CREATE DATABASE moat;
 GRANT ALL PRIVILEGES ON DATABASE moat TO moat_user;
 \c moat;
