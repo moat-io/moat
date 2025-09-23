@@ -27,6 +27,10 @@ point its bundle service to the moat deployment
 * Extensible ingestion framework to acquire tables and users from external sources (e.g trino, ldap)
 * Decision log capture
 
+## Contributing
+Contributions to Moat big or small, or just fixes to docs are always welcomed. See [contributing](CONTRIBUTING.md) for
+details.
+
 ## Development
 The Moat dev environment relies on a postgres database, OPA, trino, hive-metastore, minio and lldap to run.
 All of these dependencies are present in the `docker-compose` in the repo root

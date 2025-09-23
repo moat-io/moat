@@ -19,6 +19,17 @@ highly-available so a single replica is fine for most purposes.
 
 It is highly recommended that moat be deployed behind an SSL enabled load balancer or reverse proxy
 
+### Starting the API server
+The api server runs under `uwsgi` it can be started with the following command
+
+```bash
+# in repo root
+cd moat
+export PYTHONPATH=$(pwd)/src
+export CONFIG_FILE_PATH=config/config.yaml
+uwsgi --http 0.0.0.0:8000 --die-on-term --master -p 4 -w src.uwsgi:app
+```
+
 ## Ingestion Cronjobs
 Data in moat is ingested and maintained by periodic ingestion jobs. These can be implemented in many ways however k8s `kind: CronJob`
 are the recommended pattern. Any scheduler (crontab, airflow, CICD etc) can be used to execute the ingestion jobs via the CLI or container.
