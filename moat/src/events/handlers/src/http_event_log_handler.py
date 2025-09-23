@@ -46,6 +46,7 @@ class HttpEventLogHandler(EventLogHandlerBase):
             verify=self._config.ssl_verify,
             json=payload,
             headers=headers,
+            timeout=self._config.timeout_ms / 1000,
         )
 
         # Check if the request was successful

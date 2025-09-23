@@ -35,9 +35,6 @@ def test_event_logger():
             event_logger = EventLogger()
             event_logger.log_event(asset="test_event", action="test_action")
 
-            event_logger.terminate()
-            event_logger._worker_thread.join()
-
             mock_deliver_event.assert_called_once_with(
                 EventDto(asset="test_event", action="test_action", log="", context={})
             )

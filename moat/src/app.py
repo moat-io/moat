@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-
+import uuid
 from apis.opa import bundle_api_bp, decision_log_api_bp, status_api_bp
 from apis.healthcheck import healthcheck_bp
 from apis.scim2 import (
@@ -78,19 +78,14 @@ def create_app(database: Database | None = None) -> Flask:
         # connect DB
         g.database = database
         g.event_logger = event_logger
+        g.request_id = str(uuid.uuid4())[0:6]
+        logger.info(
+            f"{g.request_id} - Started request {request.remote_addr} {request.method}:{request.full_path}"
+        )
 
     @flask_app.after_request
     def after_request(response):
-        timestamp = datetime.now(tz=timezone.utc).strftime("[%Y-%b-%d %H:%M]")
-        logger.info(
-            "%s %s %s %s %s %s",
-            timestamp,
-            request.remote_addr,
-            request.method,
-            request.scheme,
-            request.full_path,
-            response.status,
-        )
+        logger.info(f"{g.request_id} - Completed request with status {response.status}")
         return response
 
     return flask_app

@@ -8,4 +8,5 @@ class HttpEventLoggerConfig(AppConfigModelBase):
     headers: str = None
     extra_args: str = ""
     ssl_verify: bool = True
+    timeout_ms: int = 500
     flatten_payload: bool = False
