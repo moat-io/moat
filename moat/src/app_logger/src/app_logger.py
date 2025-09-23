@@ -1,4 +1,5 @@
 import logging
+import sys
 from logging import Logger
 
 """
@@ -24,14 +25,19 @@ logger_config: LoggerConfig = LoggerConfig().load()
 root_logger = logging.getLogger(root_logger_name)  # root logger?
 root_logger.setLevel(logger_config.root_level)
 
-ch = logging.StreamHandler()
+# Create a formatter
+formatter = logging.Formatter("%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 
-# create formatter and add it to the handler
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-ch.setFormatter(formatter)
+# Create a StreamHandler for stdout
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(formatter)
+root_logger.addHandler(stdout_handler)
 
-# add the handler to the logger
-root_logger.addHandler(ch)
+# Create a StreamHandler for stderr
+stderr_handler = logging.StreamHandler(sys.stderr)
+stderr_handler.setFormatter(formatter)
+stderr_handler.setLevel(logging.ERROR)  # Only log ERROR and above to stderr
+root_logger.addHandler(stderr_handler)
 
 
 def get_logger(name: str) -> Logger:
