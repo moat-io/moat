@@ -1,14 +1,16 @@
 from typing import Tuple
-
+from datetime import datetime
 from models import (
     PrincipalAttributeDbo,
     PrincipalAttributeStagingDbo,
     PrincipalDbo,
     PrincipalStagingDbo,
+    PrincipalHistoryDbo,
+    PrincipalAttributeHistoryDbo,
 )
+from sqlalchemy import union_all
 from sqlalchemy.orm import Query
-from sqlalchemy.sql import text
-
+from sqlalchemy.sql import text, func
 from .repository_base import RepositoryBase
 
 
@@ -60,6 +62,18 @@ class PrincipalRepository(RepositoryBase):
             .first()
         )
         return principal
+
+    @staticmethod
+    def get_latest_principal_change_timestamp(session) -> datetime:
+        return RepositoryBase.get_latest_timestamp_for_model_history(
+            session=session, model=PrincipalHistoryDbo
+        )
+
+    @staticmethod
+    def get_latest_principal_attribute_change_timestamp(session) -> datetime:
+        return RepositoryBase.get_latest_timestamp_for_model_history(
+            session=session, model=PrincipalAttributeHistoryDbo
+        )
 
     @staticmethod
     def merge_staging(session, ingestion_process_id: int) -> int:

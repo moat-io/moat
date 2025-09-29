@@ -11,5 +11,6 @@ class OpaBundleDbo(MetadataDboMixin, BaseModel):
     opa_bundle_id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
     platform: Mapped[str] = Column(String)
     e_tag: Mapped[str] = Column(String)
-    created_at: Mapped[datetime] = Column(DateTime(timezone=True))
-    status: Mapped[str] = Column(String)
+    bundle_filename: Mapped[str] = Column(String)
+    bundle_directory: Mapped[str] = Column(String)
+    policy_hash: Mapped[str] = Column(String)

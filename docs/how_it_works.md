@@ -47,3 +47,6 @@ It is recommended that policy documents be controlled using normal version contr
 The `rego` files can be provided to moat using either a `git-sync` pattern, or any normal CICD process.
 
 Configmaps are a good pattern for kubernetes-based deployments
+
+## Bundles
+See [Bundles](bundles.md)

@@ -4,7 +4,7 @@ import uuid
 from apis.common import authenticate
 from apis.models import ApiConfig
 from models import PrincipalGroupDbo
-from api_services.scim2 import ScimGroupsService
+from services.scim2 import ScimGroupsService
 
 logger: Logger = get_logger("scim2.groups_api")
 bp = Blueprint("scim2_groups", __name__, url_prefix="/api/scim/v2/Groups")

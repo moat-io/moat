@@ -1,14 +1,16 @@
 from typing import Tuple
 
-from database import BaseModel
+from datetime import datetime
 from models import (
     ResourceAttributeStagingDbo,
     ResourceDbo,
     ResourceStagingDbo,
     ResourceAttributeDbo,
+    ResourceHistoryDbo,
+    ResourceAttributeHistoryDbo,
 )
 from sqlalchemy.orm import Query
-from sqlalchemy.sql import text
+from sqlalchemy.sql import text, func
 
 from .repository_base import RepositoryBase
 
@@ -45,6 +47,18 @@ class ResourceRepository(RepositoryBase):
     def truncate_resource_attribute_staging_table(session) -> None:
         RepositoryBase.truncate_tables(
             session=session, models=[ResourceAttributeStagingDbo]
+        )
+
+    @staticmethod
+    def get_latest_resource_change_timestamp(session) -> datetime:
+        return RepositoryBase.get_latest_timestamp_for_model_history(
+            session=session, model=ResourceHistoryDbo
+        )
+
+    @staticmethod
+    def get_latest_resource_attribute_change_timestamp(session) -> datetime:
+        return RepositoryBase.get_latest_timestamp_for_model_history(
+            session=session, model=ResourceAttributeHistoryDbo
         )
 
     @staticmethod

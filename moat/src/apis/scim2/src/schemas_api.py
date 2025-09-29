@@ -1,7 +1,7 @@
 import json
 from app_logger import Logger, get_logger
 from flask import Blueprint, jsonify, make_response, request, Response
-from api_services.scim2 import ScimConfig
+from services.scim2 import ScimConfig
 
 logger: Logger = get_logger("scim2.schemas_api")
 scim_config = ScimConfig.load()
