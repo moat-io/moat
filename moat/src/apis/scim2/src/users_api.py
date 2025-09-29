@@ -6,7 +6,7 @@ from apis.models import ApiConfig
 
 from repositories import PrincipalRepository
 from models import PrincipalDbo
-from api_services.scim2 import ScimUsersService
+from services.scim2 import ScimUsersService
 
 logger: Logger = get_logger("scim2.users_api")
 bp = Blueprint("scim2_users", __name__, url_prefix="/api/scim/v2/Users")

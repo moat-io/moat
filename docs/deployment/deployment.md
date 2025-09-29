@@ -30,6 +30,16 @@ export CONFIG_FILE_PATH=config/config.yaml
 uwsgi --http 0.0.0.0:8000 --die-on-term --master -p 4 -w src.uwsgi:app
 ```
 
+## Worker
+The worker should be deployed as a long-lived standalone process. It executes tasks asynchronously, such as regenerating bundles as required.
+In a kubernetes installation, it can be a second container in the same deployment as the API server, or a seperate deployment.
+
+The worker entrypoint is a CLI command, similar to the ingestion processes. It is started with
+
+```bash
+./entrypoint.sh start-worker
+```
+
 ## Ingestion Cronjobs
 Data in moat is ingested and maintained by periodic ingestion jobs. These can be implemented in many ways however k8s `kind: CronJob`
 are the recommended pattern. Any scheduler (crontab, airflow, CICD etc) can be used to execute the ingestion jobs via the CLI or container.

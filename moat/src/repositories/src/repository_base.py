@@ -1,14 +1,16 @@
 from textwrap import dedent
 from typing import Tuple, Type
-
+from datetime import datetime
 from database import BaseModel
-from models import AttributeDto
+from models import AttributeDto, MetadataDboMixin
 from sqlalchemy import desc, or_
-from sqlalchemy.sql import text
+from sqlalchemy.sql import text, func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.orm import ColumnProperty, Query, class_mapper
 from sqlalchemy.sql.elements import NamedColumn
+
+from models.src.history_dbos.history_mixin import HistoryMixin
 
 
 class RepositoryBase:
@@ -73,6 +75,16 @@ class RepositoryBase:
         raise KeyError(
             f"Column with name '{column_name}' does not exist in model: '{model}'"
         )
+
+    @staticmethod
+    def get_latest_timestamp_for_model_history(
+        session, model: type[MetadataDboMixin | BaseModel]
+    ) -> datetime:
+        assert issubclass(model, HistoryMixin)
+        latest_change_timestamp: datetime = session.query(
+            func.max(model.history_record_created_date)
+        ).scalar()
+        return latest_change_timestamp
 
     @staticmethod
     def _get_all_with_search_and_pagination(
