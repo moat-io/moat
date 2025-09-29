@@ -10,12 +10,19 @@ from ..src.bundle_generator import BundleGenerator
 
 def test_generate_bundle(tmp_path, database: Database):
     with database.Session() as session:
-        with BundleGenerator(
-            session=session, platform="trino", bundle_name="trino"
-        ) as bundle:
+        with BundleGenerator(session=session, platform="trino") as bundle:
             subprocess.run(["tar", "-xf", bundle.path], cwd=tmp_path)
         bundle_files: list[str] = sorted(os.listdir(tmp_path))
         assert bundle_files == [".manifest", "common.rego", "data.json"]
+
+
+def test_get_policy_docs_hash():
+    assert (
+        BundleGenerator.get_policy_docs_hash(
+            static_rego_file_path="moat/test/test_data/rego"
+        )
+        == "4a37e1dc809799e5b360f09fb95439ee"
+    )
 
 
 def test_generate_data_object(database: Database):
