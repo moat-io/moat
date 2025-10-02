@@ -1,5 +1,6 @@
-# Moat
-**Moat makes OPA + Trino easy**
+<center>
+<img src="images/logo-moat.png" width="350" height="350">
+</center>
 
 ## Architecture
 ![Architecture](images/architecture.png)

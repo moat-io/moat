@@ -19,7 +19,7 @@ def create():
 
     for decision_log in decision_logs:
         logger.info(f"decision_log: {decision_log}")
-        context = _parse_single_decision_log(decision_log=decision_log)
+        context = _parse_decision_log(decision_log=decision_log)
         g.event_logger.log_event(asset="opa", action="decision_log", context=context)
     return "ok"
 

@@ -1,10 +1,11 @@
-# Moat
-OPA bundle manager for Trino
+<center>
+<img src="docs/images/logo-moat.png" width="350" height="350">
+</center>
+
+# Moat :: The OPA bundle provider for Trino
 
 ## Documentation
 https://moat-io.github.io/moat/
-
-## Moat makes using OPA with Trino simple and fun
 
 OPA and Trino are an awesome combination, but maintaining the policy documents and required data object
 can be painful. Moat makes this easy with managed curation of principals and tables,
