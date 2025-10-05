@@ -17,7 +17,7 @@ def test_get_merge_statement():
             """
     merge into principals as tgt
     using (
-        select * from principals_staging
+        select * from principals_staging where source_uid is not null and id is not null
     ) src
     on src.source_uid = tgt.source_uid and src.id = tgt.id
     when matched 
