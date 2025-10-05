@@ -53,7 +53,7 @@ def test_merge_resources_staging(database_empty: Database) -> None:
         # populate staging table
         rs3: ResourceStagingDbo = ResourceStagingDbo()
         rs3.fq_name = "resource3"
-        rs3.fq_name = "redshift"
+        rs3.platform = "redshift"
         session.add(rs3)
         session.commit()
 
