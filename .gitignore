@@ -251,3 +251,5 @@ docs/~$*
 docker/opa/policy/persistence
 
 tmp/
+
+scratch*
