@@ -2,6 +2,7 @@ import os
 import re
 
 import yaml
+import time
 
 
 class AppConfigModelBase:
@@ -19,12 +20,28 @@ class AppConfigModelBase:
 
     CONFIG_PREFIX: str = "base"
     BASE_CONFIG_FILENAME_KEY: str = "config.base"
+    _cache_timestamp = {}
+    _cache_data = {}
+    _cache_ttl_s = 300
+
+    @staticmethod
+    def _get_current_time() -> float:
+        return time.time()
 
     @staticmethod
     def _load_yaml_file(config_file_path: str = None) -> dict:
         config_file_path: str = config_file_path or os.getenv(
             "CONFIG_FILE_PATH", "moat/config/config.yaml"
         )
+
+        current_time = AppConfigModelBase._get_current_time()
+        if (
+            config_file_path in AppConfigModelBase._cache_data
+            and config_file_path in AppConfigModelBase._cache_timestamp
+            and current_time - AppConfigModelBase._cache_timestamp[config_file_path]
+            < AppConfigModelBase._cache_ttl_s
+        ):
+            return AppConfigModelBase._cache_data[config_file_path]
 
         def _load(path: str) -> dict:
             if not os.path.exists(path):
@@ -40,7 +57,13 @@ class AppConfigModelBase:
                 )
             return config_content
 
-        return _load(config_file_path)
+        result = _load(config_file_path)
+
+        # Cache the result
+        AppConfigModelBase._cache_data[config_file_path] = result
+        AppConfigModelBase._cache_timestamp[config_file_path] = current_time
+
+        return result
 
     @staticmethod
     def get_value(key: str, default: str = None) -> str:

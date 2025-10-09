@@ -1,5 +1,7 @@
-from typing import TypeVar, Type
-from jsonpath_ng import parse
+import re
+from re import Pattern, Match
+from typing import TypeVar, Type, Any
+from jsonpath_ng.ext import parse
 import requests
 from app_logger import Logger, get_logger
 from ingestor.connectors.connector_base import ConnectorBase
@@ -7,19 +9,21 @@ from ingestor.models import (
     PrincipalAttributeDio,
     PrincipalDio,
 )
-
+from dataclasses import fields, is_dataclass
 from .http_connnector_config import HttpConnectorConfig
 
 logger: Logger = get_logger("ingestor.connectors.http_connector")
+T = TypeVar("T")
 
 
 class HttpConnector(ConnectorBase):
-    T = TypeVar("T")
+
     CONNECTOR_NAME: str = "http"
 
     AUTH_API_KEY: str = "api-key"
     AUTH_BASIC: str = "basic"
     AUTH_NONE: str = "none"
+    AUTH_OAUTH2: str = "oauth2"
 
     def __init__(self):
         super().__init__()
@@ -38,19 +42,91 @@ class HttpConnector(ConnectorBase):
         return HttpConnectorConfig.load()
 
     @staticmethod
-    def _populate_object_from_json_using_jsonpath_mapping(
+    def _populate_object_from_json(
         json_obj: dict,
-        json_path_mapping: dict,
-        target_object: Type[T],
-    ) -> Type[T]:
-
-        for target_attr, json_path in json_path_mapping.items():
+        attribute_mapping: dict,
+        target_class: Type[T],
+    ) -> T:
+        target_class_args: dict[str, Any] = {}
+        for target_attr, v in attribute_mapping.items():
+            target_class_args[target_attr] = None
+            try:
+                json_path: str = v.jsonpath
+                regex: str = v.regex or r".*"
+            except AttributeError:
+                logger.debug(
+                    f"Error getting json_path or regex from attribute mapping for: {target_attr}"
+                )
+                continue
+            if not json_path:
+                logger.debug(f"No jsonpath for attribute: {target_attr}")
+                continue
             json_path_expr = parse(json_path)
+            regex_pattern: Pattern[str] = re.compile(regex)
             matches = json_path_expr.find(json_obj)
-            if matches:
-                setattr(target_object, target_attr, matches[0].value)
+            if not matches:
+                logger.info(f"No jsonpath match for attribute: {target_attr}")
+                continue
+            regex_match: Match[str] = re.match(regex_pattern, matches[0].value)
+            if not regex_match:
+                logger.debug(f"could not match regex for attribute: {target_attr}")
+                continue
+            target_attr_value = (
+                ",".join(regex_match.groups())
+                if len(regex_match.groups()) > 0
+                else regex_match.group(0)
+            )
+            target_class_args[target_attr] = target_attr_value
+        logger.debug(
+            f"Populating {target_class.__name__} with attributes: {target_class_args}"
+        )
+        target_class_attr_names: list[str] = (
+            [f.name for f in fields(target_class)]
+            if is_dataclass(target_class)
+            else target_class.__dict__.keys()
+        )
+
+        if len(target_class_attr_names) > len(target_class_args.keys()):
+            logger.warning(
+                f"Missing attributes for {target_class.__name__}: {target_class_attr_names - target_class_args.keys()}"
+                f"adding None values"
+            )
+            for k in target_class_attr_names - target_class_args.keys():
+                target_class_args[k] = None
+
+        target_object = target_class(**target_class_args)
+        logger.debug(
+            f"Populated {target_class.__name__} with attributes: {target_class_args}"
+        )
 
         return target_object
+
+    def _get_access_token(self) -> str:
+        access_token_endpoint: str = self.config.oauth2_endpoint
+        client_id: str = self.config.oauth2_client_id
+        client_secret: str = self.config.oauth2_client_secret
+        grant_type: str = self.config.oauth2_grant_type
+        scope: str = self.config.oauth2_scope
+        logger.debug(f"Getting access token from {access_token_endpoint}")
+        request_data: str = (
+            f"grant_type={grant_type}&client_id={client_id}&client_secret={client_secret}&scope={scope}"
+        )
+        response = requests.post(
+            url=access_token_endpoint,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data=request_data,
+            verify=self.config.ssl_verify,
+            cert=self.config.certificate_path,
+        )
+        response.raise_for_status()
+        try:
+            access_token: str = response.json()["access_token"]
+        except KeyError:
+            logger.error(f"Error getting access token from response: {response.json()}")
+            raise RuntimeError(
+                f"Error getting access token from response of oauth2 endpoint: {access_token_endpoint}"
+            )
+        return access_token
 
     def acquire_data(self, platform: str) -> None:
         self.platform = platform
@@ -67,6 +143,10 @@ class HttpConnector(ConnectorBase):
             headers = headers | {
                 "Authorization": f"Bearer {self.config.api_key}",
             }
+        elif self.config.auth_method == HttpConnector.AUTH_OAUTH2:
+            headers = headers | {
+                "Authorization": f"Bearer {self._get_access_token()}",
+            }
 
         response = requests.get(
             url=self.config.url,
@@ -82,21 +162,19 @@ class HttpConnector(ConnectorBase):
 
     def get_principals(self) -> list[PrincipalDio]:
         principals: list[PrincipalDio] = []
+
+        attribute_mapping: dict = HttpConnectorConfig.attribute_jsonpath_mapping(
+            prefix="principal", attributes_to_map=[f.name for f in fields(PrincipalDio)]
+        )
         for principal in self.source_data:
             logger.debug(f"Principal: {principal}")
-            self._populate_object_from_json_using_jsonpath_mapping(
+            obj: PrincipalDio = self._populate_object_from_json(
                 json_obj=principal,
-                json_path_mapping=self.config.principals_jsonpath_mapping(),
-                target_object=PrincipalDio,
+                attribute_mapping=attribute_mapping,
+                target_class=PrincipalDio,
             )
-            principals.append(
-                self._populate_object_from_json_using_jsonpath_mapping(
-                    json_obj=principal,
-                    json_path_mapping=self.config.principals_jsonpath_mapping()
-                    | {"platform": self.platform},
-                    target_object=PrincipalDio,
-                )
-            )
+            obj.platform = self.platform
+            principals.append(obj)
 
         return principals
 

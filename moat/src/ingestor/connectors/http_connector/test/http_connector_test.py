@@ -1,7 +1,37 @@
 from unittest import mock
+from dataclasses import dataclass
+from collections import namedtuple
 
-from ingestor.models import PrincipalDio
+from app_config import AppConfigModelBase
+from ingestor.models import PrincipalDio, PrincipalAttributeDio
 from ..src.http_connector import HttpConnector, HttpConnectorConfig
+
+# Test helper for attribute mapping
+AttributeMapping = namedtuple("AttributeMapping", ["jsonpath", "regex"])
+
+
+@dataclass
+class TestObjectDataclass:
+    """Simple test object for unit testing"""
+
+    name: str
+    email: str
+    age: int
+    city: str
+    group_name: str
+    full_match: str
+
+
+class TestObject:
+    name: str
+    email: str
+    age: int
+    city: str
+    group_name: str
+    full_match: str
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 
 def test_acquire_data():
@@ -21,12 +51,23 @@ def test_acquire_data():
     bearer_auth_config.auth_method = "api-key"
     bearer_auth_config.api_key = "bearer_token"
 
-    with mock.patch("requests.get") as requests_mock:
+    oauth2_config = HttpConnectorConfig()
+    oauth2_config.url = "https://example.com/api/v1/things?query=true"
+    oauth2_config.auth_method = "oauth2"
+    oauth2_config.oauth2_client_id = "client-id"
+    oauth2_config.oauth2_client_secret = "client-secret"
+    oauth2_config.oauth2_endpoint = "https://idp.coi/oauth2/token"
+    oauth2_config.oauth2_scope = "read write"
+    oauth2_config.oauth2_grant_type = "client_credentials"
+
+    with mock.patch("requests.get") as requests_get_mock, mock.patch(
+        "requests.post"
+    ) as requests_post_mock:
         connector = HttpConnector()
         connector.config = no_auth_config
         connector.acquire_data(platform="identitynow")
 
-        requests_mock.assert_called_once_with(
+        requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
             headers={
                 "Content-Type": "application/json",
@@ -35,12 +76,12 @@ def test_acquire_data():
             verify=True,
             cert=None,
         )
-        requests_mock.reset_mock()
+        requests_get_mock.reset_mock()
 
         # basic auth
         connector.config = basic_auth_config
         connector.acquire_data(platform="identitynow")
-        requests_mock.assert_called_once_with(
+        requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
             headers={
                 "Content-Type": "application/json",
@@ -49,12 +90,12 @@ def test_acquire_data():
             verify=False,
             cert=None,
         )
-        requests_mock.reset_mock()
+        requests_get_mock.reset_mock()
 
         # api key auth
         connector.config = bearer_auth_config
         connector.acquire_data(platform="identitynow")
-        requests_mock.assert_called_once_with(
+        requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
             headers={
                 "Content-Type": "application/json",
@@ -64,12 +105,38 @@ def test_acquire_data():
             verify=True,
             cert=None,
         )
+        # oauth2
+        requests_get_mock.reset_mock()
+        connector.config = oauth2_config
+        requests_post_mock.return_value.json.return_value = {
+            "access_token": "oauth2_access_token",
+        }
+        connector.acquire_data(platform="identitynow")
+        requests_get_mock.assert_called_once_with(
+            url="https://example.com/api/v1/things?query=true",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer oauth2_access_token",
+            },
+            auth=None,
+            verify=True,
+            cert=None,
+        )
+        requests_post_mock.assert_called_once_with(
+            url="https://idp.coi/oauth2/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data="grant_type=client_credentials&client_id=client-id&client_secret=client-secret&scope=read write",
+            verify=True,
+            cert=None,
+        )
 
 
 def test_get_principals():
     config = HttpConnectorConfig()
     connector = HttpConnector()
     connector.config = config
+    connector.platform = "identitynow"
+
     connector.source_data = [
         {
             "authoritative": False,
@@ -115,16 +182,262 @@ def test_get_principals():
                 "group": ["ReadAllNonSensitive CH1", "ADGROUP::ABCD_All_Users"],
                 "urn:ietf:params:scim:nbnExtended.username": "onyangokariuiki",
             },
-        }
+        },
+        {
+            "authoritative": False,
+            "systemAccount": False,
+            "uncorrelated": False,
+            "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
+            "cloudLifecycleState": None,
+            "identityState": "ACTIVE",
+            "connectionType": "direct",
+            "uuid": None,
+            "nativeIdentity": "tomtakahara@aol.com.io",
+            "description": None,
+            "disabled": False,
+            "locked": False,
+            "type": None,
+            "isMachine": False,
+            "recommendation": None,
+            "manuallyCorrelated": False,
+            "hasEntitlements": True,
+            "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
+            "sourceName": "Abcd",
+            "identityId": "b0094f0086474f059924709ed53ef2e4",
+            "identity": {
+                "type": "IDENTITY",
+                "id": "b0094f0086474f059924709ed53ef2e4",
+                "name": "Tom Takahara",
+            },
+            "sourceOwner": {
+                "type": "IDENTITY",
+                "id": "2c918088766ca9a30176733d529a3b62",
+                "name": "abcd_admin",
+            },
+            "attributes": {
+                "loginID": "tomtakahara",
+                "displayName": "Tom Takahara",
+                "familyName": "takahara",
+                "givenName": "tom",
+                "active": "true",
+                "externalId": None,
+                "userName": "tomtakahara@aol.com.io",
+                "email": "tomtakahara@aol.com.io",
+                "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
+                "group": [
+                    "ReadAllNonSensitive CH1",
+                    "ADGROUP::ABCD_All_Users",
+                    "ReadAllNonSensitive CH2",
+                    "ReadAllNonSensitive CH7",
+                    "ADGROUP::ABCD_All_Admins",
+                    "ReadSenstive CH6",
+                ],
+                "urn:ietf:params:scim:nbnExtended.username": "tomtakahara",
+            },
+        },
     ]
-
-    principals: list[PrincipalDio] = connector.get_principals()
+    with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
+        load_yaml_mock.side_effect = [
+            {
+                "http_connector.principal_fq_name_jsonpath": "$.attributes.loginID",
+                "http_connector.principal_fq_name_regex": ".*",
+                "http_connector.principal_first_name_jsonpath": "$.attributes.givenName",
+                "http_connector.principal_first_name_regex": ".*",
+                "http_connector.principal_last_name_jsonpath": "$.attributes.familyName",
+                "http_connector.principal_last_name_regex": ".*",
+                "http_connector.principal_user_name_jsonpath": "$.attributes.loginID",
+                "http_connector.principal_user_name_regex": ".*",
+                "http_connector.principal_email_jsonpath": "$.attributes.email",
+                "http_connector.principal_email_regex": ".*",
+            }
+            for _ in range(12)
+        ]
+        principals: list[PrincipalDio] = connector.get_principals()
     assert principals == [
         # TODO add the rest of the params from PrincipalDbo to PrincipalDio
         PrincipalDio(
+            fq_name="onyangokariuiki",
+            platform="identitynow",
             first_name="onyango",
             last_name="kariuiki",
             user_name="onyangokariuiki",
             email="onyangokariuiki@aol.com.io",
-        )
+        ),
+        PrincipalDio(
+            fq_name="tomtakahara",
+            platform="identitynow",
+            first_name="tom",
+            last_name="takahara",
+            user_name="tomtakahara",
+            email="tomtakahara@aol.com.io",
+        ),
     ]
+
+
+def test_get_principals_with_attributes():
+    config = HttpConnectorConfig()
+    connector = HttpConnector()
+    connector.config = config
+    connector.source_data = [
+        {
+            "authoritative": False,
+            "systemAccount": False,
+            "uncorrelated": False,
+            "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
+        }
+    ]
+
+    assert connector.get_principal_attributes() == [
+        PrincipalAttributeDio(
+            fq_name="onyangokariuiki",
+            attribute_key="ReadAllNonSensitive",
+            attribute_value="CH1,CH2,CH7",
+            platform="identitynow",
+        ),
+    ]
+
+
+def test_populate_object_from_json_jsonpath_extraction():
+    """Test JSONPath extraction: basic, nested, and array access"""
+    json_obj = {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "user": {"profile": {"contact": {"phone": "555-1234"}}},
+        "groups": [{"name": "admin"}, {"name": "users"}],
+    }
+
+    attribute_mapping = {
+        "name": AttributeMapping(jsonpath="$.name", regex=None),
+        "email": AttributeMapping(jsonpath="$.email", regex=None),
+        "city": AttributeMapping(jsonpath="$.user.profile.contact.phone", regex=None),
+        "group_name": AttributeMapping(jsonpath="$.groups[1].name", regex=None),
+    }
+
+    result = HttpConnector._populate_object_from_json(
+        json_obj=json_obj,
+        attribute_mapping=attribute_mapping,
+        target_class=TestObjectDataclass,
+    )
+
+    assert result.name == "John Doe"  # Basic
+    assert result.email == "john@example.com"  # Basic
+    assert result.city == "555-1234"  # Nested
+    assert result.group_name == "users"  # Array
+
+    json_obj = {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "user": {"profile": {"contact": {"phone": "555-1234"}}},
+        "groups": [{"name": "admin"}, {"name": "users"}],
+    }
+
+    attribute_mapping = {
+        "name": AttributeMapping(jsonpath="$.name", regex=None),
+        "email": AttributeMapping(jsonpath="$.email", regex=None),
+        "city": AttributeMapping(jsonpath="$.user.profile.contact.phone", regex=None),
+        "group_name": AttributeMapping(jsonpath="$.groups[1].name", regex=None),
+    }
+
+    result = HttpConnector._populate_object_from_json(
+        json_obj=json_obj,
+        attribute_mapping=attribute_mapping,
+        target_class=TestObject,
+    )
+
+    assert result.name == "John Doe"  # Basic
+    assert result.email == "john@example.com"  # Basic
+    assert result.city == "555-1234"  # Nested
+    assert result.group_name == "users"  # Array
+
+
+def test_populate_object_from_json_regex_patterns():
+    """Test regex: no groups (full match), single group, multiple groups, and filtering"""
+    json_obj = {
+        "code": "ABC-123-XYZ",
+        "dn": "cn=developers,ou=groups,dc=example,dc=com",
+        "version": "v1.2.3-beta",
+        "city": "New York, NY 10001",
+    }
+
+    attribute_mapping = {
+        "name": AttributeMapping(jsonpath="$.code", regex=r"[A-Z]+-\d+"),  # No groups
+        "group_name": AttributeMapping(
+            jsonpath="$.dn", regex=r"cn=([a-z_]+)"
+        ),  # Single
+        "email": AttributeMapping(
+            jsonpath="$.version", regex=r"v(\d+)\.(\d+)\.(\d+)"
+        ),  # Multiple
+        "city": AttributeMapping(jsonpath="$.city", regex=r"[A-Za-z ]+"),  # Filter
+    }
+
+    result = HttpConnector._populate_object_from_json(
+        json_obj=json_obj,
+        attribute_mapping=attribute_mapping,
+        target_class=TestObjectDataclass,
+    )
+
+    assert result.name == "ABC-123"  # Full match
+    assert result.group_name == "developers"  # Single group
+    assert result.email == "1,2,3"  # Multiple groups joined
+    assert result.city == "New York"  # Filtered
+
+
+def test_populate_object_from_json_error_handling():
+    """Test error cases: missing paths, failed regex, missing attributes, empty inputs"""
+    json_obj = {"name": "John Doe", "email": "john@example.com"}
+    SimpleMapping = namedtuple("SimpleMapping", ["value"])
+
+    attribute_mapping = {
+        "name": AttributeMapping(jsonpath="$.name", regex=None),  # Valid
+        "email": AttributeMapping(jsonpath="$.missing", regex=None),  # Missing path
+        "age": AttributeMapping(jsonpath="$.email", regex=r"\d+"),  # Regex no match
+        "city": SimpleMapping(value="test"),  # Missing jsonpath attribute
+    }
+
+    result = HttpConnector._populate_object_from_json(
+        json_obj=json_obj,
+        attribute_mapping=attribute_mapping,
+        target_class=TestObjectDataclass,
+    )
+
+    assert result.name == "John Doe"  # Valid
+    assert result.email is None  # Missing path
+    assert result.age is None  # Regex no match
+    assert result.city is None  # Missing attribute
+
+    # Empty cases
+    empty_result = HttpConnector._populate_object_from_json(
+        json_obj={}, attribute_mapping={}, target_class=TestObjectDataclass
+    )
+    assert empty_result.name is None
+
+
+def test_populate_object_from_json_integration_with_principal_dio():
+    """Integration test with PrincipalDio and realistic LDAP-like data"""
+    json_obj = {
+        "attributes": {
+            "givenName": "John",
+            "familyName": "Doe",
+            "userName": "jdoe",
+            "email": "john.doe@example.com",
+        }
+    }
+
+    attribute_mapping = {
+        "first_name": AttributeMapping(jsonpath="$.attributes.givenName", regex=None),
+        "last_name": AttributeMapping(jsonpath="$.attributes.familyName", regex=None),
+        "user_name": AttributeMapping(jsonpath="$.attributes.userName", regex=None),
+        "email": AttributeMapping(jsonpath="$.attributes.email", regex=None),
+    }
+
+    result = HttpConnector._populate_object_from_json(
+        json_obj=json_obj,
+        attribute_mapping=attribute_mapping,
+        target_class=PrincipalDio,
+    )
+
+    assert isinstance(result, PrincipalDio)
+    assert result.first_name == "John"
+    assert result.last_name == "Doe"
+    assert result.user_name == "jdoe"
+    assert result.email == "john.doe@example.com"
