@@ -23,3 +23,29 @@ ldap_connector.attr_last_name: sn
 ldap_connector.attr_email: mail
 ldap_connector.attr_groups: memberOf
 ldap_connector.group_name_regex: "cn=([a-z_]*),."
+
+http_connector.auth_method: "oauth2"
+http_connector.oauth2_endpoint: "http://localhost:9000/oauth2/token"
+http_connector.oauth2_client_id: "client-id"
+http_connector.oauth2_client_secret: "client-secret"
+http_connector.oauth2_grant_type: "client_credentials"
+http_connector.oauth2_scope: "read:users"
+http_connector.url: "http://localhost:9000/users"
+
+http_connector.principal_fq_name_jsonpath: "$.attributes.loginID"
+http_connector.principal_fq_name_regex: ".*"
+http_connector.principal_first_name_jsonpath: "$.attributes.givenName"
+http_connector.principal_first_name_rege: ".*"
+http_connector.principal_last_name_jsonpath: "$.attributes.familyName"
+http_connector.principal_last_name_regex: ".*"
+http_connector.principal_user_name_jsonpath: "$.attributes.loginID"
+http_connector.principal_user_name_regex: ".*"
+http_connector.principal_email_jsonpath: "$.attributes.email"
+http_connector.principal_email_regex: ".*"
+
+http_connector.principal_attribute_fq_name_jsonpath: "$.attributes.loginID"
+http_connector.principal_attribute_fq_name_regex": ".*"
+http_connector.principal_attribute_attributes_multi_jsonpath: "$.attributes.group[?(@ =~ '(?P<key>[a-zA-Z]+) (?P<value>[a-zA-Z0-9 ]+)')]"
+http_connector.principal_attribute_attributes_multi_regex: "(?P<key>[a-zA-Z]+) (?P<value>[a-zA-Z0-9 ]+)"
+http_connector.principal_attribute_attributes_key_regex: ".*"
+http_connector.principal_attribute_attributes_value_regex: ".*"

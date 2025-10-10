@@ -114,6 +114,7 @@ class ScimUsersService(ScimServiceBase):
     ) -> None:
         attributes: dict = (
             ScimServiceBase._get_jsonpath_attribute(
+                # TODO: HACK: Fix this
                 copy.deepcopy(scim_payload),
                 scim_config.principal_attributes_jsonpath,
             )
