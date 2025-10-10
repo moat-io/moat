@@ -9,6 +9,107 @@ from ..src.http_connector import HttpConnector, HttpConnectorConfig
 # Test helper for attribute mapping
 AttributeMapping = namedtuple("AttributeMapping", ["jsonpath", "regex"])
 
+identitynow_source_data = [
+    {
+        "authoritative": False,
+        "systemAccount": False,
+        "uncorrelated": False,
+        "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
+        "cloudLifecycleState": None,
+        "identityState": "ACTIVE",
+        "connectionType": "direct",
+        "uuid": None,
+        "nativeIdentity": "onyangokariuiki@aol.com.io",
+        "description": None,
+        "disabled": False,
+        "locked": False,
+        "type": None,
+        "isMachine": False,
+        "recommendation": None,
+        "manuallyCorrelated": False,
+        "hasEntitlements": True,
+        "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
+        "sourceName": "Abcd",
+        "identityId": "b0094f0086474f059924709ed53ef2e4",
+        "identity": {
+            "type": "IDENTITY",
+            "id": "b0094f0086474f059924709ed53ef2e4",
+            "name": "Onyango Kariuiki",
+        },
+        "sourceOwner": {
+            "type": "IDENTITY",
+            "id": "2c918088766ca9a30176733d529a3b62",
+            "name": "abcd_admin",
+        },
+        "attributes": {
+            "loginID": "onyangokariuiki",
+            "displayName": "Onyango Kariuiki",
+            "familyName": "kariuiki",
+            "givenName": "onyango",
+            "active": "true",
+            "externalId": None,
+            "userName": "onyangokariuiki@aol.com.io",
+            "email": "onyangokariuiki@aol.com.io",
+            "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
+            "group": ["ReadAllNonSensitive CH1", "ADGROUP::ABCD_All_Users"],
+            "urn:ietf:params:scim:nbnExtended.username": "onyangokariuiki",
+        },
+    },
+    {
+        "authoritative": False,
+        "systemAccount": False,
+        "uncorrelated": False,
+        "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
+        "cloudLifecycleState": None,
+        "identityState": "ACTIVE",
+        "connectionType": "direct",
+        "uuid": None,
+        "nativeIdentity": "tomtakahara@aol.com.io",
+        "description": None,
+        "disabled": False,
+        "locked": False,
+        "type": None,
+        "isMachine": False,
+        "recommendation": None,
+        "manuallyCorrelated": False,
+        "hasEntitlements": True,
+        "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
+        "sourceName": "Abcd",
+        "identityId": "b0094f0086474f059924709ed53ef2e4",
+        "identity": {
+            "type": "IDENTITY",
+            "id": "b0094f0086474f059924709ed53ef2e4",
+            "name": "Tom Takahara",
+        },
+        "sourceOwner": {
+            "type": "IDENTITY",
+            "id": "2c918088766ca9a30176733d529a3b62",
+            "name": "abcd_admin",
+        },
+        "attributes": {
+            "loginID": "tomtakahara",
+            "displayName": "Tom Takahara",
+            "familyName": "takahara",
+            "givenName": "tom",
+            "active": "true",
+            "externalId": None,
+            "userName": "tomtakahara@aol.com.io",
+            "email": "tomtakahara@aol.com.io",
+            "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
+            "group": [
+                "ReadAllNonSensitive CH1",
+                "ADGROUP::ABCD_All_Users",
+                "ReadAllNonSensitive CH2",
+                "ReadAllNonSensitive CH7",
+                "ADGROUP::ABCD_All_Admins",
+                "ReadSenstive CH6",
+                "DP Customer Information",
+            ],
+            "urn:ietf:params:scim:nbnExtended.username": "tomtakahara",
+        },
+    },
+]
+
 
 @dataclass
 class TestObjectDataclass:
@@ -137,105 +238,7 @@ def test_get_principals():
     connector.config = config
     connector.platform = "identitynow"
 
-    connector.source_data = [
-        {
-            "authoritative": False,
-            "systemAccount": False,
-            "uncorrelated": False,
-            "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
-            "cloudLifecycleState": None,
-            "identityState": "ACTIVE",
-            "connectionType": "direct",
-            "uuid": None,
-            "nativeIdentity": "onyangokariuiki@aol.com.io",
-            "description": None,
-            "disabled": False,
-            "locked": False,
-            "type": None,
-            "isMachine": False,
-            "recommendation": None,
-            "manuallyCorrelated": False,
-            "hasEntitlements": True,
-            "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
-            "sourceName": "Abcd",
-            "identityId": "b0094f0086474f059924709ed53ef2e4",
-            "identity": {
-                "type": "IDENTITY",
-                "id": "b0094f0086474f059924709ed53ef2e4",
-                "name": "Onyango Kariuiki",
-            },
-            "sourceOwner": {
-                "type": "IDENTITY",
-                "id": "2c918088766ca9a30176733d529a3b62",
-                "name": "abcd_admin",
-            },
-            "attributes": {
-                "loginID": "onyangokariuiki",
-                "displayName": "Onyango Kariuiki",
-                "familyName": "kariuiki",
-                "givenName": "onyango",
-                "active": "true",
-                "externalId": None,
-                "userName": "onyangokariuiki@aol.com.io",
-                "email": "onyangokariuiki@aol.com.io",
-                "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
-                "group": ["ReadAllNonSensitive CH1", "ADGROUP::ABCD_All_Users"],
-                "urn:ietf:params:scim:nbnExtended.username": "onyangokariuiki",
-            },
-        },
-        {
-            "authoritative": False,
-            "systemAccount": False,
-            "uncorrelated": False,
-            "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
-            "cloudLifecycleState": None,
-            "identityState": "ACTIVE",
-            "connectionType": "direct",
-            "uuid": None,
-            "nativeIdentity": "tomtakahara@aol.com.io",
-            "description": None,
-            "disabled": False,
-            "locked": False,
-            "type": None,
-            "isMachine": False,
-            "recommendation": None,
-            "manuallyCorrelated": False,
-            "hasEntitlements": True,
-            "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
-            "sourceName": "Abcd",
-            "identityId": "b0094f0086474f059924709ed53ef2e4",
-            "identity": {
-                "type": "IDENTITY",
-                "id": "b0094f0086474f059924709ed53ef2e4",
-                "name": "Tom Takahara",
-            },
-            "sourceOwner": {
-                "type": "IDENTITY",
-                "id": "2c918088766ca9a30176733d529a3b62",
-                "name": "abcd_admin",
-            },
-            "attributes": {
-                "loginID": "tomtakahara",
-                "displayName": "Tom Takahara",
-                "familyName": "takahara",
-                "givenName": "tom",
-                "active": "true",
-                "externalId": None,
-                "userName": "tomtakahara@aol.com.io",
-                "email": "tomtakahara@aol.com.io",
-                "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
-                "group": [
-                    "ReadAllNonSensitive CH1",
-                    "ADGROUP::ABCD_All_Users",
-                    "ReadAllNonSensitive CH2",
-                    "ReadAllNonSensitive CH7",
-                    "ADGROUP::ABCD_All_Admins",
-                    "ReadSenstive CH6",
-                ],
-                "urn:ietf:params:scim:nbnExtended.username": "tomtakahara",
-            },
-        },
-    ]
+    connector.source_data = identitynow_source_data
     with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
         load_yaml_mock.side_effect = [
             {
@@ -278,21 +281,47 @@ def test_get_principals_with_attributes():
     config = HttpConnectorConfig()
     connector = HttpConnector()
     connector.config = config
-    connector.source_data = [
-        {
-            "authoritative": False,
-            "systemAccount": False,
-            "uncorrelated": False,
-            "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
-        }
-    ]
-
-    assert connector.get_principal_attributes() == [
+    connector.platform = "identitynow"
+    connector.source_data = identitynow_source_data
+    with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
+        load_yaml_mock.side_effect = [
+            {
+                "http_connector.principal_attribute_fq_name_jsonpath": "$.attributes.loginID",
+                "http_connector.principal_attribute_fq_name_regex": ".*",
+                "http_connector.principal_attribute_attributes_multi_jsonpath": "$.attributes.group[?(@ =~ '(?P<key>[a-zA-Z]+) (?P<value>[a-zA-Z0-9 ]+)')]",
+                "http_connector.principal_attribute_attributes_multi_regex": r"(?P<key>[a-zA-Z]+) (?P<value>[a-zA-Z0-9 ]+)",
+                "http_connector.principal_attribute_attributes_key_regex": ".*",
+                "http_connector.principal_attribute_attributes_value_regex": r".*",
+            }
+            for _ in range(8)
+        ]
+        principal_attributes: list[PrincipalAttributeDio] = (
+            connector.get_principal_attributes()
+        )
+    assert principal_attributes == [
         PrincipalAttributeDio(
             fq_name="onyangokariuiki",
-            attribute_key="ReadAllNonSensitive",
-            attribute_value="CH1,CH2,CH7",
             platform="identitynow",
+            attribute_key="ReadAllNonSensitive",
+            attribute_value="CH1",
+        ),
+        PrincipalAttributeDio(
+            fq_name="tomtakahara",
+            platform="identitynow",
+            attribute_key="ReadAllNonSensitive",
+            attribute_value="CH1, CH2, CH7",
+        ),
+        PrincipalAttributeDio(
+            fq_name="tomtakahara",
+            platform="identitynow",
+            attribute_key="ReadSenstive",
+            attribute_value="CH6",
+        ),
+        PrincipalAttributeDio(
+            fq_name="tomtakahara",
+            platform="identitynow",
+            attribute_key="DP",
+            attribute_value="Customer Information",
         ),
     ]
 
@@ -362,23 +391,36 @@ def test_populate_object_from_json_regex_patterns():
     attribute_mapping = {
         "name": AttributeMapping(jsonpath="$.code", regex=r"[A-Z]+-\d+"),  # No groups
         "group_name": AttributeMapping(
-            jsonpath="$.dn", regex=r"cn=([a-z_]+)"
+            jsonpath="$.dn", regex=r"cn=(?P<developer>[a-z_]+)"
         ),  # Single
         "email": AttributeMapping(
-            jsonpath="$.version", regex=r"v(\d+)\.(\d+)\.(\d+)"
+            jsonpath="$.version", regex=r"v(?P<one>\d+)\.(?P<two>\d+)\.(?P<three>\d+)"
         ),  # Multiple
         "city": AttributeMapping(jsonpath="$.city", regex=r"[A-Za-z ]+"),  # Filter
     }
 
+    @dataclass
+    class TestObjectGroupedDictDataclass:
+        name: str
+        email: dict
+        age: int
+        city: str
+        group_name: dict
+        full_match: str
+
     result = HttpConnector._populate_object_from_json(
         json_obj=json_obj,
         attribute_mapping=attribute_mapping,
-        target_class=TestObjectDataclass,
+        target_class=TestObjectGroupedDictDataclass,
     )
 
     assert result.name == "ABC-123"  # Full match
-    assert result.group_name == "developers"  # Single group
-    assert result.email == "1,2,3"  # Multiple groups joined
+    assert result.group_name == {"developer": "developers"}  # Single group
+    assert result.email == {
+        "one": "1",
+        "three": "3",
+        "two": "2",
+    }  # Multiple groups joined
     assert result.city == "New York"  # Filtered
 
 

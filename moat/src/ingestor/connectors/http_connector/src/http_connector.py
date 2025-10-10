@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 from re import Pattern, Match
 from typing import TypeVar, Type, Any
 from jsonpath_ng.ext import parse
@@ -9,7 +10,7 @@ from ingestor.models import (
     PrincipalAttributeDio,
     PrincipalDio,
 )
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, dataclass
 from .http_connnector_config import HttpConnectorConfig
 
 logger: Logger = get_logger("ingestor.connectors.http_connector")
@@ -67,16 +68,23 @@ class HttpConnector(ConnectorBase):
             if not matches:
                 logger.info(f"No jsonpath match for attribute: {target_attr}")
                 continue
-            regex_match: Match[str] = re.match(regex_pattern, matches[0].value)
-            if not regex_match:
-                logger.debug(f"could not match regex for attribute: {target_attr}")
+            target_attr_value: list[str] = []
+            for m in matches:
+                regex_match: Match[str] = re.match(regex_pattern, m.value)
+                if not regex_match:
+                    logger.debug(f"could not match regex for attribute: {target_attr}")
+                    continue
+                target_attr_value.append(
+                    regex_match.groupdict()
+                    if len(regex_match.groups()) > 0
+                    else regex_match.group(0)
+                )
+            if not target_attr_value:
+                logger.debug(f"No regex match for attribute: {target_attr}")
                 continue
-            target_attr_value = (
-                ",".join(regex_match.groups())
-                if len(regex_match.groups()) > 0
-                else regex_match.group(0)
+            target_class_args[target_attr] = (
+                target_attr_value if len(matches) > 1 else target_attr_value[0]
             )
-            target_class_args[target_attr] = target_attr_value
         logger.debug(
             f"Populating {target_class.__name__} with attributes: {target_class_args}"
         )
@@ -179,5 +187,43 @@ class HttpConnector(ConnectorBase):
         return principals
 
     def get_principal_attributes(self) -> list[PrincipalAttributeDio]:
+        principal_attributes: list[PrincipalAttributeDio] = []
 
-        return []
+        @dataclass
+        class PrincipalMultipleAttributes:
+            fq_name: str
+            attributes_multi: list[Any]
+
+        attribute_mapping: dict = HttpConnectorConfig.attribute_jsonpath_mapping(
+            prefix="principal_attribute",
+            attributes_to_map=[f.name for f in fields(PrincipalMultipleAttributes)],
+        )
+
+        for principal in self.source_data:
+            logger.debug(f"Principal Attribute: {principal}")
+            obj: PrincipalMultipleAttributes = self._populate_object_from_json(
+                json_obj=principal,
+                attribute_mapping=attribute_mapping,
+                target_class=PrincipalMultipleAttributes,
+            )
+            merged = {}
+            if isinstance(obj.attributes_multi, dict):
+                obj.attributes_multi = [obj.attributes_multi]
+            for item in obj.attributes_multi:
+                key = item["key"]
+                value = item["value"]
+                if key in merged:
+                    merged[key] = f"{merged[key]}, {value}"
+                else:
+                    merged[key] = value
+
+            for k, v in merged.items():
+                principal_attribute: PrincipalAttributeDio = PrincipalAttributeDio(
+                    fq_name=obj.fq_name,
+                    platform=self.platform,
+                    attribute_key=k,
+                    attribute_value=v,
+                )
+                principal_attributes.append(principal_attribute)
+
+        return principal_attributes
