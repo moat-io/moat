@@ -173,6 +173,13 @@ class RepositoryBase:
         ingestion_process_id: int,
     ) -> str:
 
+        source_stmt_where_clause: str = " and ".join(
+            [f"{c} is not null" for c in merge_keys]
+        )
+        source_stmt: str = (
+            f"select * from {source_model.__tablename__} where {source_stmt_where_clause}"
+        )
+
         matched_and_stmt: str = "and " + " or ".join(
             [f"src.{c} <> tgt.{c}" for c in update_cols]
         )
@@ -198,7 +205,7 @@ class RepositoryBase:
             f"""
                         merge into {target_model.__tablename__} as tgt
                         using (
-                            select * from {source_model.__tablename__}
+                            {source_stmt}
                         ) src
                         on {on_clause}
                         when matched 
