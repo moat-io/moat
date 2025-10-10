@@ -104,7 +104,7 @@ def test_acquire_data():
     ) as requests_post_mock:
         connector = HttpConnector()
         connector.config = no_auth_config
-        connector.acquire_data(platform="identitynow")
+        connector.acquire_data(platform="idp")
 
         requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
@@ -119,7 +119,7 @@ def test_acquire_data():
 
         # basic auth
         connector.config = basic_auth_config
-        connector.acquire_data(platform="identitynow")
+        connector.acquire_data(platform="idp")
         requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
             headers={
@@ -133,7 +133,7 @@ def test_acquire_data():
 
         # api key auth
         connector.config = bearer_auth_config
-        connector.acquire_data(platform="identitynow")
+        connector.acquire_data(platform="idp")
         requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
             headers={
@@ -150,7 +150,7 @@ def test_acquire_data():
         requests_post_mock.return_value.json.return_value = {
             "access_token": "oauth2_access_token",
         }
-        connector.acquire_data(platform="identitynow")
+        connector.acquire_data(platform="idp")
         requests_get_mock.assert_called_once_with(
             url="https://example.com/api/v1/things?query=true",
             headers={
@@ -174,7 +174,7 @@ def test_get_principals():
     config = HttpConnectorConfig()
     connector = HttpConnector()
     connector.config = config
-    connector.platform = "identitynow"
+    connector.platform = "idp"
 
     connector.source_data = source_data
     with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
@@ -198,7 +198,7 @@ def test_get_principals():
         # TODO add the rest of the params from PrincipalDbo to PrincipalDio
         PrincipalDio(
             fq_name="onyangokariuiki",
-            platform="identitynow",
+            platform="idp",
             first_name="onyango",
             last_name="kariuiki",
             user_name="onyangokariuiki",
@@ -206,7 +206,7 @@ def test_get_principals():
         ),
         PrincipalDio(
             fq_name="tomtakahara",
-            platform="identitynow",
+            platform="idp",
             first_name="tom",
             last_name="takahara",
             user_name="tomtakahara",
@@ -219,7 +219,7 @@ def test_get_principals_with_attributes():
     config = HttpConnectorConfig()
     connector = HttpConnector()
     connector.config = config
-    connector.platform = "identitynow"
+    connector.platform = "idp"
     connector.source_data = source_data
     with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
         load_yaml_mock.side_effect = [
@@ -239,25 +239,25 @@ def test_get_principals_with_attributes():
     assert principal_attributes == [
         PrincipalAttributeDio(
             fq_name="onyangokariuiki",
-            platform="identitynow",
+            platform="idp",
             attribute_key="ReadAllNonSensitive",
             attribute_value="Sales",
         ),
         PrincipalAttributeDio(
             fq_name="tomtakahara",
-            platform="identitynow",
+            platform="idp",
             attribute_key="ReadAllNonSensitive",
-            attribute_value="Sales, Marketing, HT",
+            attribute_value="Sales,Marketing,HT",
         ),
         PrincipalAttributeDio(
             fq_name="tomtakahara",
-            platform="identitynow",
+            platform="idp",
             attribute_key="ReadSensitive",
             attribute_value="IT",
         ),
         PrincipalAttributeDio(
             fq_name="tomtakahara",
-            platform="identitynow",
+            platform="idp",
             attribute_key="DP",
             attribute_value="Customer Information",
         ),

@@ -35,7 +35,7 @@ class PrincipalAttributeIngestionController(BaseIngestionController):
             stg.attribute_value = dio.attribute_value
             stgs.append(stg)
         session.add_all(stgs)
-        logger.info(f"Staged {len(stgs)} principall attributes")
+        logger.info(f"Staged {len(stgs)} principal attributes")
 
     def merge(
         self, session, ingestion_process_id: int, deactivate_omitted: bool = False

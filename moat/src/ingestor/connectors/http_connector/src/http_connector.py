@@ -1,5 +1,4 @@
 import re
-from collections import defaultdict
 from re import Pattern, Match
 from typing import TypeVar, Type, Any
 from jsonpath_ng.ext import parse
@@ -11,14 +10,13 @@ from ingestor.models import (
     PrincipalDio,
 )
 from dataclasses import fields, is_dataclass, dataclass
-from .http_connnector_config import HttpConnectorConfig
+from .http_connector_config import HttpConnectorConfig
 
 logger: Logger = get_logger("ingestor.connectors.http_connector")
 T = TypeVar("T")
 
 
 class HttpConnector(ConnectorBase):
-
     CONNECTOR_NAME: str = "http"
 
     AUTH_API_KEY: str = "api-key"
@@ -36,7 +34,8 @@ class HttpConnector(ConnectorBase):
             HttpConnector.AUTH_API_KEY,
             HttpConnector.AUTH_BASIC,
             HttpConnector.AUTH_NONE,
-        ], "Only API Key Basic or no auth are currently supported"
+            HttpConnector.AUTH_OAUTH2,
+        ], "Only API Key, Basic, Oauth2, or no auth are currently supported"
 
     @staticmethod
     def _get_config() -> HttpConnectorConfig:
@@ -213,7 +212,7 @@ class HttpConnector(ConnectorBase):
                 key = item["key"]
                 value = item["value"]
                 if key in merged:
-                    merged[key] = f"{merged[key]}, {value}"
+                    merged[key] = f"{merged[key]},{value}"
                 else:
                     merged[key] = value
 
