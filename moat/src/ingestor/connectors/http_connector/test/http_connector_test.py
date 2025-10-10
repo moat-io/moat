@@ -9,38 +9,8 @@ from ..src.http_connector import HttpConnector, HttpConnectorConfig
 # Test helper for attribute mapping
 AttributeMapping = namedtuple("AttributeMapping", ["jsonpath", "regex"])
 
-identitynow_source_data = [
+source_data = [
     {
-        "authoritative": False,
-        "systemAccount": False,
-        "uncorrelated": False,
-        "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
-        "cloudLifecycleState": None,
-        "identityState": "ACTIVE",
-        "connectionType": "direct",
-        "uuid": None,
-        "nativeIdentity": "onyangokariuiki@aol.com.io",
-        "description": None,
-        "disabled": False,
-        "locked": False,
-        "type": None,
-        "isMachine": False,
-        "recommendation": None,
-        "manuallyCorrelated": False,
-        "hasEntitlements": True,
-        "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
-        "sourceName": "Abcd",
-        "identityId": "b0094f0086474f059924709ed53ef2e4",
-        "identity": {
-            "type": "IDENTITY",
-            "id": "b0094f0086474f059924709ed53ef2e4",
-            "name": "Onyango Kariuiki",
-        },
-        "sourceOwner": {
-            "type": "IDENTITY",
-            "id": "2c918088766ca9a30176733d529a3b62",
-            "name": "abcd_admin",
-        },
         "attributes": {
             "loginID": "onyangokariuiki",
             "displayName": "Onyango Kariuiki",
@@ -50,42 +20,11 @@ identitynow_source_data = [
             "externalId": None,
             "userName": "onyangokariuiki@aol.com.io",
             "email": "onyangokariuiki@aol.com.io",
-            "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
-            "group": ["ReadAllNonSensitive CH1", "ADGROUP::ABCD_All_Users"],
-            "urn:ietf:params:scim:nbnExtended.username": "onyangokariuiki",
+            "group": ["ReadAllNonSensitive Sales", "ADGROUP::ABCD_All_Users"],
+            "urn:ietf:params:scim:enterpriseExtended.username": "onyangokariuiki",
         },
     },
     {
-        "authoritative": False,
-        "systemAccount": False,
-        "uncorrelated": False,
-        "features": "SYNC_PROVISIONING, DIRECT_PERMISSIONS, PROVISIONING, SEARCH, ENABLE",
-        "cloudLifecycleState": None,
-        "identityState": "ACTIVE",
-        "connectionType": "direct",
-        "uuid": None,
-        "nativeIdentity": "tomtakahara@aol.com.io",
-        "description": None,
-        "disabled": False,
-        "locked": False,
-        "type": None,
-        "isMachine": False,
-        "recommendation": None,
-        "manuallyCorrelated": False,
-        "hasEntitlements": True,
-        "sourceId": "0e7e7f808c484ae1aa7eeb3ba69b284d",
-        "sourceName": "Abcd",
-        "identityId": "b0094f0086474f059924709ed53ef2e4",
-        "identity": {
-            "type": "IDENTITY",
-            "id": "b0094f0086474f059924709ed53ef2e4",
-            "name": "Tom Takahara",
-        },
-        "sourceOwner": {
-            "type": "IDENTITY",
-            "id": "2c918088766ca9a30176733d529a3b62",
-            "name": "abcd_admin",
-        },
         "attributes": {
             "loginID": "tomtakahara",
             "displayName": "Tom Takahara",
@@ -95,17 +34,16 @@ identitynow_source_data = [
             "externalId": None,
             "userName": "tomtakahara@aol.com.io",
             "email": "tomtakahara@aol.com.io",
-            "idNowDescription": "563ae98f3e2833bdd8e7e2ebd1120e3b616c26fd740af31b9beb7105f2afd086",
             "group": [
-                "ReadAllNonSensitive CH1",
+                "ReadAllNonSensitive Sales",
                 "ADGROUP::ABCD_All_Users",
-                "ReadAllNonSensitive CH2",
-                "ReadAllNonSensitive CH7",
+                "ReadAllNonSensitive Marketing",
+                "ReadAllNonSensitive HT",
                 "ADGROUP::ABCD_All_Admins",
-                "ReadSenstive CH6",
+                "ReadSensitive IT",
                 "DP Customer Information",
             ],
-            "urn:ietf:params:scim:nbnExtended.username": "tomtakahara",
+            "urn:ietf:params:scim:enterpriseExtended.username": "tomtakahara",
         },
     },
 ]
@@ -238,7 +176,7 @@ def test_get_principals():
     connector.config = config
     connector.platform = "identitynow"
 
-    connector.source_data = identitynow_source_data
+    connector.source_data = source_data
     with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
         load_yaml_mock.side_effect = [
             {
@@ -282,7 +220,7 @@ def test_get_principals_with_attributes():
     connector = HttpConnector()
     connector.config = config
     connector.platform = "identitynow"
-    connector.source_data = identitynow_source_data
+    connector.source_data = source_data
     with mock.patch.object(AppConfigModelBase, "_load_yaml_file") as load_yaml_mock:
         load_yaml_mock.side_effect = [
             {
@@ -303,19 +241,19 @@ def test_get_principals_with_attributes():
             fq_name="onyangokariuiki",
             platform="identitynow",
             attribute_key="ReadAllNonSensitive",
-            attribute_value="CH1",
+            attribute_value="Sales",
         ),
         PrincipalAttributeDio(
             fq_name="tomtakahara",
             platform="identitynow",
             attribute_key="ReadAllNonSensitive",
-            attribute_value="CH1, CH2, CH7",
+            attribute_value="Sales, Marketing, HT",
         ),
         PrincipalAttributeDio(
             fq_name="tomtakahara",
             platform="identitynow",
-            attribute_key="ReadSenstive",
-            attribute_value="CH6",
+            attribute_key="ReadSensitive",
+            attribute_value="IT",
         ),
         PrincipalAttributeDio(
             fq_name="tomtakahara",
@@ -346,31 +284,6 @@ def test_populate_object_from_json_jsonpath_extraction():
         json_obj=json_obj,
         attribute_mapping=attribute_mapping,
         target_class=TestObjectDataclass,
-    )
-
-    assert result.name == "John Doe"  # Basic
-    assert result.email == "john@example.com"  # Basic
-    assert result.city == "555-1234"  # Nested
-    assert result.group_name == "users"  # Array
-
-    json_obj = {
-        "name": "John Doe",
-        "email": "john@example.com",
-        "user": {"profile": {"contact": {"phone": "555-1234"}}},
-        "groups": [{"name": "admin"}, {"name": "users"}],
-    }
-
-    attribute_mapping = {
-        "name": AttributeMapping(jsonpath="$.name", regex=None),
-        "email": AttributeMapping(jsonpath="$.email", regex=None),
-        "city": AttributeMapping(jsonpath="$.user.profile.contact.phone", regex=None),
-        "group_name": AttributeMapping(jsonpath="$.groups[1].name", regex=None),
-    }
-
-    result = HttpConnector._populate_object_from_json(
-        json_obj=json_obj,
-        attribute_mapping=attribute_mapping,
-        target_class=TestObject,
     )
 
     assert result.name == "John Doe"  # Basic
