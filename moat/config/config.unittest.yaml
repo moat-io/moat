@@ -65,3 +65,9 @@ event_logger.http.headers: "Api-Key=API_KEY,content-type=application/json"
 event_logger.http.extra_args: "eventType=MoatEvent"
 event_logger.http.ssl_verify: "true"
 event_logger.http.flatten_payload: "true"
+
+grant_connector.postgres.host: localhost
+grant_connector.postgres.port: "5432"
+grant_connector.postgres.username: postgres
+grant_connector.postgres.password: password
+grant_connector.postgres.database: warehouse
