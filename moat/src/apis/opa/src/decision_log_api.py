@@ -5,7 +5,7 @@ from app_logger import Logger, get_logger
 from apis.common import authenticate
 from apis.models import ApiConfig
 from services.decision_log import DecisionLogService
-from flask import Blueprint, g, request
+from flask import Blueprint, g, request, jsonify
 
 
 logger: Logger = get_logger("opa.decision_log_api")
@@ -28,4 +28,4 @@ def create():
         g.event_logger.log_event(
             asset="opa", action="decision_log", context=conformed_event
         )
-    return "ok"
+    return jsonify({"status": "ok"}), 201
