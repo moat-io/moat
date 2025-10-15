@@ -1,156 +1,98 @@
 {
-  "data_objects": [
-    {
+  "data_objects": {
+    "datalake.sales.customer_demographics": {
       "attributes": [
         "Subject::Sales",
         "AccessLevel::Privacy"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "customer_demographics"
-      }
+      ]
     },
-    {
+    "datalake.sales.customer_markets": {
       "attributes": [
         "Subject::IT",
         "AccessLevel::Commercial"
       ],
-      "columns": [
-        {
+      "columns": {
+        "type_name": {
           "attributes": [
             "Subject::IT",
             "AccessLevel::Restricted"
-          ],
-          "name": "type_name"
+          ]
         }
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "customer_markets"
       }
     },
-    {
+    "datalake.sales.customers": {
       "attributes": [
         "Subject::Sales",
         "AccessLevel::Restricted"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "customers"
-      }
+      ]
     },
-    {
+    "datalake.hr.employee_territories": {
       "attributes": [
         "Subject::HR",
         "AccessLevel::Commercial"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "hr",
-        "table": "employee_territories"
-      }
+      ]
     },
-    {
+    "datalake.hr.employees": {
       "attributes": [
         "Subject::HR",
         "AccessLevel::Restricted"
       ],
-      "columns": [
-        {
+      "columns": {
+        "phonenumber": {
           "attributes": [
             "Subject::HR",
             "AccessLevel::Privacy"
-          ],
-          "name": "phonenumber"
+          ]
         }
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "hr",
-        "table": "employees"
       }
     },
-    {
+    "datalake.sales.orders": {
       "attributes": [
         "Subject::Marketing",
         "AccessLevel::Privacy"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "orders"
-      }
+      ]
     },
-    {
+    "datalake.sales.products": {
       "attributes": [
         "Subject::Sales",
         "AccessLevel::Commercial"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "sales",
-        "table": "products"
-      }
+      ]
     },
-    {
+    "datalake.logistics.regions": {
       "attributes": [
         "Subject::Marketing",
         "AccessLevel::Commercial"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "regions"
-      }
+      ]
     },
-    {
+    "datalake.logistics.shippers": {
       "attributes": [
         "Subject::Sales",
         "AccessLevel::Commercial"
       ],
-      "columns": [
-        {
+      "columns": {
+        "phone": {
           "attributes": [
             "Subject::Sales",
             "AccessLevel::Privacy"
-          ],
-          "name": "phone"
+          ]
         }
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "shippers"
       }
     },
-    {
+    "datalake.logistics.suppliers": {
       "attributes": [
         "Subject::Marketing",
         "AccessLevel::Restricted"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "suppliers"
-      }
+      ]
     },
-    {
+    "datalake.logistics.territories": {
       "attributes": [
         "Subject::Sales",
         "AccessLevel::Commercial"
-      ],
-      "object": {
-        "database": "datalake",
-        "schema": "logistics",
-        "table": "territories"
-      }
+      ]
     }
-  ],
-  "principals": [
-    {
+  },
+  "principals": {
+    "admin": {
       "groups": [
         "ADMINISTRATORS"
       ],
@@ -163,10 +105,9 @@
         "Employee::True",
         "Redact::None",
         "Department::Administration"
-      ],
-      "name": "admin"
+      ]
     },
-    {
+    "alice": {
       "groups": [
         "DEVELOPERS",
         "IT_SUPERVISORS_GL",
@@ -188,10 +129,9 @@
         "Commercial::Marketing",
         "Commercial::IT",
         "Commercial::Sales"
-      ],
-      "name": "alice"
+      ]
     },
-    {
+    "anne": {
       "groups": [
         "HR_ANALYSTS_GL",
         "IT_DIRECTORS_GL",
@@ -211,10 +151,9 @@
         "Commercial::IT",
         "Commercial::Marketing",
         "Commercial::HR"
-      ],
-      "name": "anne"
+      ]
     },
-    {
+    "bob": {
       "groups": [
         "HR_SUPERVISORS_GL",
         "IT_ANALYSTS_GL",
@@ -234,10 +173,9 @@
         "Commercial::Sales",
         "Commercial::HR",
         "Commercial::IT"
-      ],
-      "name": "bob"
+      ]
     },
-    {
+    "frank": {
       "groups": [
         "HR_DIRECTORS_GL",
         "MARKETING_ANALYSTS_GL",
@@ -257,8 +195,7 @@
         "Commercial::HR",
         "Commercial::Sales",
         "Commercial::Marketing"
-      ],
-      "name": "frank"
+      ]
     }
-  ]
+  }
 }

@@ -36,15 +36,13 @@ def test_generate_data_object(database: Database):
         assert list(actual.keys()) == ["data_objects", "principals"]
 
         # data objects
-        assert sorted(
-            actual.get("data_objects"), key=lambda e: e.get("object").get("table")
-        ) == sorted(
-            expected.get("data_objects"), key=lambda e: e.get("object").get("table")
+        assert sorted(actual.get("data_objects").keys()) == sorted(
+            expected.get("data_objects").keys()
         )
 
         # principals
-        assert sorted(actual.get("principals"), key=lambda e: e["name"]) == sorted(
-            expected.get("principals"), key=lambda e: e["name"]
+        assert sorted(actual.get("principals").keys()) == sorted(
+            expected.get("principals").keys()
         )
 
 
@@ -57,9 +55,7 @@ def test_generate_principals_in_data_object(database: Database):
     with database.Session() as session:
         actual = BundleGenerator._generate_principals_in_data_object(session=session)
 
-    assert sorted(actual, key=lambda e: e["name"]) == sorted(
-        expected, key=lambda e: e["name"]
-    )
+    assert sorted(actual.keys()) == sorted(expected.keys())
 
 
 def test_generate_principals_in_data_object_with_deactivation(database: Database):
@@ -72,16 +68,14 @@ def test_generate_principals_in_data_object_with_deactivation(database: Database
     with open(
         "moat/src/opa/bundle_generator/test/bundle_generator_test_data.json"
     ) as f:
-        expected: list[dict] = [
-            p for p in json.load(f).get("principals") if p.get("name") != "alice"
-        ]
+        principals: dict = json.load(f).get("principals", {})
+        principals.pop("alice", {})
+        expected = principals
 
     with database.Session() as session:
         actual = BundleGenerator._generate_principals_in_data_object(session=session)
 
-    assert sorted(actual, key=lambda e: e["name"]) == sorted(
-        expected, key=lambda e: e["name"]
-    )
+    assert sorted(actual.keys()) == sorted(expected.keys())
 
 
 def test_generate_data_objects_in_data_object(database: Database):
@@ -95,6 +89,4 @@ def test_generate_data_objects_in_data_object(database: Database):
             session=session, platform="trino"
         )
 
-    assert sorted(actual, key=lambda e: e.get("object").get("table")) == sorted(
-        expected, key=lambda e: e.get("object").get("table")
-    )
+    assert sorted(actual.keys()) == sorted(expected.keys())

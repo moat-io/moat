@@ -117,44 +117,38 @@ class BundleGenerator:
 
     @staticmethod
     def generate_data_object(session, platform: str) -> dict:
-        principals: list[dict] = BundleGenerator._generate_principals_in_data_object(
+        principals: dict = BundleGenerator._generate_principals_in_data_object(
             session=session
         )
-        data_objects: list[dict] = (
-            BundleGenerator._generate_data_objects_in_data_object(
-                session=session, platform=platform
-            )
+        data_objects: dict = BundleGenerator._generate_data_objects_in_data_object(
+            session=session, platform=platform
         )
 
         return {"data_objects": data_objects, "principals": principals}
 
     @staticmethod
-    def _generate_principals_in_data_object(session) -> list[dict]:
-        principal_count, principals = PrincipalRepository.get_all_active(
+    def _generate_principals_in_data_object(session) -> dict:
+        principal_count, principals_db = PrincipalRepository.get_all_active(
             session=session
         )
         logger.info(f"Retrieved {principal_count} active principals from the DB")
 
-        principals_dict: list[dict] = []
-        for principal in principals:
-            principals_dict.append(
-                {
-                    "name": principal.user_name,
-                    "attributes": BundleGenerator._flatten_attributes(
-                        principal.attributes
-                    ),
-                    "entitlements": principal.entitlements,
-                    "groups": sorted([g.fq_name for g in principal.groups]),
-                }
-            )
-        return principals_dict
+        principals: dict = {}
+        for principal in principals_db:
+            principals[f"{principal.user_name}"] = {
+                "attributes": BundleGenerator._flatten_attributes(principal.attributes),
+                "entitlements": principal.entitlements,
+                "groups": sorted([g.fq_name for g in principal.groups]),
+            }
+
+        return principals
 
     @staticmethod
-    def _generate_data_objects_in_data_object(session, platform: str) -> list[dict]:
+    def _generate_data_objects_in_data_object(session, platform: str) -> dict:
         """
         Takes the resources of type "table" from the DB and returns a nested data object optimized for OPA
         """
-        data_objects: list[dict] = []
+        data_objects: dict = {}
         repo: ResourceRepository = ResourceRepository()
 
         count, resources = repo.get_all_by_platform(session=session, platform=platform)
@@ -165,35 +159,26 @@ class BundleGenerator:
             # Split the fully qualified name to extract database, schema, and table
             if resource.object_type == "table":
                 database, schema, table = resource.fq_name.split(".")
-                data_objects.append(
-                    {
-                        "object": {
-                            "database": database,
-                            "schema": schema,
-                            "table": table,
-                        },
-                        "attributes": BundleGenerator._flatten_attributes(
-                            resource.attributes
-                        ),
-                    }
-                )
+                data_objects[f"{database}.{schema}.{table}"] = {
+                    "attributes": BundleGenerator._flatten_attributes(
+                        resource.attributes
+                    ),
+                }
 
             if resource.object_type == "column":
-                # the last one will be the one we want to append to, due to ordering
-                data_object: dict = data_objects[-1]
-                column_name: str = re.search(r"([^.]*$)", resource.fq_name).group(1)
+                fq_name_split: dict = re.search(
+                    r"(?P<table_name>.+)\.(?P<column_name>[^.]+)$", resource.fq_name
+                ).groupdict()
+                column_name: str = fq_name_split.get("column_name", "")
+                table_name: str = fq_name_split.get("table_name", "")
+                if not data_objects.get(table_name).get("columns"):
+                    data_objects.get(table_name)["columns"] = {}
 
-                if not data_object.get("columns"):
-                    data_object["columns"] = []
-
-                data_object["columns"].append(
-                    {
-                        "name": column_name,
-                        "attributes": BundleGenerator._flatten_attributes(
-                            resource.attributes
-                        ),
-                    }
-                )
+                data_objects.get(table_name)["columns"][f"{column_name}"] = {
+                    "attributes": BundleGenerator._flatten_attributes(
+                        resource.attributes
+                    ),
+                }
 
         return data_objects
 
