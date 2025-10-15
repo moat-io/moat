@@ -33,16 +33,19 @@ class BundleService:
                 policy_hash: str = opa_bundle.policy_hash
                 session.commit()
 
-                event_logger.log_event(
-                    asset="bundle",
-                    action="generate",
-                    log=f"Bundle regenerated for platform: {platform}",
-                    context={
-                        "platform": platform,
-                        "etag": e_tag,
-                        "policy_hash": policy_hash,
-                    },
-                )
+                try:
+                    event_logger.log_event(
+                        asset="bundle",
+                        action="generate",
+                        log=f"Bundle regenerated for platform: {platform}",
+                        context={
+                            "platform": platform,
+                            "etag": e_tag,
+                            "policy_hash": policy_hash,
+                        },
+                    )
+                except Exception as e:
+                    logger.error(f"Error logging bundle generation event: {e}")
 
     @staticmethod
     def _get_current_datetime() -> datetime:

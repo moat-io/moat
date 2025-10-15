@@ -23,9 +23,7 @@ def create():
         decision_logs=decision_logs
     )
 
-    for conformed_event in conformed_events:
-        logger.debug(f"Conformed decision_log: {conformed_event}")
-        g.event_logger.log_event(
-            asset="opa", action="decision_log", context=conformed_event
-        )
+    g.event_logger.log_events(
+        asset="opa", action="decision_log", contexts=conformed_events
+    )
     return jsonify({"status": "ok"}), 201

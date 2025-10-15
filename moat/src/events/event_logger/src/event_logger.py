@@ -37,14 +37,30 @@ class EventLogger:
     def _load_config() -> EventLoggerConfig:
         return EventLoggerConfig().load()
 
+    def log_events(
+        self, asset: str, action: str, log: str = "", contexts: list[dict] = None
+    ):
+        if self._config.type is None:
+            logger.info(f"No event handler configured, ignoring event")
+            return
+
+        try:
+            events: list[EventDto] = [
+                EventDto(asset=asset, action=action, log=log, context=context)
+                for context in contexts or []
+            ]
+            self._event_handler.deliver_events(events=events)
+
+        except Exception as e:
+            logger.error(f"Error processing event: {e}")
+            raise
+
     def log_event(
         self, asset: str, action: str, log: str = "", context: dict = None
     ) -> None:
-        event = EventDto(asset=asset, action=action, log=log, context=context or {})
-        if self._config.type is None:
-            logger.info(f"No event handler configured, ignoring event")
-        else:
-            try:
-                self._event_handler.deliver_event(event)
-            except Exception as e:
-                logger.error(f"Error processing event: {e}")
+        self.log_events(
+            asset=asset,
+            action=action,
+            log=log,
+            contexts=[context] if context else [{}],
+        )
