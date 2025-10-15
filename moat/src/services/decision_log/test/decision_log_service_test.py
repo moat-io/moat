@@ -720,3 +720,125 @@ def test_parse_decision_log_showcreatetable():
         "timestamp": "2025-10-11T22:45:53.732273931Z",
         "username": "admin",
     }
+
+
+def test_parse_decision_log_impersonate_user():
+    assert DecisionLogService.parse_decision_log(
+        {
+            "labels": {
+                "environment": "prod",
+                "id": "90532938-66f9-47a1-b1dd-886ea7be64b7",
+                "instance": "user",
+                "platform": "trino",
+                "version": "1.8.0",
+            },
+            "decision_id": "45c8be29-d2b5-460e-b813-c99c720830f0",
+            "bundles": {"trino": {}},
+            "path": "moat/trino/allow",
+            "input": {
+                "action": {
+                    "operation": "ImpersonateUser",
+                    "resource": {
+                        "user": {
+                            "user": "frank",
+                        }
+                    },
+                },
+                "context": {
+                    "identity": {"groups": [], "user": "admin"},
+                    "softwareStack": {"trinoVersion": "476"},
+                },
+            },
+            "result": True,
+            "requested_by": "10.89.1.7:40570",
+            "timestamp": "2025-10-11T22:45:53.732273931Z",
+            "metrics": {
+                "counter_server_query_cache_hit": 1,
+                "timer_rego_input_parse_ns": 18833,
+                "timer_rego_query_eval_ns": 21125,
+                "timer_server_handler_ns": 56875,
+            },
+            "req_id": 261,
+        }
+    ) == {
+        "decision_id": "45c8be29-d2b5-460e-b813-c99c720830f0",
+        "labels": {
+            "environment": "prod",
+            "id": "90532938-66f9-47a1-b1dd-886ea7be64b7",
+            "instance": "user",
+            "platform": "trino",
+            "version": "1.8.0",
+        },
+        "metrics": {
+            "counter_server_query_cache_hit": 1,
+            "timer_rego_input_parse_ns": 18833,
+            "timer_rego_query_eval_ns": 21125,
+            "timer_server_handler_ns": 56875,
+        },
+        "operation": "ImpersonateUser",
+        "path": "moat/trino/allow",
+        "result": True,
+        "timestamp": "2025-10-11T22:45:53.732273931Z",
+        "username": "admin",
+        "value": "frank",
+    }
+
+
+def test_parse_decision_log_session_props():
+    assert DecisionLogService.parse_decision_log(
+        {
+            "labels": {
+                "environment": "prod",
+                "id": "90532938-66f9-47a1-b1dd-886ea7be64b7",
+                "instance": "user",
+                "platform": "trino",
+                "version": "1.8.0",
+            },
+            "decision_id": "ef8e4ab9-a060-470f-a4d6-d8e5fa9ecb48",
+            "bundles": {"trino": {}},
+            "path": "moat/trino/allow",
+            "input": {
+                "action": {
+                    "operation": "SetSystemSessionProperty",
+                    "resource": {
+                        "systemSessionProperty": {"name": "query_max_execution_time"}
+                    },
+                },
+                "context": {
+                    "identity": {"user": "admin"},
+                    "softwareStack": {"trinoVersion": "468-e.2"},
+                },
+            },
+            "result": True,
+            "requested_by": "10.10.140.210:41611",
+            "timestamp": "2025-10-06T03:08:26.98681908Z",
+            "metrics": {
+                "counter_server_query_cache_hit": 1,
+                "timer_rego_input_parse_ns": 91363,
+                "timer_rego_query_eval_ns": 38720,
+                "timer_server_handler_ns": 153959,
+            },
+            "req_id": 151,
+        }
+    ) == {
+        "decision_id": "ef8e4ab9-a060-470f-a4d6-d8e5fa9ecb48",
+        "labels": {
+            "environment": "prod",
+            "id": "90532938-66f9-47a1-b1dd-886ea7be64b7",
+            "instance": "user",
+            "platform": "trino",
+            "version": "1.8.0",
+        },
+        "metrics": {
+            "counter_server_query_cache_hit": 1,
+            "timer_rego_input_parse_ns": 91363,
+            "timer_rego_query_eval_ns": 38720,
+            "timer_server_handler_ns": 153959,
+        },
+        "operation": "SetSystemSessionProperty",
+        "path": "moat/trino/allow",
+        "result": True,
+        "timestamp": "2025-10-06T03:08:26.98681908Z",
+        "username": "admin",
+        "value": "query_max_execution_time",
+    }

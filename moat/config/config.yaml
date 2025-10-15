@@ -33,3 +33,4 @@ event_logger.http.url: http://localhost:9000/event
 event_logger.http.headers: "Api-Key=API_KEY,content-type=application/json"
 event_logger.http.extra_args: "eventType=MoatEvent"
 event_logger.http.flatten_payload: "true"
+event_logger.http.send_as_list: "true"

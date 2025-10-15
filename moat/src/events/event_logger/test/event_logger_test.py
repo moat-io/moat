@@ -27,14 +27,46 @@ def test_event_logger():
         mock_load_config.return_value = EventLoggerConfig()
         mock_load_config.return_value.type = "default"
 
-        # write to the queue
+        # send a single event
         with mock.patch.object(
             events.handlers.src.default_event_log_handler.DefaultEventLogHandler,
-            "deliver_event",
-        ) as mock_deliver_event:
+            "deliver_events",
+        ) as mock_deliver_events:
             event_logger = EventLogger()
             event_logger.log_event(asset="test_event", action="test_action")
 
-            mock_deliver_event.assert_called_once_with(
-                EventDto(asset="test_event", action="test_action", log="", context={})
+            mock_deliver_events.assert_called_once_with(
+                events=[
+                    EventDto(
+                        asset="test_event", action="test_action", log="", context={}
+                    )
+                ]
             )
+
+        # send multiple events
+        with mock.patch.object(
+            events.handlers.src.default_event_log_handler.DefaultEventLogHandler,
+            "deliver_events",
+        ) as mock_deliver_events:
+            event_logger = EventLogger()
+            event_logger.log_events(
+                asset="test_event",
+                action="test_action",
+                contexts=[{"k1": "v1"}, {"k2": "v2"}],
+            )
+
+            mock_deliver_events.assert_called_once()
+            assert mock_deliver_events.call_args.kwargs["events"] == [
+                EventDto(
+                    asset="test_event",
+                    action="test_action",
+                    log="",
+                    context={"k1": "v1"},
+                ),
+                EventDto(
+                    asset="test_event",
+                    action="test_action",
+                    log="",
+                    context={"k2": "v2"},
+                ),
+            ]

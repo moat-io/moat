@@ -96,6 +96,14 @@ class DecisionLogService:
                     str(s) for s in decision_log.get("result", [])
                 )
 
+            elif operation == "ImpersonateUser":
+                context["value"] = resource.get("user", {}).get("user")
+                context["result"] = decision_log.get("result", None)
+
+            elif operation == "SetSystemSessionProperty":
+                context["value"] = resource.get("systemSessionProperty", {}).get("name")
+                context["result"] = decision_log.get("result", None)
+
             return context
 
         except Exception as e:
