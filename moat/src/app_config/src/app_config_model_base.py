@@ -90,7 +90,11 @@ class AppConfigModelBase:
             if hasattr(instance, attr_name):
                 if isinstance(getattr(instance, attr_name), bool):
                     value = value.lower() == "true"
-
+                elif isinstance(getattr(instance, attr_name), int):
+                    try:
+                        value = int(value)
+                    except Exception:
+                        pass
                 setattr(instance, attr_name, value)
         return instance
 

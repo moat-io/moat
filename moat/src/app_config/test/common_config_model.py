@@ -8,3 +8,4 @@ class TestConfigModel(AppConfigModelBase):
     overridden: str = None
     new_in_layer_2: str = None
     boolean_value: bool = False
+    int_value: int = 0
