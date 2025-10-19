@@ -233,6 +233,7 @@ def test_parse_decision_log__filter_schemas():
                         {"schema": {"catalogName": "datalake", "schemaName": "sales"}},
                     ],
                     "operation": "FilterSchemas",
+                    "resourceCount": 6,
                 },
                 "context": {
                     "identity": {"groups": [], "user": "alice"},
@@ -271,6 +272,7 @@ def test_parse_decision_log__filter_schemas():
         "path": "moat/trino/batch",
         "timestamp": "2025-10-02T08:37:19.845323394Z",
         "username": "alice",
+        "resource_count": 6,
     }
 
 
@@ -311,6 +313,7 @@ def test_parse_decision_log__get_column_mask():
                         },
                     ],
                     "operation": "GetColumnMask",
+                    "resourceCount": 2,
                 },
                 "context": {
                     "identity": {"groups": [], "user": "alice"},
@@ -349,6 +352,7 @@ def test_parse_decision_log__get_column_mask():
         "operation": "GetColumnMask",
         "timestamp": "2025-10-02T08:37:19.60712436Z",
         "username": "alice",
+        "resource_count": 2,
     }
 
 
@@ -481,6 +485,7 @@ def test_parse_decision_log_filtercatalogs():
                         {"catalog": {"name": "moat"}},
                     ],
                     "operation": "FilterCatalogs",
+                    "resourceCount": 5,
                 },
                 "context": {
                     "identity": {"groups": [], "user": "admin"},
@@ -517,6 +522,7 @@ def test_parse_decision_log_filtercatalogs():
         "path": "moat/trino/batch",
         "timestamp": "2025-10-11T21:52:02.875765232Z",
         "username": "admin",
+        "resource_count": 5,
     }
 
 
@@ -545,6 +551,7 @@ def test_parse_decision_log_filtertables():
                         }
                     ],
                     "operation": "FilterTables",
+                    "resourceCount": 1,
                 },
                 "context": {
                     "identity": {"groups": [], "user": "admin"},
@@ -581,6 +588,7 @@ def test_parse_decision_log_filtertables():
         "path": "moat/trino/batch",
         "timestamp": "2025-10-11T21:52:04.075778835Z",
         "username": "admin",
+        "resource_count": 1,
     }
 
 
@@ -616,6 +624,7 @@ def test_parse_decision_log_filtercolumns():
                         }
                     ],
                     "operation": "FilterColumns",
+                    "resourceCount": 1,
                 },
                 "context": {
                     "identity": {"groups": [], "user": "admin"},
@@ -652,6 +661,7 @@ def test_parse_decision_log_filtercolumns():
         "path": "moat/trino/batch",
         "timestamp": "2025-10-11T21:52:04.356879756Z",
         "username": "admin",
+        "resource_count": 1,
     }
 
 
