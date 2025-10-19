@@ -43,7 +43,12 @@ test_mask_filter_tables_1 if {
       },
       "req_id": 168,
   }
-  expected := {"/input/context/identity/groups", {"op": "upsert", "path": "/input/action/resourceCount", "value": 1}}
+  expected := {
+    "/input/context/identity/groups",
+    {"op": "upsert", "path": "/input/action/resourceCount", "value": 1},
+    "/input/action/filterResources",
+    "/result"
+  }
   actual == expected
 }
 
@@ -95,7 +100,11 @@ test_mask_filter_tables_2 if {
       },
       "req_id": 168,
   }
-
-  expected := {"/input/action/filterResources", "/input/context/identity/groups", {"op": "upsert", "path": "/input/action/resourceCount", "value": 2}}
+  expected := {
+    "/input/action/filterResources",
+    "/input/context/identity/groups",
+    "/result",
+    {"op": "upsert", "path": "/input/action/resourceCount", "value": 2}
+  }
   actual == expected
 }

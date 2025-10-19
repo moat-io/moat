@@ -11,7 +11,11 @@ mask contains {"op": "upsert", "path": "/input/action/resourceCount", "value": v
 }
 
 # remove the list of tables in FilterTables, FilterColumns
-mask contains {"/input/action/filterResources", "/result"} if {
+mask contains "/input/action/filterResources" if {
+  input.input.action.operation in ["FilterTables", "FilterColumns"]
+}
+
+mask contains "/result" if {
   input.input.action.operation in ["FilterTables", "FilterColumns"]
 }
 
