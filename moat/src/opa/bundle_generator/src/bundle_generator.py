@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import re
@@ -27,6 +28,9 @@ class Bundle:
 
 
 class BundleGenerator:
+    def _get_revision(self) -> str:
+        return datetime.datetime.now(datetime.UTC).isoformat()
+
     def __init__(self, session, platform: str):
         self.session = session
         self.platform = platform
@@ -66,7 +70,22 @@ class BundleGenerator:
 
         # write the manifest file to scope the bundle
         with open(self.manifest_file_path, "w") as f:
-            f.write(json.dumps({"roots": ["trino", "moat/trino"]}))
+            f.write(
+                json.dumps(
+                    {
+                        "rego_version": 1,  # TODO make configurable or load from disk
+                        "revision": self._get_revision(),
+                        "roots": [
+                            ""
+                        ],  # asserts that the bundle has all namespaces. no external data or policy
+                        "metadata": {
+                            "policy_hash": BundleGenerator.get_policy_docs_hash(
+                                self.static_rego_file_path
+                            )
+                        },
+                    }
+                )
+            )
 
         # build the bundle
         result = subprocess.run(

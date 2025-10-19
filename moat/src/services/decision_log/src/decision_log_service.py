@@ -21,6 +21,9 @@ class DecisionLogService:
         resource: dict = action.get("resource", {})
         labels: dict = decision_log.get("labels", {})
 
+        logger.info(f"Received decision log: {operation}")
+        logger.debug(f"Decision log: {decision_log}")
+
         context: dict = {
             "decision_id": decision_log.get("decision_id"),
             "path": decision_log.get("path", ""),
@@ -34,13 +37,12 @@ class DecisionLogService:
         try:
             # TODO just use the suffix allow or batch
             if not decision_log.get("path").endswith("allow"):
-                # nothing else todo in this case
+                context["resource_count"] = action.get("resourceCount", None)
                 return context
 
             if operation in (
                 "GetColumnMask",
                 "SelectFromColumns",
-                "FilterTables",
                 "FilterColumns",
                 "CreateSchema",
                 "DropSchema",

@@ -26,26 +26,27 @@ class BundleService:
             if BundleService.bundle_requires_refresh(
                 session=session, platform=platform
             ):
-                opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
-                    session=session, platform=platform
-                )
-                e_tag: str = opa_bundle.e_tag
-                policy_hash: str = opa_bundle.policy_hash
-                session.commit()
-
                 try:
-                    event_logger.log_event(
-                        asset="bundle",
-                        action="generate",
-                        log=f"Bundle regenerated for platform: {platform}",
-                        context={
-                            "platform": platform,
-                            "etag": e_tag,
-                            "policy_hash": policy_hash,
-                        },
+                    opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
+                        session=session, platform=platform
                     )
+
+                    log: str = f"Bundle generated for platform: {platform}"
+                    context: dict = {
+                        "platform": platform,
+                        "etag": opa_bundle.e_tag,
+                        "policy_hash": opa_bundle.policy_hash,
+                    }
+                    session.commit()
+
                 except Exception as e:
-                    logger.error(f"Error logging bundle generation event: {e}")
+                    log: str = f"Error generating bundle for platform: {platform}"
+                    logger.error(log)
+
+                finally:
+                    event_logger.log_event(
+                        asset="bundle", action="generate", log=log, context=context
+                    )
 
     @staticmethod
     def _get_current_datetime() -> datetime:
