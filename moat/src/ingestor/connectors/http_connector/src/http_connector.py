@@ -3,6 +3,7 @@ from re import Pattern, Match
 from typing import TypeVar, Type, Any
 from jsonpath_ng.ext import parse
 import requests
+from urllib.parse import urlencode
 from app_logger import Logger, get_logger
 from ingestor.connectors.connector_base import ConnectorBase
 from ingestor.models import (
@@ -115,9 +116,14 @@ class HttpConnector(ConnectorBase):
         grant_type: str = self.config.oauth2_grant_type
         scope: str = self.config.oauth2_scope
         logger.debug(f"Getting access token from {access_token_endpoint}")
+        assert all(
+            x is not None for x in (grant_type, client_id, client_secret)
+        ), "Missing Mandatory fields: grant_type, client_id, client_secret for token generation."
         request_data: str = (
-            f"grant_type={grant_type}&client_id={client_id}&client_secret={client_secret}&scope={scope}"
+            f"grant_type={grant_type}&client_id={client_id}&client_secret={client_secret}"
         )
+        if scope:
+            request_data += f"&scope={scope}"
         response = requests.post(
             url=access_token_endpoint,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -155,6 +161,8 @@ class HttpConnector(ConnectorBase):
                 "Authorization": f"Bearer {self._get_access_token()}",
             }
 
+        # Todo: Need to support pagination
+        # for sailpoint if you pass count=True, 'X-Total-Count' is passed in response headers
         response = requests.get(
             url=self.config.url,
             headers=headers,
