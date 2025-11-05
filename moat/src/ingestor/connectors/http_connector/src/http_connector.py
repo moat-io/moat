@@ -141,6 +141,52 @@ class HttpConnector(ConnectorBase):
             )
         return access_token
 
+    def acquire_single_data_stream(
+        self, headers: dict, auth: tuple[str, str] | None, query_params: dict
+    ) -> tuple[dict[str, Any] | list[dict], dict[str, str]]:
+        response = requests.get(
+            url=self.config.url,
+            headers=headers,
+            auth=auth,
+            params=query_params,
+            verify=self.config.ssl_verify,
+            cert=self.config.certificate_path,
+        )
+
+        response_json = response.json()
+        logger.info(f"Retrieved {len(response_json)} records from source")
+        logger.debug(f"Source data: {response_json}")
+        return response_json, response.headers
+
+    @staticmethod
+    def handle_response_json(
+        content_pattern: str, response_json: dict[str, Any] | list[dict]
+    ) -> list[dict]:
+        matches = parse(content_pattern).find(response_json)  # inline parse+find
+        results: list = []
+        for m in matches:
+            results.append(m.value)
+        return results
+
+    @staticmethod
+    def get_total_count(
+        response_header: dict,
+        response_json: dict[str, Any] | list[dict],
+        pagination_key_location: str,
+        pagination_key_name: str,
+    ) -> int:
+        assert pagination_key_location in [
+            "response_header",
+            "response_json",
+        ], "Pagination key location must be either 'response_header' or 'response_json'"
+        if pagination_key_location == "response_header":
+            return int(response_header[pagination_key_name])
+        elif pagination_key_location == "response_json":
+            assert isinstance(
+                response_json, dict
+            ), "Response json must be a dict, if pagination key location is 'response_json'"
+            return int(response_json[pagination_key_name])
+
     def acquire_data(self, platform: str) -> None:
         self.platform = platform
         auth: tuple[str, str] | None = None
@@ -161,19 +207,42 @@ class HttpConnector(ConnectorBase):
                 "Authorization": f"Bearer {self._get_access_token()}",
             }
 
-        # Todo: Need to support pagination
-        # for sailpoint if you pass count=True, 'X-Total-Count' is passed in response headers
-        response = requests.get(
-            url=self.config.url,
-            headers=headers,
-            auth=auth,
-            verify=self.config.ssl_verify,
-            cert=self.config.certificate_path,
-        )
-
-        self.source_data = response.json()
-        logger.info(f"Retrieved {len(self.source_data)} records from source")
-        logger.debug(f"Source data: {self.source_data}")
+        if self.config.pagination_enabled:
+            page_size: int = self.config.pagination_size
+            offset: int = 0
+            logger.info(f"Pagination enabled, page size: {page_size}")
+            while True:
+                query_params = {
+                    self.config.pagination_target_key: page_size,
+                    self.config.pagination_offset_key: offset,
+                }
+                response_json, response_header = self.acquire_single_data_stream(
+                    headers, auth, query_params
+                )
+                handled_response_json = self.handle_response_json(
+                    self.config.content_pattern, response_json
+                )
+                if not handled_response_json:
+                    break
+                self.source_data.extend(handled_response_json)
+                total_count = self.get_total_count(
+                    response_header,
+                    response_json,
+                    self.config.pagination_key_location,
+                    self.config.pagination_key_name,
+                )
+                current_source_length = len(self.source_data)
+                if current_source_length >= total_count:
+                    break
+                offset = current_source_length
+        else:
+            response_json, _ = self.acquire_single_data_stream(
+                headers, auth, query_params={}
+            )
+            self.source_data = self.handle_response_json(
+                self.config.content_pattern, response_json
+            )
+        logger.info(f"Retrieved total {len(self.source_data)} records from source.")
 
     def get_principals(self) -> list[PrincipalDio]:
         principals: list[PrincipalDio] = []
