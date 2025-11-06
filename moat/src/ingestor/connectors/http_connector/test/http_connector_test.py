@@ -324,9 +324,6 @@ def test_get_principals_with_attributes():
             attribute_key="DP",
             attribute_value="Customer Information",
         ),
-        PrincipalAttributeDio(
-            fq_name="karisakamau", platform="idp", attribute_key="", attribute_value=""
-        ),
     ]
 
 

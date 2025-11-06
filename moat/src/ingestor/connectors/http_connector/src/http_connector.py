@@ -284,14 +284,6 @@ class HttpConnector(ConnectorBase):
             )
             # if no attribute multi then append a attribute dio without attributes
             if not obj.attributes_multi:
-                principal_attributes.append(
-                    PrincipalAttributeDio(
-                        fq_name=obj.fq_name,
-                        platform=self.platform,
-                        attribute_key="",
-                        attribute_value="",
-                    )
-                )
                 continue
             merged = {}
             if isinstance(obj.attributes_multi, dict):
