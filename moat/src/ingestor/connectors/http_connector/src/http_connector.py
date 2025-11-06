@@ -3,7 +3,6 @@ from re import Pattern, Match
 from typing import TypeVar, Type, Any
 from jsonpath_ng.ext import parse
 import requests
-from urllib.parse import urlencode
 from app_logger import Logger, get_logger
 from ingestor.connectors.connector_base import ConnectorBase
 from ingestor.models import (
@@ -70,6 +69,8 @@ class HttpConnector(ConnectorBase):
                 continue
             target_attr_value: list[str] = []
             for m in matches:
+                if not m.value:
+                    continue
                 regex_match: Match[str] = re.match(regex_pattern, m.value)
                 if not regex_match:
                     logger.debug(f"could not match regex for attribute: {target_attr}")
@@ -181,11 +182,10 @@ class HttpConnector(ConnectorBase):
         ], "Pagination key location must be either 'response_header' or 'response_json'"
         if pagination_key_location == "response_header":
             return int(response_header[pagination_key_name])
-        elif pagination_key_location == "response_json":
-            assert isinstance(
-                response_json, dict
-            ), "Response json must be a dict, if pagination key location is 'response_json'"
-            return int(response_json[pagination_key_name])
+        assert isinstance(
+            response_json, dict
+        ), "Response json must be a dict, if pagination key location is 'response_json'"
+        return int(response_json[pagination_key_name])
 
     def acquire_data(self, platform: str) -> None:
         self.platform = platform
