@@ -48,6 +48,20 @@ source_data = [
             "urn:ietf:params:scim:enterpriseExtended.username": "tomtakahara",
         },
     },
+    {
+        "attributes": {
+            "loginID": "karisakamau",
+            "displayName": "Karisa Kamau",
+            "familyName": "karisa",
+            "givenName": "kamau",
+            "active": "true",
+            "externalId": None,
+            "userName": "karisakamau@aol.com.io",
+            "email": "karisakamau@aol.com.io",
+            "group": None,
+            "urn:ietf:params:scim:enterpriseExtended.username": "karisakamau",
+        },
+    },
 ]
 
 
@@ -252,6 +266,14 @@ def test_get_principals():
             last_name="takahara",
             user_name="tomtakahara",
             email="tomtakahara@aol.com.io",
+        ),
+        PrincipalDio(
+            fq_name="karisakamau",
+            platform="idp",
+            first_name="kamau",
+            last_name="karisa",
+            user_name="karisakamau",
+            email="karisakamau@aol.com.io",
         ),
     ]
 
