@@ -380,7 +380,7 @@ def test_populate_object_from_json_regex_patterns():
 
 def test_populate_object_from_json_error_handling():
     """Test error cases: missing paths, failed regex, missing attributes, empty inputs"""
-    json_obj = {"name": "John Doe", "email": "john@example.com"}
+    json_obj = {"name": "John Doe", "email": "john@example.com", "group": None}
     SimpleMapping = namedtuple("SimpleMapping", ["value"])
 
     attribute_mapping = {
@@ -388,6 +388,7 @@ def test_populate_object_from_json_error_handling():
         "email": AttributeMapping(jsonpath="$.missing", regex=None),  # Missing path
         "age": AttributeMapping(jsonpath="$.email", regex=r"\d+"),  # Regex no match
         "city": SimpleMapping(value="test"),  # Missing jsonpath attribute
+        "group_name": AttributeMapping(jsonpath="$.group", regex=r".*"),
     }
 
     result = HttpConnector._populate_object_from_json(
@@ -400,6 +401,7 @@ def test_populate_object_from_json_error_handling():
     assert result.email is None  # Missing path
     assert result.age is None  # Regex no match
     assert result.city is None  # Missing attribute
+    assert result.group_name is None
 
     # Empty cases
     empty_result = HttpConnector._populate_object_from_json(
