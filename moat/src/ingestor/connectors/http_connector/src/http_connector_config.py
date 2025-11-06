@@ -1,13 +1,21 @@
 from app_config import AppConfigModelBase
 from collections import namedtuple
+from enum import Enum
+from pydantic import Field
 
 
 AttributeMapping = namedtuple("AttributeMapping", ["jsonpath", "regex"])
 
 
+class PaginationKeyLocation(Enum):
+    RESPONSE_HEADER = "response_header"
+    RESPONSE_BODY = "response_body"
+
+
 class HttpConnectorConfig(AppConfigModelBase):
     CONFIG_PREFIX: str = "http_connector"
     auth_method: str = "api-key"
+    content_pattern: str = "$[*]"  # "can be also items[*] or $[*]"
     api_key: str | None = None
 
     url: str | None = None
@@ -20,6 +28,12 @@ class HttpConnectorConfig(AppConfigModelBase):
     oauth2_client_secret: str | None = None
     oauth2_grant_type: str | None = None
     oauth2_scope: str | None = None
+    pagination_enabled: bool = False
+    pagination_size: int = 250
+    pagination_target_key: str = None
+    pagination_key_location: str = None
+    pagination_key_name: str = None
+    pagination_offset_key: str = None
 
     @staticmethod
     def attribute_jsonpath_mapping(
