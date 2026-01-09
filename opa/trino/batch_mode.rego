@@ -11,14 +11,14 @@ batch contains i if {
 	allow with input.action.resource as raw_resource
 }
 
+# returns true for all columns.
+# This makes sense because we mask the columns the user should not see
 batch contains i if {
-	some i
-	input.action.operation == "FilterColumns"
-	count(input.action.filterResources) == 1
-	raw_resource := input.action.filterResources[0]
-	count(raw_resource.table.columns) > 0
-	new_resources := [
-    object.union(raw_resource, {"table": {"column": column_name}}) | column_name := raw_resource.table.columns[_]
-	]
-	allow with input.action.resource as new_resources[i]
+    some i
+    input.action.operation == "FilterColumns"
+    count(input.action.filterResources) == 1
+    raw_resource := input.action.filterResources[0]
+
+    count(raw_resource["table"]["columns"]) > 0
+    true with input.action.resource as raw_resource["table"]["columns"][i]
 }
