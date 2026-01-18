@@ -15,7 +15,7 @@ RUN mkdir -p /app/moat
 WORKDIR /app/moat
 
 # Install Deps
-RUN apt-get update && apt-get install -y curl libexpat1 && \
+RUN apt-get update && apt-get install -y curl libexpat1 nodejs npm && \
     curl -L -o /usr/local/bin/opa https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64_static && \
     chmod 755 /usr/local/bin/opa && \
     apt-get clean && \
@@ -27,6 +27,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
 COPY moat/ /app/moat/
+
+# Build the UI
+RUN cd /app/moat/ui && \
+    npm install && \
+    npm run build
 
 # Copy the default policies
 COPY opa/ /app/opa

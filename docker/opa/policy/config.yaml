@@ -23,8 +23,8 @@ bundles:
     resource: /bundle/trino
 #    persist: true
     polling:
-      min_delay_seconds: 10
-      max_delay_seconds: 20
+      min_delay_seconds: 5
+      max_delay_seconds: 10
 #    signing:
 #      keyid: global_key
 #      scope: write

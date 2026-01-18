@@ -253,3 +253,7 @@ docker/opa/policy/persistence
 tmp/
 
 scratch*
+
+# static built objects
+/moat/ui/static/css/
+/moat/ui/static/js/

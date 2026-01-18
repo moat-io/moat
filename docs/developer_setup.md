@@ -19,6 +19,10 @@ python3.12 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
+# front end (optional)
+cd moat/ui
+npm install
+npm run build
 ```
 
 ## Code Formatting
@@ -48,6 +52,13 @@ flask --app moat.src.app run --debug --port 8000
 
 # seed the database
 python moat/moat/src/seed_db.py
+
+# start the mock API (optional)
+python moat/src/_scripts/mock_apis.py
+
+# watch the UI changes (optional)
+cd moat/ui
+npm start
 
 # nuking a bad flask process
 kill $(pgrep -f flask)
@@ -82,7 +93,7 @@ services:
 
 ## Building the container image
 ```bash
-docker build -t moat/moat
+podman build -t moat/moat .
 ```
 
 ## Running Ingestion

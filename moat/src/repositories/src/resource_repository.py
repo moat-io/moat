@@ -31,6 +31,26 @@ class ResourceRepository(RepositoryBase):
         )
         return query.count(), query.all()
 
+    @staticmethod
+    def get_all_with_search_and_pagination(
+        session,
+        sort_col_name: str,
+        page_number: int,
+        page_size: int,
+        sort_ascending: bool = True,
+        search_term: str = "",
+    ) -> Tuple[int, list[ResourceDbo]]:
+        return RepositoryBase._get_all_with_search_and_pagination(
+            model=ResourceDbo,
+            session=session,
+            sort_col_name=sort_col_name,
+            page_number=page_number,
+            page_size=page_size,
+            sort_ascending=sort_ascending,
+            search_term=search_term,
+            search_column_names=["fq_name"],
+        )
+
     # TODO base class
     @staticmethod
     def get_by_id(session, resource_id: int) -> ResourceDbo:
