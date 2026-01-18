@@ -20,6 +20,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     \c testdb "$POSTGRES_USER";
     GRANT ALL ON SCHEMA public TO test_user;
 
+    CREATE USER container_user WITH PASSWORD 'container_password';
+    CREATE DATABASE containerdb;
+    GRANT ALL PRIVILEGES ON DATABASE containerdb TO container_user;
+    \c containerdb "$POSTGRES_USER";
+    GRANT ALL ON SCHEMA public TO container_user;
+
     CREATE USER trino_user WITH PASSWORD 'trino_password';
     CREATE DATABASE datalake;
     CREATE DATABASE workspace;
@@ -147,21 +153,21 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT SELECT ON ALL TABLES IN SCHEMA sales TO trino_user;
     GRANT SELECT ON ALL TABLES IN SCHEMA logistics TO trino_user;
 
-    CREATE DATABASE warehouse;
-    GRANT ALL PRIVILEGES ON DATABASE warehouse TO trino_user;
-    \c warehouse "$POSTGRES_USER";
-
-    CREATE SCHEMA IF NOT EXISTS bronze;
-
-    CREATE TABLE bronze.customers
-    (
-        Id VARCHAR,
-        CompanyName VARCHAR,
-        ContactName VARCHAR,
-        ContactTitle VARCHAR
-    );
-
-    GRANT ALL ON SCHEMA bronze TO trino_user;
-    GRANT SELECT ON ALL TABLES IN SCHEMA bronze TO trino_user;
+#    CREATE DATABASE warehouse;
+#    GRANT ALL PRIVILEGES ON DATABASE warehouse TO trino_user;
+#    \c warehouse "$POSTGRES_USER";
+#
+#    CREATE SCHEMA IF NOT EXISTS bronze;
+#
+#    CREATE TABLE bronze.customers
+#    (
+#        Id VARCHAR,
+#        CompanyName VARCHAR,
+#        ContactName VARCHAR,
+#        ContactTitle VARCHAR
+#    );
+#
+#    GRANT ALL ON SCHEMA bronze TO trino_user;
+#    GRANT SELECT ON ALL TABLES IN SCHEMA bronze TO trino_user;
 
 EOSQL

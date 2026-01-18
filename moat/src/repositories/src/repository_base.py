@@ -96,7 +96,7 @@ class RepositoryBase:
         sort_ascending: bool = True,
         sort_col_name: str | None = None,
         search_term: str = "",
-    ) -> Tuple[int, list[BaseModel]]:
+    ):
         query: Query = session.query(model)
         query = RepositoryBase._get_search_query(
             query=query,

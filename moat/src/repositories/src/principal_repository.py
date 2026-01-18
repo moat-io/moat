@@ -37,6 +37,26 @@ class PrincipalRepository(RepositoryBase):
         return query.count(), query.all()
 
     @staticmethod
+    def get_all_with_search_and_pagination(
+        session,
+        sort_col_name: str,
+        page_number: int,
+        page_size: int,
+        sort_ascending: bool = True,
+        search_term: str = "",
+    ) -> Tuple[int, list[PrincipalDbo]]:
+        return RepositoryBase._get_all_with_search_and_pagination(
+            model=PrincipalDbo,
+            session=session,
+            sort_col_name=sort_col_name,
+            page_number=page_number,
+            page_size=page_size,
+            sort_ascending=sort_ascending,
+            search_term=search_term,
+            search_column_names=["user_name"],
+        )
+
+    @staticmethod
     def get_by_id(session, principal_id: int) -> PrincipalDbo:
         principal: PrincipalDbo = (
             session.query(PrincipalDbo)

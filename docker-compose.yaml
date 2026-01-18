@@ -138,3 +138,22 @@ services:
         reservations:
           cpus: '0.5'
           memory: 1024M
+
+  mock_api:
+    build: .
+    command: ["start-mock-server"]
+    ports:
+      - "9000:9000"
+
+  moat:
+    build: .
+    command: ["start-demo-server"]
+    ports:
+      - "8000:8000"
+    environment:
+      CONFIG_FILE_PATH: config/config.docker.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./moat/config/:/app/moat/config

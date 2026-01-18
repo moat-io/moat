@@ -14,6 +14,7 @@ nav:
   - Trino and OPA: trino_and_opa.md
   - How it works: how_it_works.md
   - Bundles: bundles.md
+  - User Interface: ui.md
   - Provisioning:
       - SCIM2.0: provisioning/scim.md
       - Resources:  provisioning/resource_ingestion.md
