@@ -1,0 +1,38 @@
+logger.root_level: "INFO"
+
+flask.secret_key: "$FLASK_SECRET_KEY"
+
+database.protocol: "postgresql+psycopg"
+database.user: "container_user"
+database.password: "container_password"
+database.host: "postgres"
+database.port: "5432"
+database.database: "containerdb"
+database.seed_data_path: "/app/moat/seed_data"
+
+opa_client.timeout_seconds: "0.1"
+
+bundle_generator.temp_directory: /tmp
+
+api.healthcheck.auth_method: none
+api.healthcheck.oauth2_issuer: http://keycloak:8080/realms/moat
+api.healthcheck.oauth2_audience: account
+api.healthcheck.oauth2_jwks_uri: http://keycloak:8080/realms/moat/protocol/openid-connect/certs
+api.healthcheck.oauth2_read_scope: profile
+
+api.opa.auth_method: api-key
+api.opa.api_key: bearer-token
+
+api.scim.auth_method: api-key
+api.scim.api_key: scim-token
+
+scim.principal_attributes_jsonpath: "$.'urn:ietf:params:scim:custom'"
+
+event_logger.type: http
+event_logger.http.url: http://mock_api:9000/event
+event_logger.http.headers: "Api-Key=API_KEY,content-type=application/json"
+event_logger.http.extra_args: "eventType=MoatEvent"
+event_logger.http.flatten_payload: "true"
+event_logger.http.send_as_list: "true"
+
+worker.interval_s: "5"
