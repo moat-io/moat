@@ -1,0 +1,58 @@
+{% from "partials/common/macro-attribute-pill-list.html" import attribute_pill_list %}
+<div class="p-4 md:p-5 space-y-4">
+    <div class="flex flex-col">
+        <div class="overflow-x-auto overflow-y-auto">
+            <div class="inline-block min-w-full align-middle">
+                <div class="overflow-hidden shadow">
+                    <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                        <caption class="p-5 text-lg font-semibold text-center text-gray-900 bg-white dark:text-white dark:bg-gray-700">
+                            {{ table.table_name }}
+                            <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                {{ table.schema.database.database_name }}.{{ table.schema.schema_name }}.{{ table.table_name }}
+                            </p>
+                        </caption>
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th scope="col"
+                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            >
+                                <div class="flex items-center">
+                                    Column Name
+                                </div>
+                            </th>
+                            <th scope="col"
+                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                <div class="flex items-center">
+                                    Attributes
+                                </div>
+                            </th>
+                            <th scope="col"
+                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                Mask Expression
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody id="principals-tables-body"
+                               class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        {% for column in table.columns %}
+                            <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+                                    <div class="text-base font-semibold text-gray-900 dark:text-white">{{ column.column_name }}</div>
+{#                                    <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ principal.user_name }}</div>#}
+                                </td>
+                                <td class="p-4 whitespace-nowrap">
+                                    {{ attribute_pill_list(column.attributes) }}
+                                </td>
+                                <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+                                    {{ column.mask }}
+{#                                    <div class="text-base font-semibold text-gray-900 dark:text-white">{{ column.mask }}</div>#}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
