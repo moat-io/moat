@@ -38,7 +38,12 @@
               hx-trigger="load"
         >
         </main>
-        {% include 'partials/footer-dashboard.html' %}
+        <p class="mt-10 text-sm text-center text-gray-700">
+            &copy; {{ year }} <a href="/" class="hover:underline" target="_blank">Moat</a>. All rights reserved.
+        </p>
+        <p class="mb-10 text-sm text-center text-gray-400">
+            Environment: {{ environment }} - App version: {{ version }} - OPA Version: {{ opa_version }}
+        </p>
     </div>
 </div>
 </body>

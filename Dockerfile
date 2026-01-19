@@ -40,6 +40,9 @@ COPY opa/ /app/opa
 COPY entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh
 
+# copy the version.txt
+COPY version.txt /app/
+
 # Expose the port the app runs on
 EXPOSE 8000
 
