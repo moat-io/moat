@@ -1,6 +1,7 @@
 logger.root_level: "INFO"
 
 flask.secret_key: "$FLASK_SECRET_KEY"
+flask.environment: "Demo"
 
 database.protocol: "postgresql+psycopg"
 database.user: "container_user"

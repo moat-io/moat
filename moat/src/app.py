@@ -26,6 +26,7 @@ logger: Logger = get_logger("app")
 
 class FlaskConfig(AppConfigModelBase):
     CONFIG_PREFIX: str = "flask"
+    environment: str = "dev"
     secret_key: str = None
     static_url_path: str = ""
     static_folder: str = "../ui/static"
@@ -91,6 +92,8 @@ def create_app(database: Database | None = None) -> Flask:
         g.database = database
         g.event_logger = event_logger
         g.request_id = str(uuid.uuid4())[0:6]
+        g.environment = flask_config.environment
+
         logger.info(
             f"{g.request_id} - Started request {request.remote_addr} {request.method}:{request.full_path}"
         )

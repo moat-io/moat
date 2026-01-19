@@ -149,7 +149,7 @@ services:
     build: .
     command: ["start-demo-server"]
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       CONFIG_FILE_PATH: config/config.docker.yaml
     depends_on:
