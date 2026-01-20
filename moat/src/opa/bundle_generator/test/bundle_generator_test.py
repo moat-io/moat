@@ -9,6 +9,13 @@ from sqlalchemy import text
 from ..src.bundle_generator import BundleGenerator
 
 
+def test_get_rego_policy_file_list():
+    bundle_generator: BundleGenerator = BundleGenerator()
+    assert bundle_generator.get_rego_policy_file_path_list() == [
+        "moat/test/test_data/rego/common.rego"
+    ]
+
+
 @mock.patch.object(
     BundleGenerator, "_get_revision", return_value="2025-10-19T00:11:45.494304+00:00"
 )
