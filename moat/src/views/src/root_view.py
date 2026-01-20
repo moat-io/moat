@@ -12,7 +12,7 @@ def main():
     year: int = datetime.now().year
     opa_version: str = os.getenv("OPA_VERSION", "dev")
     version: str = (
-        open("version.txt").read().strip()
+        open(VERSION_FILE_PATH).read().strip()
         if os.path.isfile(VERSION_FILE_PATH)
         else "dev"
     )

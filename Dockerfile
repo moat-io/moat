@@ -6,6 +6,7 @@ ARG OPA_VERSION=1.7.1
 ENV CONFIG_FILE_PATH=/app/moat/config/config.yaml
 ENV PYTHONPATH=/app/moat/src
 ENV FLASK_APP=moat.src.app
+ENV OPA_VERSION=$OPA_VERSION
 
 # Create non-root user with UID 1000
 RUN groupadd -g 1000 appuser && \
@@ -41,7 +42,7 @@ COPY entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh
 
 # copy the version.txt
-COPY version.txt /app/
+COPY version.txt /app/moat/
 
 # Expose the port the app runs on
 EXPOSE 8000

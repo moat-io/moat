@@ -31,7 +31,7 @@ class BundleGenerator:
     def _get_revision(self) -> str:
         return datetime.datetime.now(datetime.UTC).isoformat()
 
-    def __init__(self, session, platform: str):
+    def __init__(self, session=None, platform: str = "trino"):
         self.session = session
         self.platform = platform
         self.bundle_filename = "bundle.tar.gz"
@@ -46,16 +46,20 @@ class BundleGenerator:
         )
         self.manifest_file_path: str = os.path.join(self.bundle_directory, ".manifest")
 
+    def get_rego_policy_file_path_list(self) -> list[str]:
+        return [
+            os.path.join(self.static_rego_file_path, file)
+            for file in os.listdir(self.static_rego_file_path)
+            if re.match(rf"(?!.*_test.rego).*\.rego", file)
+        ]
+
     def __enter__(self) -> Bundle:
         os.makedirs(os.path.join(self.data_directory), exist_ok=True)
 
         # Copy all .rego files from static_rego_file_path to bundle_directory
         [
-            shutil.copy(
-                os.path.join(self.static_rego_file_path, file), self.bundle_directory
-            )
-            for file in os.listdir(self.static_rego_file_path)
-            if re.match(rf"(?!.*_test.rego).*\.rego", file)
+            shutil.copy(file_path, self.bundle_directory)
+            for file_path in self.get_rego_policy_file_path_list()
         ]
 
         # write the data file
