@@ -39,6 +39,48 @@ def test_get_merge_statement():
     )
 
 
+def test_get_merge_insert_statement():
+    assert (
+        dedent(
+            """
+        insert into principals (source_uid, id, first_name, last_name, user_name, email, ingestion_process_id)
+        select src.source_uid, src.id, src.first_name, src.last_name, src.user_name, src.email, 1234
+        from principals_staging src
+            left join principals tgt on tgt.source_uid = src.source_uid and tgt.id = src.id
+            where tgt.source_uid is null and tgt.id is null
+        """
+        )
+        == RepositoryBase._get_merge_insert_statement(
+            source_model=PrincipalStagingDboMock,
+            target_model=PrincipalDboMock,
+            merge_keys=["source_uid", "id"],
+            update_cols=["first_name", "last_name", "user_name", "email"],
+            ingestion_process_id=1234,
+        )
+    )
+
+
+def test_get_merge_update_statement():
+    assert (
+        dedent(
+            """
+        update principals
+        set first_name = src.first_name, last_name = src.last_name, user_name = src.user_name, email = src.email, ingestion_process_id = 1234
+        from principals tgt
+        join principals_staging src on tgt.source_uid = src.source_uid and tgt.id = src.id
+        where tgt.first_name <> src.first_name or tgt.last_name <> src.last_name or tgt.user_name <> src.user_name or tgt.email <> src.email
+        """
+        )
+        == RepositoryBase._get_merge_update_statement(
+            source_model=PrincipalStagingDboMock,
+            target_model=PrincipalDboMock,
+            merge_keys=["source_uid", "id"],
+            update_cols=["first_name", "last_name", "user_name", "email"],
+            ingestion_process_id=1234,
+        )
+    )
+
+
 def test_get_merge_deactivate_statement():
     assert (
         dedent(

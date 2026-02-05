@@ -96,6 +96,32 @@ services:
           cpus: '0.1'
           memory: 128M
 
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "0.0.0.0:3306:3306"
+    command: ["--bind-address=0.0.0.0"]
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=moat
+      - MYSQL_USER=moat_user
+      - MYSQL_PASSWORD=moat_password
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
   keycloak:
     build:
       dockerfile: docker/keycloak/Dockerfile

@@ -1,0 +1,6 @@
+config.base: moat/config/config.unittest.yaml
+
+database.protocol: "pmysql+pymysql"
+database.user: "moat_user"
+database.password: "moat_password"
+database.port: "3306"

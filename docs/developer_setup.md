@@ -91,6 +91,14 @@ services:
       - postgres
 ```
 
+## Updating packages
+```bash
+# make changes to requirements.in
+source venv/bin/activate
+pip install pip-tools
+pip-compile --generate-hashes requirements.in > requirements.txt
+```
+
 ## Building the container image
 ```bash
 podman build -t moat/moat .
