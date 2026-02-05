@@ -32,8 +32,11 @@ def test_merge_principals_staging(database_empty: Database) -> None:
 
     # merge it
     with database_empty.Session.begin() as session:
-        row_count: int = repo.merge_staging(session=session, ingestion_process_id=1)
-        assert row_count == 2
+        insert_row_count, update_row_count = repo.merge_staging(
+            session=session, ingestion_process_id=1
+        )
+        assert insert_row_count == 2
+        assert update_row_count == 0
 
         row_count: int = repo.merge_deactivate_staging(
             session=session, ingestion_process_id=2
@@ -68,8 +71,11 @@ def test_merge_principals_staging(database_empty: Database) -> None:
 
     # merge it
     with database_empty.Session.begin() as session:
-        row_count: int = repo.merge_staging(session=session, ingestion_process_id=2)
-        assert row_count == 1
+        insert_row_count, update_row_count = repo.merge_staging(
+            session=session, ingestion_process_id=2
+        )
+        assert insert_row_count == 1
+        assert update_row_count == 0
 
         row_count: int = repo.merge_deactivate_staging(
             session=session, ingestion_process_id=2
@@ -96,7 +102,7 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         ps: PrincipalStagingDbo = PrincipalStagingDbo()
         ps.fq_name = "abigail.fleming"
         ps.first_name = "Anne"
-        ps.last_name = "Hathaway"
+        ps.last_name = "Hathaway"  # name changed
         ps.user_name = "abigail.fleming"
         ps.email = "abigail.fleming@mail.com"
         session.add(ps)
@@ -104,13 +110,15 @@ def test_merge_principals_staging(database_empty: Database) -> None:
 
     # merge it
     with database_empty.Session.begin() as session:
-        row_count: int = repo.merge_staging(session=session, ingestion_process_id=3)
-        assert row_count == 1
-
-        row_count: int = repo.merge_deactivate_staging(
+        insert_row_count, update_row_count = repo.merge_staging(
             session=session, ingestion_process_id=3
         )
-        assert row_count == 2  # two soft deletes
+        deactivate_row_count: int = repo.merge_deactivate_staging(
+            session=session, ingestion_process_id=3
+        )
+        assert insert_row_count == 0
+        assert update_row_count == 1
+        assert deactivate_row_count == 2  # two soft deletes
         session.commit()
 
     # test it

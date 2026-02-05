@@ -21,3 +21,5 @@ pyuwsgi==2.0.30
 jsonpath-ng==1.7.0
 pyjwt==2.10.1
 cryptography==46.0.1
+PyMySQL==1.1.2
+pytest-mysql==3.1.0

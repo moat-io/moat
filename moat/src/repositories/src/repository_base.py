@@ -220,6 +220,60 @@ class RepositoryBase:
         return merge_statement
 
     @staticmethod
+    def _get_merge_insert_statement(
+        source_model: type[BaseModel],
+        target_model: type[BaseModel],
+        merge_keys: list[str],
+        update_cols: list[str],
+        ingestion_process_id: int,
+    ) -> str:
+        """
+        Selects the records in the source table whose 'merge_keys' do not exist in the target table
+        Inserts these into the target table
+        """
+        all_cols_str: str = ", ".join(
+            merge_keys + update_cols + ["ingestion_process_id"]
+        )
+        source_cols_str: str = ", ".join([f"src.{c}" for c in merge_keys + update_cols])
+        join_condition_str: str = " and ".join(
+            [f"tgt.{c} = src.{c}" for c in merge_keys]
+        )
+
+        where_clause: str = " and ".join([f"tgt.{c} is null" for c in merge_keys])
+
+        return dedent(
+            f"""
+            insert into {target_model.__tablename__} ({all_cols_str})
+            select {source_cols_str}, {ingestion_process_id}
+            from {source_model.__tablename__} src
+                left join {target_model.__tablename__} tgt on {join_condition_str}
+                where {where_clause}
+            """
+        )
+
+    @staticmethod
+    def _get_merge_update_statement(
+        source_model: type[BaseModel],
+        target_model: type[BaseModel],
+        merge_keys: list[str],
+        update_cols: list[str],
+        ingestion_process_id: int,
+    ) -> str:
+
+        set_stmt: str = ", ".join([f"{c} = src.{c}" for c in update_cols])
+        join_stmt: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
+        where_stmt: str = " or ".join([f"tgt.{c} <> src.{c}" for c in update_cols])
+
+        return dedent(
+            f"""
+            update {target_model.__tablename__} tgt
+            set {set_stmt}, ingestion_process_id = {str(ingestion_process_id)}
+            from {source_model.__tablename__} src
+            where {join_stmt} and ({where_stmt})
+            """
+        )
+
+    @staticmethod
     def _get_merge_deactivate_statement(
         source_model: type[BaseModel],
         target_model: type[BaseModel],
