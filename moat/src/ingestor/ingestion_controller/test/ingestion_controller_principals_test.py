@@ -97,7 +97,7 @@ def test_ingest(database_empty: Database):
 
         assert ingestion_processes[0].object_type == "principal"
         assert ingestion_processes[0].status == "complete"
-        assert ingestion_processes[0].started_at < ingestion_processes[0].completed_at
+        assert ingestion_processes[0].started_at <= ingestion_processes[0].completed_at
         assert ingestion_processes[1].object_type == "principal_attribute"
 
         # test that the right principals and attrs are in the DB transaction tables

@@ -1,3 +1,4 @@
+import re
 from models.src import (
     PrincipalDbo,
     PrincipalGroupDbo,
@@ -36,6 +37,8 @@ def test_principal_history_table(database_empty: Database) -> None:
         )
 
         assert len(principals_history) == 1
+        # UUID with hyphens (8-4-4-4-12 format, 36 chars total)
+        assert re.match(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', str(principals_history[0].history_id))
         assert principals_history[0].history_change_operation == "I"  # Insert operation
         assert principals_history[0].fq_name == "test.principal"
         assert principals_history[0].first_name == "Test"

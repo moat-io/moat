@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moat
+  namespace: moat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moat
+  template:
+    metadata:
+      labels:
+        app: moat
+    spec:
+      initContainers:
+      - name: init-db
+        image: ghcr.io/moat-io/moat:0.21.0
+        args: ["migrate", "upgrade"]
+        envFrom:
+        - secretRef:
+            name: env-secret
+        env:
+        - name: CONFIG_FILE_PATH
+          value: "/opt/moat/config.yaml"
+        volumeMounts:
+        - name: moat-api-config
+          mountPath: /opt/moat
+
+      containers:
+      - name: base
+        image: ghcr.io/moat-io/moat:0.21.0
+        command: ["start-server"]
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - secretRef:
+            name: env-secret
+        env:
+        - name: CONFIG_FILE_PATH
+          value: "/opt/moat/config.yaml"
+        volumeMounts:
+        - name: moat-api-config
+          mountPath: /opt/moat
+          readOnly: true
+        - name: moat-config-trino-policy
+          mountPath: /opt/moat/trino
+          readOnly: true
+        - name: bundle-storage
+          mountPath: /opt/moat/bundles
+
+      - name: worker
+        image: ghcr.io/moat-io/moat:0.21.0
+        command: ["start-worker"]
+        envFrom:
+        - secretRef:
+            name: env-secret
+        env:
+        - name: CONFIG_FILE_PATH
+          value: "/opt/moat/config.yaml"
+        volumeMounts:
+        - name: moat-api-config
+          mountPath: /opt/moat
+          readOnly: true
+        - name: moat-config-trino-policy
+          mountPath: /opt/moat/trino
+          readOnly: true
+        - name: bundle-storage
+          mountPath: /opt/moat/bundles
+
+      volumes:
+      - name: moat-api-config
+        configMap:
+          name: moat-api-config
+      - name: moat-config-trino-policy
+        configMap:
+          name: moat-config-trino-policy
+      - name: bundle-storage
+        emptyDir: {}

@@ -133,6 +133,6 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert 3 == count
 
         # anne should be active, the others not
-        assert repo.get_by_id(session=session, principal_id=1).active
-        assert not repo.get_by_id(session=session, principal_id=2).active
-        assert not repo.get_by_id(session=session, principal_id=3).active
+        assert next(p for p in principals if p.first_name == "Anne").active
+        assert not next(p for p in principals if p.first_name == "Frank").active
+        assert not next(p for p in principals if p.first_name == "Boris").active

@@ -14,6 +14,8 @@ database.seed_data_path: "/app/moat/seed_data"
 opa_client.timeout_seconds: "0.1"
 
 bundle_generator.temp_directory: /tmp
+bundle_generator.static_rego_file_path: "/opt/moat/opa"
+bundler.bundle_directory: "/opt/moat/bundles"
 
 api.healthcheck.auth_method: none
 api.healthcheck.oauth2_issuer: http://keycloak:8080/realms/moat

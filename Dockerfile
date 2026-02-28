@@ -34,9 +34,6 @@ RUN cd /app/moat/ui && \
     npm install && \
     npm run build
 
-# Copy the default policies
-COPY opa/ /app/opa
-
 # Copy the entrypoint script
 COPY entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh

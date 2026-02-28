@@ -48,20 +48,19 @@ podman-compose up -d
 podman-compose exec lldap /bootstrap/bootstrap.sh
 
 export PYTHONPATH=moat/src
+
+# run the DB migrations
+alembic -c moat/alembic.ini upgrade head
+
+# run the app
 flask --app moat.src.app run --debug --port 8000
 
 # seed the database
 python moat/moat/src/seed_db.py
 
-# start the mock API (optional)
-python moat/src/_scripts/mock_apis.py
-
 # watch the UI changes (optional)
 cd moat/ui
 npm start
-
-# nuking a bad flask process
-kill $(pgrep -f flask)
 
 # all the data for lldap and postgres is stored in the `instance` dir. nuke it to reset the app
 rm -rf instance
@@ -71,24 +70,6 @@ rm -rf instance
 ```bash
 podman run --rm -p 3000:8000 moat/moat:0.0.1
 curl localhost:3000/api/v1/healthcheck
-```
-
-### Running with Docker Compose
-To run the Moat application along with its dependencies (OPA, PostgreSQL, etc.), you can add the following service to your `docker-compose.yaml` file:
-
-```yaml
-services:
-
-  moat:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - FLASK_SECRET_KEY=your_secret_key
-      - OIDC_AUTH_PROVIDER_CLIENT_SECRET=your_client_secret
-    depends_on:
-      - opa
-      - postgres
 ```
 
 ## Updating packages
@@ -121,7 +102,6 @@ docker run moat ingest --connector-name=ldap --object-type=principal
 export PYTHONPATH=./moat/src
 export CONFIG_FILE_PATH=moat/config/config.yaml
 alembic -c moat/alembic.ini revision --autogenerate -m "message about the revision"
-
 
 # upgrade
 alembic -c moat/alembic.ini upgrade head

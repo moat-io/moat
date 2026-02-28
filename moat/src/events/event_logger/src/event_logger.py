@@ -53,7 +53,6 @@ class EventLogger:
 
         except Exception as e:
             logger.error(f"Error processing event: {e}")
-            raise
 
     def log_event(
         self, asset: str, action: str, log: str = "", context: dict = None

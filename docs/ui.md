@@ -14,3 +14,10 @@ Searches on the principals view will filter by the `user_name` field
 Searches on the resources view will filter by the `fq_name` field
 
 ![Resources UI](images/ui-resources.png)
+
+
+## Policies View
+
+![Policies List](images/ui-policies-list.png)
+
+![Policies Detail](images/ui-policies-detail.png)

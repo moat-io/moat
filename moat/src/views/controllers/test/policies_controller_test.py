@@ -24,5 +24,5 @@ def test_get_by_id():
     policy = controller.get_by_id("does not exist")
     assert policy is None
 
-    policy = controller.get_by_id("3c467e4d8640f5b2947c69765c29de33a09af93e")
-    assert policy.file_path == "moat/test/test_data/rego/common.rego"
+    policy = controller.get_by_id("1106eada510eabcd95f7f9709830416a5ba3769a")
+    assert policy.file_path == "moat/test/test_data/rego/trino/common.rego"

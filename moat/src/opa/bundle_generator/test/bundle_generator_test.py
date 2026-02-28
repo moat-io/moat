@@ -12,7 +12,7 @@ from ..src.bundle_generator import BundleGenerator
 def test_get_rego_policy_file_list():
     bundle_generator: BundleGenerator = BundleGenerator()
     assert bundle_generator.get_rego_policy_file_path_list() == [
-        "moat/test/test_data/rego/common.rego"
+        "moat/test/test_data/rego/trino/common.rego"
     ]
 
 
@@ -42,7 +42,7 @@ def test_generate_bundle(
 def test_get_policy_docs_hash():
     assert (
         BundleGenerator.get_policy_docs_hash(
-            static_rego_file_path="moat/test/test_data/rego"
+            static_rego_file_path="moat/test/test_data/rego/trino"
         )
         == "4a37e1dc809799e5b360f09fb95439ee"
     )

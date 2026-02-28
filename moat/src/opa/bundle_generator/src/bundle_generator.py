@@ -39,7 +39,7 @@ class BundleGenerator:
         config: BundleGeneratorConfig = BundleGeneratorConfig().load()
         self.bundle_directory: str = f"{config.temp_directory}/{uuid.uuid4()}"
         self.data_directory: str = f"{self.bundle_directory}/{platform}"
-        self.static_rego_file_path: str = config.static_rego_file_path
+        self.static_rego_file_path: str = f"{config.static_rego_file_path}/{platform}"
 
         self.data_file_path: str = os.path.join(
             self.bundle_directory, f"{platform}", "data.json"
@@ -47,6 +47,9 @@ class BundleGenerator:
         self.manifest_file_path: str = os.path.join(self.bundle_directory, ".manifest")
 
     def get_rego_policy_file_path_list(self) -> list[str]:
+        logger.info(
+            f"Getting rego policy file path list from {self.static_rego_file_path}"
+        )
         return [
             os.path.join(self.static_rego_file_path, file)
             for file in os.listdir(self.static_rego_file_path)

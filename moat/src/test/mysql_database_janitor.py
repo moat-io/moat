@@ -31,9 +31,10 @@ class MysqlDatabaseJanitor:
         connection.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        connection = self._get_connection()
-        self._drop_db(connection)
-        connection.close()
+        # connection = self._get_connection()
+        # self._drop_db(connection)
+        # connection.close()
+        pass
 
     def _get_connection(self) -> pymysql.connections.Connection:
         return pymysql.connect(

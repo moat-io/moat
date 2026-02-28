@@ -11,10 +11,12 @@ def test_get_principal_groups(database: Database) -> None:
             session=session, fq_name="IT_ANALYSTS_GL"
         )
         assert group.fq_name == "IT_ANALYSTS_GL"
-        assert group.members == ["bob"]
+        assert len(group.members) == 1
+        assert group.members[0].member_fq_name == "bob"
 
         group: PrincipalGroupDbo = repo.get_group_by_name(
             session=session, fq_name="SALES_ANALYSTS_GL"
         )
         assert group.fq_name == "SALES_ANALYSTS_GL"
-        assert group.members == ["alice"]
+        assert len(group.members) == 1
+        assert group.members[0].member_fq_name == "alice"

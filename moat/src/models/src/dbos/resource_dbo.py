@@ -8,9 +8,9 @@ class ResourceDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "resources"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: Mapped[str] = Column(String)
-    platform: Mapped[str] = Column(String)
-    object_type: Mapped[str] = Column(String)
+    fq_name: Mapped[str] = Column(String(512))
+    platform: Mapped[str] = Column(String(100))
+    object_type: Mapped[str] = Column(String(100))
 
     attributes: Mapped[list["ResourceAttributeDbo"]] = relationship(
         "ResourceAttributeDbo",
@@ -25,6 +25,6 @@ class ResourceAttributeDbo(IngestionDboMixin, MetadataDboMixin, BaseModel):
     __tablename__ = "resource_attributes"
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: Mapped[str] = Column(String)
-    attribute_key: Mapped[str] = Column(String)
-    attribute_value: Mapped[str] = Column(String)
+    fq_name: Mapped[str] = Column(String(512))
+    attribute_key: Mapped[str] = Column(String(255))
+    attribute_value: Mapped[str] = Column(String(2048))

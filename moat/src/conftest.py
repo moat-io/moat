@@ -9,8 +9,9 @@ from pytest_postgresql.janitor import DatabaseJanitor as PostgresDatabaseJanitor
 from alembic import command
 from alembic.config import Config
 
+# if not set, default to postgres
 os.environ["CONFIG_FILE_PATH"] = os.getenv(
-    "CONFIG_FILE_PATH", "moat/config/config.unittest.yaml"
+    "CONFIG_FILE_PATH", "moat/config/unittest/config.postgres.yaml"
 )
 os.environ["FLASK_SECRET_KEY"] = "dont-tell-anyone"
 os.environ["FLASK_TESTING"] = "true"
@@ -42,8 +43,7 @@ def database_empty() -> Generator[Database, Any, None]:
     ):
         db.connect()
         # Run all alembic migrations instead of creating tables directly
-        alembic_cfg = Config("moat/alembic.ini")
-        command.upgrade(alembic_cfg, "head")
+        command.upgrade(Config("moat/alembic.ini"), "head")
         yield db
 
 

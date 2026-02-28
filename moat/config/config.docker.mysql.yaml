@@ -1,0 +1,8 @@
+config.base: config/config.docker.yaml
+
+database.protocol: "mysql+pymysql"
+database.user: "root"
+database.password: "root_password"
+database.host: "mysql"
+database.port: "3306"
+database.database: "moat"

@@ -76,6 +76,9 @@ def test_generate_bundle(database: Database, tmp_path):
                 assert opa_bundle_1.platform == "trino"
                 assert opa_bundle_1.e_tag == "03408ae13f7ba441750554b221915682"
                 assert opa_bundle_1.policy_hash == "4a37e1dc809799e5b360f09fb95439ee"
+
+                session.flush()
+                first_bundle_id: int = opa_bundle_1.opa_bundle_id
                 session.commit()
 
         # second bundle - should invalidate the old one
@@ -93,16 +96,14 @@ def test_generate_bundle(database: Database, tmp_path):
                         opa_bundle_2.bundle_directory, opa_bundle_2.bundle_filename
                     )
                 )
+                # check the contents of the object
+                assert opa_bundle_2.e_tag != "03408ae13f7ba441750554b221915682"
                 session.commit()
 
         # make the first bundle older than the retention period
         with database.Session() as session:
-            opa_bundles = (
-                session.query(OpaBundleDbo)
-                .order_by(OpaBundleDbo.record_updated_date.desc())
-                .all()
-            )
-            opa_bundles[1].record_updated_date = datetime.now(UTC) - timedelta(days=10)
+            opa_bundle: OpaBundleDbo = session.query(OpaBundleDbo).get(first_bundle_id)
+            opa_bundle.record_updated_date = datetime.now(UTC) - timedelta(days=10)
             session.commit()
 
         # clean up the bundle storage

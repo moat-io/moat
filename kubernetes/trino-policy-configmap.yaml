@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moat-config-trino-policy
+  namespace: moat
+data:
+  policy.rego: |
+    # Add as many policy docs here as needed
+    # One configmap is required per platform
+    

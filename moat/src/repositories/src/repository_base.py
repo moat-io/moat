@@ -10,8 +10,6 @@ from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.orm import ColumnProperty, Query, class_mapper
 from sqlalchemy.sql.elements import NamedColumn
 
-from models.src.history_dbos.history_mixin import HistoryMixin
-
 
 class RepositoryBase:
 
@@ -22,9 +20,11 @@ class RepositoryBase:
     def truncate_tables(session, models: list[type[BaseModel]]) -> None:
         for model in models:
             session.execute(text(f"truncate {model.__tablename__}"))
-            session.execute(
-                text(f"alter sequence {model.__tablename__}_id_seq restart with 1")
-            )
+            # Postgres requires an explicit reset on the sequence
+            if session.bind.dialect.name == "postgresql":
+                session.execute(
+                    text(f"alter sequence {model.__tablename__}_id_seq restart with 1")
+                )
 
     @staticmethod
     def get_attribute_dtos(
@@ -77,12 +77,11 @@ class RepositoryBase:
         )
 
     @staticmethod
-    def get_latest_timestamp_for_model_history(
+    def get_latest_timestamp_for_model(
         session, model: type[MetadataDboMixin | BaseModel]
     ) -> datetime:
-        assert issubclass(model, HistoryMixin)
         latest_change_timestamp: datetime = session.query(
-            func.max(model.history_record_created_date)
+            func.max(model.record_updated_date)
         ).scalar()
         return latest_change_timestamp
 
@@ -165,61 +164,6 @@ class RepositoryBase:
         return query.slice(page_number * page_size, (page_number + 1) * page_size)
 
     @staticmethod
-    def _get_merge_statement(
-        source_model: type[BaseModel],
-        target_model: type[BaseModel],
-        merge_keys: list[str],
-        update_cols: list[str],
-        ingestion_process_id: int,
-    ) -> str:
-
-        source_stmt_where_clause: str = " and ".join(
-            [f"{c} is not null" for c in merge_keys]
-        )
-        source_stmt: str = (
-            f"select * from {source_model.__tablename__} where {source_stmt_where_clause}"
-        )
-
-        matched_and_stmt: str = "and " + " or ".join(
-            [f"src.{c} <> tgt.{c}" for c in update_cols]
-        )
-
-        update_stmt: str = (
-            "update set "
-            + ", ".join([f"{c} = src.{c}" for c in update_cols])
-            + f", ingestion_process_id = {ingestion_process_id}"
-        )
-
-        insert_stmt: str = (
-            "insert (" + ", ".join(merge_keys + update_cols) + ", ingestion_process_id)"
-        )
-        values_stmt: str = (
-            "values ("
-            + ", ".join([f"src.{c}" for c in merge_keys + update_cols])
-            + f", {ingestion_process_id})"
-        )
-
-        on_clause: str = " and ".join([f"src.{c} = tgt.{c}" for c in merge_keys])
-
-        merge_statement: str = dedent(
-            f"""
-                        merge into {target_model.__tablename__} as tgt
-                        using (
-                            {source_stmt}
-                        ) src
-                        on {on_clause}
-                        when matched 
-                            {matched_and_stmt}
-                        then
-                            {update_stmt}
-                        when not matched then
-                            {insert_stmt}
-                            {values_stmt}
-                    """
-        )
-        return merge_statement
-
-    @staticmethod
     def _get_merge_insert_statement(
         source_model: type[BaseModel],
         target_model: type[BaseModel],
@@ -239,7 +183,10 @@ class RepositoryBase:
             [f"tgt.{c} = src.{c}" for c in merge_keys]
         )
 
-        where_clause: str = " and ".join([f"tgt.{c} is null" for c in merge_keys])
+        # where the staging table entry is not null and target table entry is null
+        where_clause: str = " and ".join(
+            [f"src.{c} is not null and tgt.{c} is null" for c in merge_keys]
+        )
 
         return dedent(
             f"""
@@ -258,12 +205,25 @@ class RepositoryBase:
         merge_keys: list[str],
         update_cols: list[str],
         ingestion_process_id: int,
+        dialect: str = "postgresql",
     ) -> str:
 
         set_stmt: str = ", ".join([f"{c} = src.{c}" for c in update_cols])
         join_stmt: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
         where_stmt: str = " or ".join([f"tgt.{c} <> src.{c}" for c in update_cols])
 
+        if dialect == "mysql":
+            set_stmt: str = ", ".join([f"tgt.{c} = src.{c}" for c in update_cols])
+            return dedent(
+                f"""
+                UPDATE {target_model.__tablename__} tgt
+                JOIN {source_model.__tablename__} src ON {join_stmt}
+                SET {set_stmt}, tgt.ingestion_process_id = {str(ingestion_process_id)}
+                WHERE {where_stmt}
+                """
+            )
+
+        # postgres
         return dedent(
             f"""
             update {target_model.__tablename__} tgt
@@ -279,6 +239,7 @@ class RepositoryBase:
         target_model: type[BaseModel],
         merge_keys: list[str],
         ingestion_process_id: int,
+        dialect: str = "postgresql",
     ) -> str:
         """
         The merge delete statement actually executes an update
@@ -291,6 +252,19 @@ class RepositoryBase:
         merge_keys_str: str = ", ".join(merge_keys)
         where_clause: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
 
+        if dialect == "mysql":
+            return dedent(
+                f"""
+                    update {target_model.__tablename__} tgt
+                    join (
+                        select {merge_keys_str} from {target_model.__tablename__}
+                        except
+                        select {merge_keys_str} from {source_model.__tablename__}
+                    ) src on {where_clause} and tgt.active
+                    set ingestion_process_id = {ingestion_process_id}, active = false
+                """
+            )
+
         return dedent(
             f"""
                 update {target_model.__tablename__} tgt
@@ -300,6 +274,6 @@ class RepositoryBase:
                     except
                     select {merge_keys_str} from {source_model.__tablename__}
                 ) src
-                where {where_clause}
+                where {where_clause} and tgt.active
                 """
         )

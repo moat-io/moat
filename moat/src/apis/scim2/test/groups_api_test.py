@@ -71,7 +71,10 @@ def test_create_group(flask_test_client: FlaskClient, database_empty: Database):
             assert principal_group is not None
 
             assert principal_group.fq_name == "APP_DEVELOPERS_GL"
-            assert principal_group.members == ["alice.cooper", "bob.hope"]
+            assert sorted([g.member_fq_name for g in principal_group.members]) == [
+                "alice.cooper",
+                "bob.hope",
+            ]
 
             assert principal_group.source_uid == "12345678-1234-5678-1234-567812345678"
             assert principal_group.source_type == "scim"
@@ -244,7 +247,11 @@ def test_update_group(flask_test_client: FlaskClient, database_empty: Database):
         assert principal_group is not None
 
         assert principal_group.fq_name == "SOME_OTHER_GROUP_GL"
-        assert principal_group.members == ["frank.zappa", "bob.hope", "boris.yeltsin"]
+        assert sorted([g.member_fq_name for g in principal_group.members]) == [
+            "bob.hope",
+            "boris.yeltsin",
+            "frank.zappa",
+        ]
 
         assert principal_group.source_uid == "12345678-1234-5678-1234-567812345678"
         assert principal_group.source_type == "scim"
