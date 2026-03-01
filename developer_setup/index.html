@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -907,19 +907,19 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#running-with-docker-compose" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-packages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Running with Docker Compose
+        Updating packages
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1052,6 +1052,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release_notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1151,19 +1178,19 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#running-with-docker-compose" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-packages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Running with Docker Compose
+        Updating packages
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1337,20 +1364,19 @@ podman-compose up -d
 podman-compose exec lldap /bootstrap/bootstrap.sh
 
 export PYTHONPATH=moat/src
+
+# run the DB migrations
+alembic -c moat/alembic.ini upgrade head
+
+# run the app
 flask --app moat.src.app run --debug --port 8000
 
 # seed the database
 python moat/moat/src/seed_db.py
 
-# start the mock API (optional)
-python moat/src/_scripts/mock_apis.py
-
 # watch the UI changes (optional)
 cd moat/ui
 npm start
-
-# nuking a bad flask process
-kill $(pgrep -f flask)
 
 # all the data for lldap and postgres is stored in the `instance` dir. nuke it to reset the app
 rm -rf instance
@@ -1359,20 +1385,11 @@ rm -rf instance
 <pre><code class="language-bash">podman run --rm -p 3000:8000 moat/moat:0.0.1
 curl localhost:3000/api/v1/healthcheck
 </code></pre>
-<h3 id="running-with-docker-compose">Running with Docker Compose</h3>
-<p>To run the Moat application along with its dependencies (OPA, PostgreSQL, etc.), you can add the following service to your <code>docker-compose.yaml</code> file:</p>
-<pre><code class="language-yaml">services:
-
-  moat:
-    build: .
-    ports:
-      - &quot;8000:8000&quot;
-    environment:
-      - FLASK_SECRET_KEY=your_secret_key
-      - OIDC_AUTH_PROVIDER_CLIENT_SECRET=your_client_secret
-    depends_on:
-      - opa
-      - postgres
+<h2 id="updating-packages">Updating packages</h2>
+<pre><code class="language-bash"># make changes to requirements.in
+source venv/bin/activate
+pip install pip-tools
+pip-compile --generate-hashes requirements.in &gt; requirements.txt
 </code></pre>
 <h2 id="building-the-container-image">Building the container image</h2>
 <pre><code class="language-bash">podman build -t moat/moat .
@@ -1390,7 +1407,6 @@ docker run moat ingest --connector-name=ldap --object-type=principal
 export PYTHONPATH=./moat/src
 export CONFIG_FILE_PATH=moat/config/config.yaml
 alembic -c moat/alembic.ini revision --autogenerate -m &quot;message about the revision&quot;
-
 
 # upgrade
 alembic -c moat/alembic.ini upgrade head
