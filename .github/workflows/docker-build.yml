@@ -79,7 +79,7 @@ jobs:
         # Run unit tests with MySQL
         docker run --rm --network=host \
           -e CONFIG_FILE_PATH=moat/config/unittest/config.mysql.yaml \
-          moat-io/moat:${{ steps.get_version.outputs.VERSION }} test unit --config-name=config.mysql.yaml
+          moat-io/moat:${{ steps.get_version.outputs.VERSION }} test unit
 
     - name: Run CLI tests
       run: |
