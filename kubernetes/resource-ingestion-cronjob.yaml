@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: moat-ingest-resources
+  namespace: moat
+spec:
+  schedule: 0 * * * *
+  jobTemplate:
+    metadata:
+      name: moat-ingest-resources
+    spec:
+      template:
+        spec:
+          containers:
+          - name: base
+            image: ghcr.io/moat-io/moat:0.21.0
+            args: ["ingest", "--connector-name", "dbapi", "--object-type", "resource", "--platform", "trino"]
+            imagePullPolicy: IfNotPresent
+            envFrom:
+            - secretRef:
+                name: env-secret
+            env:
+            - name: CONFIG_FILE_PATH
+              value: "/opt/moat/config.yaml"
+            volumeMounts:
+            - name: moat-api-config
+              mountPath: /opt/moat
+          volumes:
+          - name: moat-api-config
+            configMap:
+              name: moat-api-config

@@ -1,0 +1,6 @@
+config.base: moat/config/unittest/config.postgres.yaml
+
+database.protocol: "mysql+pymysql"
+database.user: "root"
+database.password: "root_password"
+database.port: "3306"

@@ -10,9 +10,9 @@ class ResourceStagingDbo(BaseModel):
     UPDATE_COLS: list[str] = ["platform", "object_type"]
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: Mapped[str] = Column(String)
-    platform: Mapped[str] = Column(String)
-    object_type: Mapped[str] = Column(String)
+    fq_name: Mapped[str] = Column(String(512))
+    platform: Mapped[str] = Column(String(100))
+    object_type: Mapped[str] = Column(String(100))
 
 
 class ResourceAttributeStagingDbo(BaseModel):
@@ -22,6 +22,6 @@ class ResourceAttributeStagingDbo(BaseModel):
     UPDATE_COLS: list[str] = ["attribute_value"]
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: Mapped[str] = Column(String)
-    attribute_key: Mapped[str] = Column(String)
-    attribute_value: Mapped[str] = Column(String)
+    fq_name: Mapped[str] = Column(String(512))
+    attribute_key: Mapped[str] = Column(String(255))
+    attribute_value: Mapped[str] = Column(String(2048))

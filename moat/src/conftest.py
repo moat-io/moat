@@ -2,13 +2,17 @@ import os
 from typing import Any, Generator
 
 import pytest
+from test import MysqlDatabaseJanitor
 from flask import Flask
 from flask.testing import FlaskClient
-from pytest_postgresql.janitor import DatabaseJanitor
+from pytest_postgresql.janitor import DatabaseJanitor as PostgresDatabaseJanitor
 from alembic import command
 from alembic.config import Config
 
-os.environ["CONFIG_FILE_PATH"] = "moat/config/config.unittest.yaml"
+# if not set, default to postgres
+os.environ["CONFIG_FILE_PATH"] = os.getenv(
+    "CONFIG_FILE_PATH", "moat/config/unittest/config.postgres.yaml"
+)
 os.environ["FLASK_SECRET_KEY"] = "dont-tell-anyone"
 os.environ["FLASK_TESTING"] = "true"
 
@@ -20,7 +24,15 @@ from database.src.database_seeder import DatabaseSeeder
 @pytest.fixture(scope="module")
 def database_empty() -> Generator[Database, Any, None]:
     db: Database = Database()
-    with DatabaseJanitor(
+
+    if "postgresql" in db.config.protocol:
+        janitor_class = PostgresDatabaseJanitor
+    elif "mysql" in db.config.protocol:
+        janitor_class = MysqlDatabaseJanitor
+    else:
+        raise ValueError(f"Unsupported database protocol: {db.config.protocol}")
+
+    with janitor_class(
         user=db.config.user,
         password=db.config.password,
         host=db.config.host,
@@ -31,8 +43,7 @@ def database_empty() -> Generator[Database, Any, None]:
     ):
         db.connect()
         # Run all alembic migrations instead of creating tables directly
-        alembic_cfg = Config("moat/alembic.ini")
-        command.upgrade(alembic_cfg, "head")
+        command.upgrade(Config("moat/alembic.ini"), "head")
         yield db
 
 

@@ -9,6 +9,7 @@ from models import (
     IngestionProcessDbo,
     PrincipalAttributeDbo,
     PrincipalGroupDbo,
+    PrincipalGroupMemberDbo,
     PrincipalDbo,
     ResourceDbo,
     ResourceAttributeDbo,
@@ -82,7 +83,10 @@ class DatabaseSeeder:
 
                 for mock_user in mock_users:
                     if group in mock_user.get("groups", []):
-                        principal_group_dbo.members.append(mock_user.get("username"))
+                        member = PrincipalGroupMemberDbo(
+                            member_fq_name=mock_user.get("username")
+                        )
+                        principal_group_dbo.members.append(member)
 
                 groups.append(principal_group_dbo)
             return groups

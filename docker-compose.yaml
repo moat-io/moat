@@ -96,6 +96,31 @@ services:
           cpus: '0.1'
           memory: 128M
 
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=moat
+      - MYSQL_USER=moat_user
+      - MYSQL_PASSWORD=moat_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "moat_user", "-pmoat_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
   keycloak:
     build:
       dockerfile: docker/keycloak/Dockerfile
@@ -130,14 +155,20 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/info || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
     deploy:
       resources:
         limits:
           cpus: '1'
-          memory: 1024M
+          memory: 2048M
         reservations:
           cpus: '0.5'
-          memory: 1024M
+          memory: 2048M
 
   mock_api:
     build: .
@@ -147,13 +178,33 @@ services:
 
   moat:
     build: .
+    # runs migrations and seeds the database
     command: ["start-demo-server"]
     ports:
       - "8001:8000"
     environment:
-      CONFIG_FILE_PATH: config/config.docker.yaml
+#      CONFIG_FILE_PATH: config/config.docker.yaml
+      CONFIG_FILE_PATH: config/config.docker.mysql.yaml
     depends_on:
-      postgres:
+#      postgres:
+      mysql:
         condition: service_healthy
     volumes:
       - ./moat/config/:/app/moat/config
+      - ./opa/:/opt/moat/opa
+      - ./instance/moat_worker/bundles:/opt/moat/bundles
+
+  moat_worker:
+    build: .
+    command: ["start-worker"]
+    environment:
+#      CONFIG_FILE_PATH: config/config.docker.yaml
+      CONFIG_FILE_PATH: config/config.docker.mysql.yaml
+    depends_on:
+#      postgres:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./moat/config/:/app/moat/config
+      - ./opa/:/opt/moat/opa
+      - ./instance/moat_worker/bundles:/opt/moat/bundles

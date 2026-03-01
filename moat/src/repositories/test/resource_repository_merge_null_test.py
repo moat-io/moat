@@ -37,8 +37,11 @@ def test_merge_with_null_source(database_empty: Database) -> None:
 
     # merge
     with database_empty.Session.begin() as session:
-        row_count: int = repo.merge_staging(session=session, ingestion_process_id=1)
-        assert row_count == 2
+        insert_row_count, update_row_count = repo.merge_staging(
+            session=session, ingestion_process_id=1
+        )
+        assert insert_row_count == 2
+        assert update_row_count == 0
         session.commit()
 
     # test

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moat-config
+  namespace: moat
+data:
+  config.yaml: |
+    # Moat Configuration
+    # Copy from moat/config/config.docker.yaml and customize as needed
+
+    # config defined by the deployment
+    bundle_generator.static_rego_file_path: "/opt/moat" # /trino is added by default
+    bundler.bundle_directory: "/opt/moat/bundles"

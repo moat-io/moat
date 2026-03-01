@@ -25,7 +25,9 @@ class Worker:
         while True:
             try:
                 logger.info("Starting bundle refresh")
-                BundleService.refresh_bundle(database=self.database)
+                BundleService.refresh_bundle(
+                    database=self.database, event_logger=self.event_logger
+                )
 
             except Exception as e:
                 logger.error(f"Error refreshing bundle: {e}")
