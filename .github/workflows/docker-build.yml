@@ -70,8 +70,9 @@ jobs:
     - name: Run Unit tests (PostgreSQL)
       run: |
         # Run unit tests with PostgreSQL
+        docker run --rm --network=host \
         -e CONFIG_FILE_PATH=moat/config/unittest/config.postgres.yaml \
-        docker run --rm --network=host moat-io/moat:${{ steps.get_version.outputs.VERSION }} test unit
+        moat-io/moat:${{ steps.get_version.outputs.VERSION }} test unit
 
     - name: Run Unit tests (MySQL)
       run: |
