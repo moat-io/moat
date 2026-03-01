@@ -27,6 +27,19 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: moat
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -54,10 +67,17 @@ jobs:
         # Run OPA tests
         docker run --rm moat-io/moat:${{ steps.get_version.outputs.VERSION }} test opa
 
-    - name: Run Unit tests
+    - name: Run Unit tests (PostgreSQL)
       run: |
-        # Run unit tests
+        # Run unit tests with PostgreSQL
         docker run --rm --network=host moat-io/moat:${{ steps.get_version.outputs.VERSION }} test unit
+
+    - name: Run Unit tests (MySQL)
+      run: |
+        # Run unit tests with MySQL
+        docker run --rm --network=host \
+          -e CONFIG_FILE_PATH=moat/config/unittest/config.postgres.yaml \
+          moat-io/moat:${{ steps.get_version.outputs.VERSION }} test unit --config-name=config.mysql.yaml
 
     - name: Run CLI tests
       run: |
