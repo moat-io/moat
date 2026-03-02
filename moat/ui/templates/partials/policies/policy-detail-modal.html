@@ -1,0 +1,15 @@
+{% from "partials/common/macro-attribute-pill-list.html" import attribute_pill_list %}
+<div class="p-4 w-full space-y-4">
+    <div class="flex justify-between">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ policy.policy_name }}
+        </h3>
+    </div>
+
+    <div class="w-full mb-1">
+        <form id="dsl_content_form">
+            <input id="dsl_content" name="policy_dsl" type="hidden" value="{{ policy.policy_dsl }}">
+        </form>
+        <div id="editor" class="h-50 w-full"></div>
+    </div>
+</div>

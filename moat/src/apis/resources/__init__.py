@@ -1,0 +1,1 @@
+from .src.resource_api import bp as resource_bp

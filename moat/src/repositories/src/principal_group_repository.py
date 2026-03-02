@@ -20,6 +20,6 @@ class PrincipalGroupRepository(RepositoryBase):
 
     @staticmethod
     def get_latest_change_timestamp(session) -> datetime:
-        return RepositoryBase.get_latest_timestamp_for_model_history(
-            session=session, model=PrincipalGroupHistoryDbo
+        return RepositoryBase.get_latest_timestamp_for_model(
+            session=session, model=PrincipalGroupDbo
         )

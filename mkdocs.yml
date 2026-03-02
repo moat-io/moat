@@ -5,7 +5,7 @@ theme:
     - navigation.expand
     - navigation.path
 repo_url: https://github.com/moat-io/moat
-dev_addr: localhost:8001
+dev_addr: localhost:7000
 
 # https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml
 
@@ -14,6 +14,7 @@ nav:
   - Trino and OPA: trino_and_opa.md
   - How it works: how_it_works.md
   - Bundles: bundles.md
+  - User Interface: ui.md
   - Provisioning:
       - SCIM2.0: provisioning/scim.md
       - Resources:  provisioning/resource_ingestion.md
@@ -28,3 +29,4 @@ nav:
       - Monitoring, Events & Webhooks: deployment/monitoring.md
   - Developer Setup: developer_setup.md
   - Extending Moat: extensions.md
+  - Release Notes: release_notes.md

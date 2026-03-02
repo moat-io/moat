@@ -3,6 +3,7 @@
 </center>
 
 # Moat :: The OPA bundle provider for Trino
+Moat is officially an [OPA ecosystem project](https://www.openpolicyagent.org/ecosystem/entry/moat)
 
 ## Documentation
 https://moat-io.github.io/moat/

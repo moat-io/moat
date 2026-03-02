@@ -1,0 +1,16 @@
+{% for principal in principals %}
+<tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+    <td class="w-4 p-4">
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+        <div class="text-base font-semibold text-gray-900 dark:text-white">{{ principal.first_name }} {{ principal.last_name }}</div>
+        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ principal.user_name }}</div>
+    </td>
+    <td class="p-4 whitespace-nowrap">
+        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ principal.source_type | capitalize }}</span>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+        {{ attribute_pill_list(principal.attributes) }}
+    </td>
+</tr>
+{% endfor %}

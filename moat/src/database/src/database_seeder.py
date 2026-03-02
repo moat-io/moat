@@ -9,6 +9,7 @@ from models import (
     IngestionProcessDbo,
     PrincipalAttributeDbo,
     PrincipalGroupDbo,
+    PrincipalGroupMemberDbo,
     PrincipalDbo,
     ResourceDbo,
     ResourceAttributeDbo,
@@ -82,7 +83,10 @@ class DatabaseSeeder:
 
                 for mock_user in mock_users:
                     if group in mock_user.get("groups", []):
-                        principal_group_dbo.members.append(mock_user.get("username"))
+                        member = PrincipalGroupMemberDbo(
+                            member_fq_name=mock_user.get("username")
+                        )
+                        principal_group_dbo.members.append(member)
 
                 groups.append(principal_group_dbo)
             return groups
@@ -119,7 +123,7 @@ class DatabaseSeeder:
         ingestion_process_dbo: IngestionProcessDbo = IngestionProcessDbo()
         with self.db.Session.begin() as session:
             session.add(ingestion_process_dbo)
-            ingestion_process_dbo.source = "Seed"
+            ingestion_process_dbo.source = "Seeder"
             ingestion_process_dbo.object_type = object_type
             session.flush()
             ingestion_process_id = ingestion_process_dbo.ingestion_process_id
@@ -141,7 +145,15 @@ class DatabaseSeeder:
             ingestion_process_dbo.status = "completed"
             session.commit()
 
+    def db_populated(self) -> bool:
+        with self.db.Session.begin() as session:
+            return session.query(IngestionProcessDbo).count() != 0
+
     def seed(self, object_types: list[ObjectTypeEnum] | None = None):
+        if self.db_populated():
+            print("Database is already populated, exiting seeder")
+            exit(0)
+
         if not object_types:
             object_types = [
                 ObjectTypeEnum.PRINCIPAL,

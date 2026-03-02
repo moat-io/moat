@@ -25,7 +25,7 @@ class HttpEventLogHandler(EventLogHandlerBase):
 
         return dict(items)
 
-    def deliver_event(self, event: EventDto) -> None:
+    def deliver_events(self, events: list[EventDto]) -> None:
         # split the extra_args string into a dictionary if they are valid
         extra_args: dict = HttpEventLoggerConfig.split_key_value_pairs(
             self._config.extra_args
@@ -35,11 +35,22 @@ class HttpEventLogHandler(EventLogHandlerBase):
             self._config.headers
         )
 
-        payload = extra_args | event.model_dump()
+        payloads: list[dict] = []
 
-        if self._config.flatten_payload:
-            payload = self._flatten_dict(payload.pop("context")) | payload
+        for event in events:
+            payload = extra_args | event.model_dump()
 
+            if self._config.flatten_payload:
+                payload = self._flatten_dict(payload.pop("context")) | payload
+
+            payloads.append(payload)
+            if not self._config.send_as_list:
+                self._send_request(payload, headers)
+
+        if self._config.send_as_list:
+            self._send_request(payloads, headers)
+
+    def _send_request(self, payload: list[dict], headers: dict) -> None:
         # Send the events to the endpoint
         response = requests.post(
             self._config.url,
@@ -54,3 +65,4 @@ class HttpEventLogHandler(EventLogHandlerBase):
             logger.warning(
                 f"Failed to send events to endpoint: {self._config.url} code: {response.status_code} message: {response.text}"
             )
+            response.raise_for_status()

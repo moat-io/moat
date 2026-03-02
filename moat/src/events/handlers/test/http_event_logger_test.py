@@ -28,12 +28,16 @@ def test_log_event():
         mock_post.return_value = mock_response
 
         # Call the method under test
-        handler.deliver_event(event)
+        handler.deliver_events([event])
 
-        # Verify that requests.post was called with the correct arguments
-        mock_post.assert_called_once()
-        args, kwargs = mock_post.call_args
+        # with send_as_list=true
+        handler._config.send_as_list = True
+        handler.deliver_events([event])
 
+    # Verify that requests.post was called with the correct arguments
+    assert mock_post.call_count == 2
+
+    args, kwargs = mock_post.call_args_list[0]
     # Check URL
     assert args[0] == "https://localhost:9000/event"
 
@@ -57,3 +61,18 @@ def test_log_event():
         "actions__sub_key1": "sub_value",
         "actions__sub_key2__sub_key3": "sub_value3",
     }
+
+    # with send_as_list=true
+    args, kwargs = mock_post.call_args_list[1]
+    assert kwargs["json"] == [
+        {
+            "eventType": "MoatEvent",
+            "asset": "test_asset",
+            "action": "test_action",
+            "log": "Test log message",
+            "key1": "value1",
+            "key2": "value2",
+            "actions__sub_key1": "sub_value",
+            "actions__sub_key2__sub_key3": "sub_value3",
+        }
+    ]

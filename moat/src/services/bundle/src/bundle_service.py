@@ -3,6 +3,8 @@ import shutil
 import hashlib
 from database import Database
 from datetime import datetime, timedelta, UTC
+
+from events import EventLogger
 from models import OpaBundleDbo
 from opa.bundle_generator import BundleGenerator
 from repositories import (
@@ -12,37 +14,47 @@ from repositories import (
 )
 from app_logger import Logger, get_logger
 from services.bundle.src.bundler_config import BundlerConfig
-from events import EventLogger
 
 logger: Logger = get_logger("services.bundle")
 
 
 class BundleService:
     @staticmethod
-    def refresh_bundle(database: Database, platform: str = "trino"):
-        event_logger: EventLogger = EventLogger()
-
+    def refresh_bundle(
+        database: Database, event_logger: EventLogger, platform: str = "trino"
+    ) -> None:
         with database.Session() as session:
             if BundleService.bundle_requires_refresh(
                 session=session, platform=platform
             ):
-                opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
-                    session=session, platform=platform
-                )
-                e_tag: str = opa_bundle.e_tag
-                policy_hash: str = opa_bundle.policy_hash
-                session.commit()
+                try:
+                    opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
+                        session=session, platform=platform
+                    )
 
-                event_logger.log_event(
-                    asset="bundle",
-                    action="generate",
-                    log=f"Bundle regenerated for platform: {platform}",
-                    context={
+                    log: str = f"Bundle generated for platform: {platform}"
+                    context: dict = {
                         "platform": platform,
-                        "etag": e_tag,
-                        "policy_hash": policy_hash,
-                    },
-                )
+                        "etag": opa_bundle.e_tag,
+                        "policy_hash": opa_bundle.policy_hash,
+                        "state": "success",
+                    }
+                    session.commit()
+
+                    event_logger.log_event(
+                        asset="bundle", action="generate", log=log, context=context
+                    )
+
+                except Exception as e:
+                    logger.error(
+                        f"Error generating bundle for platform: {platform} :: {e}"
+                    )
+                    event_logger.log_event(
+                        asset="bundle",
+                        action="generate",
+                        log=log,
+                        context={"state": "failure", "error": str(e)},
+                    )
 
     @staticmethod
     def _get_current_datetime() -> datetime:
@@ -54,7 +66,7 @@ class BundleService:
         # - metadata object does not exist
         # - metadata timestamp is older than newest record from resource/principal tables
         # - policy docs hash does not match metadata object
-        # - bundle file does not
+        # - bundle file does not exist
         logger.info(f"Checking if bundle requires refresh for {platform}")
 
         opa_bundle: OpaBundleDbo = BundleService.get_current_bundle_metadata(
@@ -79,6 +91,7 @@ class BundleService:
         )
 
         latest_object_date: datetime = BundleService.get_latest_object_date(session)
+        logger.info(f"Latest date of record in metadata tables: {latest_object_date}")
 
         logger.info(f"Bundle timestamp: {opa_bundle.record_updated_date}")
         logger.info(

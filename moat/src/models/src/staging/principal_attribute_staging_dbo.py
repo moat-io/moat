@@ -10,6 +10,6 @@ class PrincipalAttributeStagingDbo(BaseModel):
     UPDATE_COLS: list[str] = ["attribute_value"]
 
     id: Mapped[int] = Column(Integer, primary_key=True, autoincrement=True)
-    fq_name: Mapped[str] = Column(String)
-    attribute_key: Mapped[str] = Column(String)
-    attribute_value: Mapped[str] = Column(String)
+    fq_name: Mapped[str] = Column(String(512))
+    attribute_key: Mapped[str] = Column(String(255))
+    attribute_value: Mapped[str] = Column(String(1024))

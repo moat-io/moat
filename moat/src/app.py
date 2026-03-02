@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 import uuid
 from apis.opa import bundle_api_bp, decision_log_api_bp, status_api_bp
 from apis.healthcheck import healthcheck_bp
@@ -8,6 +7,13 @@ from apis.scim2 import (
     scim2_schemas_bp,
     scim2_users_bp,
     scim2_groups_bp,
+)
+from views import (
+    resources_bp,
+    healthz_bp,
+    principals_bp,
+    policies_bp,
+    root_bp,
 )
 from app_config import AppConfigModelBase
 from app_logger import Logger, get_logger
@@ -21,6 +27,7 @@ logger: Logger = get_logger("app")
 
 class FlaskConfig(AppConfigModelBase):
     CONFIG_PREFIX: str = "flask"
+    environment: str = "dev"
     secret_key: str = None
     static_url_path: str = ""
     static_folder: str = "../ui/static"
@@ -42,11 +49,19 @@ def create_app(database: Database | None = None) -> Flask:
     database: Database = Database()
     database.connect()
 
+    # views
+    flask_app.register_blueprint(root_bp)
+    flask_app.register_blueprint(principals_bp)
+    flask_app.register_blueprint(healthz_bp)
+    flask_app.register_blueprint(resources_bp)
+    flask_app.register_blueprint(policies_bp)
+
     # enable APIs
     flask_app.register_blueprint(bundle_api_bp)
     flask_app.register_blueprint(decision_log_api_bp)
     flask_app.register_blueprint(status_api_bp)
     flask_app.register_blueprint(healthcheck_bp)
+    # flask_app.register_blueprint(resource_bp)
 
     # Register SCIM2 blueprints
     flask_app.register_blueprint(scim2_service_provider_config_bp)
@@ -79,6 +94,8 @@ def create_app(database: Database | None = None) -> Flask:
         g.database = database
         g.event_logger = event_logger
         g.request_id = str(uuid.uuid4())[0:6]
+        g.environment = flask_config.environment
+
         logger.info(
             f"{g.request_id} - Started request {request.remote_addr} {request.method}:{request.full_path}"
         )

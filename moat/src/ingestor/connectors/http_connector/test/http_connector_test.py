@@ -2,6 +2,8 @@ from unittest import mock
 from dataclasses import dataclass
 from collections import namedtuple
 
+import pytest
+
 from app_config import AppConfigModelBase
 from ingestor.models import PrincipalDio, PrincipalAttributeDio
 from ..src.http_connector import HttpConnector, HttpConnectorConfig
@@ -44,6 +46,20 @@ source_data = [
                 "DP Customer Information",
             ],
             "urn:ietf:params:scim:enterpriseExtended.username": "tomtakahara",
+        },
+    },
+    {
+        "attributes": {
+            "loginID": "karisakamau",
+            "displayName": "Karisa Kamau",
+            "familyName": "karisa",
+            "givenName": "kamau",
+            "active": "true",
+            "externalId": None,
+            "userName": "karisakamau@aol.com.io",
+            "email": "karisakamau@aol.com.io",
+            "group": None,
+            "urn:ietf:params:scim:enterpriseExtended.username": "karisakamau",
         },
     },
 ]
@@ -96,8 +112,16 @@ def test_acquire_data():
     oauth2_config.oauth2_client_id = "client-id"
     oauth2_config.oauth2_client_secret = "client-secret"
     oauth2_config.oauth2_endpoint = "https://idp.coi/oauth2/token"
-    oauth2_config.oauth2_scope = "read write"
+    oauth2_config.oauth2_scope = "idn:accounts:read sp:scopes:default"
     oauth2_config.oauth2_grant_type = "client_credentials"
+
+    oauth2_config_without_scope = HttpConnectorConfig()
+    oauth2_config_without_scope.url = "https://example.com/api/v1/things?query=true"
+    oauth2_config_without_scope.auth_method = "oauth2"
+    oauth2_config_without_scope.oauth2_client_id = "client-id"
+    oauth2_config_without_scope.oauth2_client_secret = "client-secret"
+    oauth2_config_without_scope.oauth2_endpoint = "https://idp.coi/oauth2/token"
+    oauth2_config_without_scope.oauth2_grant_type = "client_credentials"
 
     with mock.patch("requests.get") as requests_get_mock, mock.patch(
         "requests.post"
@@ -111,6 +135,7 @@ def test_acquire_data():
             headers={
                 "Content-Type": "application/json",
             },
+            params={},
             auth=None,
             verify=True,
             cert=None,
@@ -125,6 +150,7 @@ def test_acquire_data():
             headers={
                 "Content-Type": "application/json",
             },
+            params={},
             auth=("username", "password"),
             verify=False,
             cert=None,
@@ -140,6 +166,7 @@ def test_acquire_data():
                 "Content-Type": "application/json",
                 "Authorization": "Bearer bearer_token",
             },
+            params={},
             auth=None,
             verify=True,
             cert=None,
@@ -157,6 +184,7 @@ def test_acquire_data():
                 "Content-Type": "application/json",
                 "Authorization": "Bearer oauth2_access_token",
             },
+            params={},
             auth=None,
             verify=True,
             cert=None,
@@ -164,7 +192,34 @@ def test_acquire_data():
         requests_post_mock.assert_called_once_with(
             url="https://idp.coi/oauth2/token",
             headers={"Content-Type": "application/x-www-form-urlencoded"},
-            data="grant_type=client_credentials&client_id=client-id&client_secret=client-secret&scope=read write",
+            data="grant_type=client_credentials&client_id=client-id&client_secret=client-secret&scope=idn:accounts:read sp:scopes:default",
+            verify=True,
+            cert=None,
+        )
+
+        # oauth2 without scope (Scope is optional.)
+        requests_get_mock.reset_mock()
+        requests_post_mock.reset_mock()
+        connector.config = oauth2_config_without_scope
+        requests_post_mock.return_value.json.return_value = {
+            "access_token": "oauth2_access_token",
+        }
+        connector.acquire_data(platform="idp")
+        requests_get_mock.assert_called_once_with(
+            url="https://example.com/api/v1/things?query=true",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer oauth2_access_token",
+            },
+            params={},
+            auth=None,
+            verify=True,
+            cert=None,
+        )
+        requests_post_mock.assert_called_once_with(
+            url="https://idp.coi/oauth2/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data="grant_type=client_credentials&client_id=client-id&client_secret=client-secret",
             verify=True,
             cert=None,
         )
@@ -211,6 +266,14 @@ def test_get_principals():
             last_name="takahara",
             user_name="tomtakahara",
             email="tomtakahara@aol.com.io",
+        ),
+        PrincipalDio(
+            fq_name="karisakamau",
+            platform="idp",
+            first_name="kamau",
+            last_name="karisa",
+            user_name="karisakamau",
+            email="karisakamau@aol.com.io",
         ),
     ]
 
@@ -339,7 +402,7 @@ def test_populate_object_from_json_regex_patterns():
 
 def test_populate_object_from_json_error_handling():
     """Test error cases: missing paths, failed regex, missing attributes, empty inputs"""
-    json_obj = {"name": "John Doe", "email": "john@example.com"}
+    json_obj = {"name": "John Doe", "email": "john@example.com", "group": None}
     SimpleMapping = namedtuple("SimpleMapping", ["value"])
 
     attribute_mapping = {
@@ -347,6 +410,7 @@ def test_populate_object_from_json_error_handling():
         "email": AttributeMapping(jsonpath="$.missing", regex=None),  # Missing path
         "age": AttributeMapping(jsonpath="$.email", regex=r"\d+"),  # Regex no match
         "city": SimpleMapping(value="test"),  # Missing jsonpath attribute
+        "group_name": AttributeMapping(jsonpath="$.group", regex=r".*"),
     }
 
     result = HttpConnector._populate_object_from_json(
@@ -359,6 +423,7 @@ def test_populate_object_from_json_error_handling():
     assert result.email is None  # Missing path
     assert result.age is None  # Regex no match
     assert result.city is None  # Missing attribute
+    assert result.group_name is None
 
     # Empty cases
     empty_result = HttpConnector._populate_object_from_json(
@@ -396,3 +461,111 @@ def test_populate_object_from_json_integration_with_principal_dio():
     assert result.last_name == "Doe"
     assert result.user_name == "jdoe"
     assert result.email == "john.doe@example.com"
+
+
+def test_handle_response_json():
+    assert [{"1": 1}, {"2": 2}] == HttpConnector.handle_response_json(
+        "$[*]", [{"1": 1}, {"2": 2}]
+    )
+    assert [{"item": 1}, {"item": 2}] == HttpConnector.handle_response_json(
+        "$.items[*]", {"items": [{"item": 1}, {"item": 2}]}
+    )
+    assert [] == HttpConnector.handle_response_json(
+        "$.itemss[*]", {"items": [{"item": 1}, {"item": 2}]}
+    )
+
+
+def test_get_total_count():
+    assert 1 == HttpConnector.get_total_count(
+        response_header={"count": 1},
+        response_json=[{"1": 1}, {"2": 2}],
+        pagination_key_location="response_header",
+        pagination_key_name="count",
+    )
+
+    assert 1 == HttpConnector.get_total_count(
+        response_header={"counts": 1},
+        response_json={"count": 1, "items": [{"1": 1}, {"2": 2}]},
+        pagination_key_location="response_json",
+        pagination_key_name="count",
+    )
+
+    with pytest.raises(KeyError):
+        HttpConnector.get_total_count(
+            response_header={"counts": 1},
+            response_json={"counts": 1, "items": [{"1": 1}, {"2": 2}]},
+            pagination_key_location="response_json",
+            pagination_key_name="count",
+        )
+
+    with pytest.raises(AssertionError):
+        HttpConnector.get_total_count(
+            response_header={"counts": 1},
+            response_json={"counts": 1, "items": [{"1": 1}, {"2": 2}]},
+            pagination_key_location="response_jsonasd",
+            pagination_key_name="count",
+        )
+
+
+def test_acquire_data_paginated():
+    oauth2_config = HttpConnectorConfig()
+    oauth2_config.url = "https://example.com/api/v1/things?query=true"
+    oauth2_config.auth_method = "oauth2"
+    oauth2_config.oauth2_client_id = "client-id"
+    oauth2_config.oauth2_client_secret = "client-secret"
+    oauth2_config.oauth2_endpoint = "https://idp.coi/oauth2/token"
+    oauth2_config.oauth2_scope = "idn:accounts:read sp:scopes:default"
+    oauth2_config.oauth2_grant_type = "client_credentials"
+    oauth2_config.pagination_enabled = True
+    oauth2_config.pagination_size = 2
+    oauth2_config.pagination_target_key = "limit"
+    oauth2_config.pagination_key_location = "response_header"
+    oauth2_config.pagination_key_name = "X-Total-Count"
+    oauth2_config.pagination_offset_key = "offset"
+
+    with mock.patch("requests.get") as requests_get_mock, mock.patch(
+        "requests.post"
+    ) as requests_post_mock:
+        connector = HttpConnector()
+        connector.config = oauth2_config
+        requests_post_mock.return_value.json.return_value = {
+            "access_token": "oauth2_access_token",
+        }
+        requests_get_mock.side_effect = [
+            mock.Mock(
+                status_code=200,
+                json=mock.Mock(return_value=[{"item": 1}, {"item": 2}]),
+                headers={"X-Total-Count": "5"},
+            ),
+            mock.Mock(
+                status_code=200,
+                json=mock.Mock(return_value=[{"item": 3}, {"item": 4}]),
+                headers={"X-Total-Count": "5"},
+            ),
+            mock.Mock(
+                status_code=200,
+                json=mock.Mock(return_value=[{"item": 5}]),
+                headers={"X-Total-Count": "5"},
+            ),
+        ]
+        connector.acquire_data(platform="idp")
+        assert requests_get_mock.call_count == 3
+        assert requests_get_mock.call_args_list[0][1]["params"] == {
+            "limit": 2,
+            "offset": 0,
+        }
+        assert requests_get_mock.call_args_list[1][1]["params"] == {
+            "limit": 2,
+            "offset": 2,
+        }
+        assert requests_get_mock.call_args_list[2][1]["params"] == {
+            "limit": 2,
+            "offset": 4,
+        }
+        requests_post_mock.assert_called_once_with(
+            url="https://idp.coi/oauth2/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data="grant_type=client_credentials&client_id=client-id&client_secret=client-secret&scope=idn:accounts:read sp:scopes:default",
+            verify=True,
+            cert=None,
+        )

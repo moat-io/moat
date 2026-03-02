@@ -1,6 +1,7 @@
 logger.root_level: "INFO"
 
 flask.secret_key: "$FLASK_SECRET_KEY"
+flask.environment: "Development"
 
 database.protocol: "postgresql+psycopg"
 database.user: "test_user"
@@ -33,3 +34,6 @@ event_logger.http.url: http://localhost:9000/event
 event_logger.http.headers: "Api-Key=API_KEY,content-type=application/json"
 event_logger.http.extra_args: "eventType=MoatEvent"
 event_logger.http.flatten_payload: "true"
+event_logger.http.send_as_list: "true"
+
+worker.interval_s: "5"

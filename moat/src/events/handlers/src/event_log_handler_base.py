@@ -6,5 +6,5 @@ class EventLogHandlerBase:
     NAME: str = "base"
 
     @abstractmethod
-    def deliver_event(self, event: EventDto) -> None:
+    def deliver_events(self, events: list[EventDto]) -> None:
         pass

@@ -3,7 +3,7 @@ from clients import TrinoClient
 from ingestor.connectors.connector_base import ConnectorBase
 from ingestor.models import ResourceAttributeDio, ResourceDio
 
-from .dbapi_connnector_config import DBAPIConnectorConfig
+from .dbapi_connector_config import DBAPIConnectorConfig
 
 logger: Logger = get_logger("ingestor.connectors.dbapi_connector")
 

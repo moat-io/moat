@@ -4,6 +4,7 @@ It has one POST endpoint at /event that prints the received content to the conso
 """
 
 from flask import Flask, request, jsonify
+from pprint import pprint
 
 app = Flask(__name__)
 
@@ -20,7 +21,7 @@ def log_event():
     """
     content = request.json
     print("Received event:")
-    print(content)
+    pprint(content)
     return jsonify({"status": "success", "message": "Event received"})
 
 

@@ -10,5 +10,6 @@ logger: Logger = get_logger("event_log_handler.default")
 class DefaultEventLogHandler(EventLogHandlerBase):
     NAME = "default"
 
-    def deliver_event(self, event: EventDto) -> None:
-        logger.info(f"Logging event: {event}")
+    def deliver_events(self, events: list[EventDto]) -> None:
+        for event in events:
+            logger.info(f"Logging event: {event}")

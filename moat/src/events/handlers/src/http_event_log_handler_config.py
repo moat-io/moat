@@ -10,3 +10,4 @@ class HttpEventLoggerConfig(AppConfigModelBase):
     ssl_verify: bool = True
     timeout_ms: int = 500
     flatten_payload: bool = False
+    send_as_list: bool = False
