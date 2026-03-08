@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from app_logger import Logger, get_logger
-from models import AttributeDto, PrincipalDbo
+from models import AttributeDto, PrincipalDbo, PrincipalAttributeHistoryDbo
 from repositories import PrincipalRepository
 
 logger: Logger = get_logger("controller.principals")
@@ -41,6 +41,20 @@ class PrincipalsController:
         #     search_term=search_term,
         #     attributes=attributes,
         # )
+
+    @staticmethod
+    def get_principal_by_id(session, principal_id: int) -> PrincipalDbo:
+        repo: PrincipalRepository = PrincipalRepository()
+        return repo.get_by_id(session=session, principal_id=principal_id)
+
+    @staticmethod
+    def get_principal_attribute_history(
+        session, principal_id: int
+    ) -> list[PrincipalAttributeHistoryDbo]:
+        repo: PrincipalRepository = PrincipalRepository()
+        return repo.get_principal_attribute_history(
+            session=session, principal_id=principal_id
+        )
 
     # @staticmethod
     # def get_principal_attributes_by_username(

@@ -4,6 +4,7 @@ from models import (
     PrincipalDbo,
     PrincipalStagingDbo,
     PrincipalAttributeDbo,
+    PrincipalAttributeHistoryDbo,
 )
 
 from ..src.principal_repository import PrincipalRepository
@@ -77,3 +78,38 @@ def test_get_by_username(database: Database) -> None:
             "Redact": "PII",
             "Restricted": "Marketing,IT",
         }
+
+
+def test_get_principal_attribute_history(database: Database) -> None:
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        # Get Alice's principal
+        principal: PrincipalDbo = repo.get_by_username(
+            session=session, user_name="alice"
+        )
+
+        # Get her attribute history
+        history_records = repo.get_principal_attribute_history(
+            session=session, principal_id=principal.principal_id
+        )
+
+        # Verify we got history records
+        assert len(history_records) > 0
+        assert all(
+            [isinstance(h, PrincipalAttributeHistoryDbo) for h in history_records]
+        )
+
+        # Verify records are sorted by timestamp (oldest first)
+        timestamps = [h.history_record_created_date for h in history_records]
+        assert timestamps == sorted(timestamps)
+
+        # Verify all records are for alice's attributes
+        for record in history_records:
+            assert record.fq_name.startswith(principal.fq_name)
+
+        # Test with non-existent principal_id
+        empty_history = repo.get_principal_attribute_history(
+            session=session, principal_id=999999
+        )
+        assert empty_history == []

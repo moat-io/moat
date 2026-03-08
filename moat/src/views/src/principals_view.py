@@ -1,4 +1,4 @@
-from flask import Blueprint, g, render_template
+from flask import Blueprint, g, render_template, abort, make_response, Response
 from flask_pydantic import validate
 from views.controllers import PrincipalsController
 from views.models import TableQueryVm
@@ -36,3 +36,23 @@ def principals_table(query: TableQueryVm):
             principal_count=principal_count,
             query_state=query,
         )
+
+
+@bp.route("/<principal_id>/history-modal", methods=["GET"])
+@validate()
+def get_policy_modal(principal_id: int):
+    with g.database.Session.begin() as session:
+        history = PrincipalsController.get_principal_attribute_history(
+            session=session, principal_id=principal_id
+        )
+
+        response: Response = make_response(
+            render_template(
+                template_name_or_list="partials/principals/principal-history-modal.html",
+                history=history,
+            )
+        )
+
+        response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
+
+    return response

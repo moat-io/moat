@@ -1,0 +1,60 @@
+{% from "partials/common/macro-attribute-pill.html" import attribute_pill %}
+
+<div class="p-4 md:p-5 space-y-4">
+    <div class="flex flex-col">
+        <div class="overflow-x-auto overflow-y-auto">
+            <div class="inline-block min-w-full align-middle">
+                <div class="overflow-hidden shadow">
+                    <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                            <th scope="col"
+                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400"
+                            >
+                                <div class="flex items-center">
+                                    Timestamp
+                                </div>
+                            </th>
+                            <th scope="col"
+                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                Change Type
+                            </th>
+                            <th scope="col"
+                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                Attributes
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody id="history-tables-body"
+                               class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        {% for item in history %}
+                            <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+                                    <div class="text-base font-semibold text-gray-900 dark:text-white">
+                                        <span class="full-timestamp" data-time="{{ item.history_record_created_date.isoformat() }}"></span>
+                                    </div>
+                                    <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                        <span class="timeago" data-time="{{ item.history_record_created_date.isoformat() }}"></span>
+                                    </div>
+                                </td>
+                                <td class="p-4 whitespace-nowrap">
+                                    {% if item.history_change_operation == "I" %}
+                                        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Added</span>
+                                    {% elif item.history_change_operation == "U" %}
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Updated</span>
+                                    {% elif item.history_change_operation == "D" %}
+                                        <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Removed</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                    {{ attribute_pill(item.attribute_key, item.attribute_value) }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
