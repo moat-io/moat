@@ -12,5 +12,21 @@
     <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
         {{ attribute_pill_list(principal.attributes) }}
     </td>
+    <td class="p-4 space-x-2 whitespace-nowrap">
+        <button
+                hx-get="/principals/{{ principal.principal_id }}/history-modal"
+                hx-target="#principal-history-modal-content"
+                data-modal-target="principal-history-modal"
+                data-modal-toggle="principal-history-modal"
+                type="button"
+                id="principal-history-button-{{ principal.principal_id }}"
+                class="inline-flex items-center px-3 py-2 text-xs font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" stroke="none" class="size-4 mr-2">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clip-rule="evenodd" />
+            </svg>
+            History
+        </button>
+    </td>
 </tr>
 {% endfor %}

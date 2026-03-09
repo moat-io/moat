@@ -164,3 +164,26 @@ class PrincipalRepository(RepositoryBase):
         )
         result = session.execute(text(merge_stmt))
         return result.rowcount
+
+    @staticmethod
+    def get_principal_attribute_history(
+        session, principal_id: int
+    ) -> list[PrincipalAttributeHistoryDbo]:
+        """
+        Get all attribute history records for a principal, sorted by timestamp.
+
+        Returns:
+            List of PrincipalAttributeHistoryDbo records sorted by timestamp (oldest first)
+        """
+        history_records = (
+            session.query(PrincipalAttributeHistoryDbo)
+            .join(
+                PrincipalDbo,
+                PrincipalAttributeHistoryDbo.fq_name == PrincipalDbo.fq_name,
+            )
+            .filter(PrincipalDbo.principal_id == principal_id)
+            .order_by(PrincipalAttributeHistoryDbo.history_record_created_date.desc())
+            .all()
+        )
+
+        return history_records
