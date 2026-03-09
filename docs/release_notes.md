@@ -19,8 +19,8 @@
 
 #### bundle_generator.static_rego_file_path
 This configuration option now has the `platform` value appended in code, so this should be removed:
-* **Existing:** `bundle_generator.static_rego_file_path: "/opt/moat/opa/trino"`
-* **New:** `bundle_generator.static_rego_file_path: "/opt/moat/opa"`
+- **Existing:** `bundle_generator.static_rego_file_path: "/opt/moat/opa/trino"`
+- **New:** `bundle_generator.static_rego_file_path: "/opt/moat/opa"`
 
 ### Database Changes
 

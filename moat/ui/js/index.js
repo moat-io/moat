@@ -44,4 +44,14 @@ function moment_render_all() {
         }
         element.innerHTML = moment(element.innerHTML).format(formatString)
     })
+
+    // Render relative time
+    document.querySelectorAll('.timeago').forEach(el => {
+        el.textContent = moment(el.dataset.time).fromNow();
+    });
+
+    // Render full timestamp with timezone
+    document.querySelectorAll('.full-timestamp').forEach(el => {
+        el.textContent = moment(el.dataset.time).format('YYYY-MM-DD HH:mm:ss Z');
+    });
 }

@@ -1,18 +1,18 @@
 {
-  "name": "permitta-io",
+  "name": "moat-io",
   "version": "1.0.0",
   "description": "Open source bundle manager for OPA and Trino",
   "keywords": [
-    "permitta",
+    "moat",
     "opa",
     "rego",
     "trino"
   ],
   "style": "static/output.css",
   "main": "js/index.js",
-  "homepage": "https://permitta.com",
-  "repository": "https://github.com/jcoenraadts/permitta.git",
-  "author": "Permitta",
+  "homepage": "https://getmoat.io",
+  "repository": "https://github.com/moat-io/moat",
+  "author": "Moat.io",
   "scripts": {
     "start": "npm-run-all --parallel watch:styles watch:webpack",
     "build": "NODE_ENV=production && run-s build:webpack build:styles",
