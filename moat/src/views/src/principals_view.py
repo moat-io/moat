@@ -30,12 +30,17 @@ def principals_table(query: TableQueryVm):
             )
         )
         query.record_count = principal_count
-        return render_template(
-            template_name_or_list="partials/principals/principals-table.html",
-            principals=principals,
-            principal_count=principal_count,
-            query_state=query,
+        response: Response = make_response(
+            render_template(
+                template_name_or_list="partials/principals/principals-table.html",
+                principals=principals,
+                principal_count=principal_count,
+                query_state=query,
+            )
         )
+
+    response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
+    return response
 
 
 @bp.route("/<principal_id>/history-modal", methods=["GET"])
@@ -53,6 +58,5 @@ def get_policy_modal(principal_id: int):
             )
         )
 
-        response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
-
+    response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
     return response
