@@ -5,3 +5,4 @@ class BundlerConfig(AppConfigModelBase):
     CONFIG_PREFIX: str = "bundler"
     bundle_directory: str = "/tmp/bundles"
     bundle_retention_days: int = 7
+    bundle_minimum_count: int = 1

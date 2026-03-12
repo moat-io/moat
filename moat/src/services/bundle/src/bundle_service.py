@@ -3,6 +3,7 @@ import shutil
 import hashlib
 from database import Database
 from datetime import datetime, timedelta, UTC
+from sqlalchemy import func
 
 from events import EventLogger
 from models import OpaBundleDbo
@@ -19,6 +20,10 @@ logger: Logger = get_logger("services.bundle")
 
 
 class BundleService:
+    @staticmethod
+    def _to_non_negative_int(value: int) -> int:
+        return max(0, value)
+
     @staticmethod
     def refresh_bundle(
         database: Database, event_logger: EventLogger, platform: str = "trino"
@@ -55,6 +60,7 @@ class BundleService:
                         log=log,
                         context={"state": "failure", "error": str(e)},
                     )
+            BundleService.clean_up_bundle_storage(session, event_logger)
 
     @staticmethod
     def _get_current_datetime() -> datetime:
@@ -182,23 +188,65 @@ class BundleService:
         return opa_bundle
 
     @staticmethod
-    def clean_up_bundle_storage(session) -> None:
-        logger.info(f"Cleaning up bundle storage")
+    def clean_up_bundle_storage(session, event_logger: EventLogger) -> None:
+        logger.info("Cleaning up bundle storage")
         config: BundlerConfig = BundlerConfig().load()
-        cutoff_date = datetime.now() - timedelta(days=config.bundle_retention_days)
+        retention_days = BundleService._to_non_negative_int(
+            value=config.bundle_retention_days,
+        )
+        min_bundle_count = BundleService._to_non_negative_int(
+            value=config.bundle_minimum_count,
+        )
+        cutoff_date = datetime.now(UTC) - timedelta(days=retention_days)
+
+        platform_bundle_counts = dict(
+            session.query(
+                OpaBundleDbo.platform,
+                func.count(OpaBundleDbo.opa_bundle_id),
+            )
+            .group_by(OpaBundleDbo.platform)
+            .all()
+        )
+        max_deletions_by_platform = {
+            platform: max(0, bundle_count - min_bundle_count)
+            for platform, bundle_count in platform_bundle_counts.items()
+        }
+        deleted_bundles_by_platform = dict.fromkeys(platform_bundle_counts, 0)
 
         old_bundles = (
             session.query(OpaBundleDbo)
             .filter(OpaBundleDbo.record_updated_date < cutoff_date)
+            .order_by(
+                OpaBundleDbo.platform.asc(),
+                OpaBundleDbo.record_updated_date.asc(),
+                OpaBundleDbo.opa_bundle_id.asc(),
+            )
             .all()
         )
 
         for bundle in old_bundles:
+            deleted_count = deleted_bundles_by_platform.get(bundle.platform, 0)
+            max_deletions = max_deletions_by_platform.get(bundle.platform, 0)
+
+            if deleted_count >= max_deletions:
+                continue
+
             bundle_path = os.path.join(bundle.bundle_directory, bundle.bundle_filename)
             if os.path.exists(bundle_path):
                 os.remove(bundle_path)
             session.delete(bundle)
-            logger.info(f"Deleted bundle {bundle.bundle_filename}")
+            deleted_bundles_by_platform[bundle.platform] = deleted_count + 1
+            event_logger.log_event(
+                asset="bundle",
+                action="delete",
+                log=f"Deleted bundle {bundle.bundle_filename}",
+                context={
+                    "platform": bundle.platform,
+                    "bundle_filename": bundle.bundle_filename,
+                    "bundle_date": bundle.record_updated_date,
+                    "cutoff_date": cutoff_date,
+                },
+            )
 
     @staticmethod
     def get_current_bundle_metadata(session, platform: str) -> OpaBundleDbo:
