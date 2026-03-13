@@ -15,6 +15,9 @@ opa_client.timeout_seconds: "0.1"
 
 bundle_generator.temp_directory: /tmp
 
+bundler.minimum_retention_days: 7
+bundler.bundle_minimum_count: 1
+
 api.healthcheck.auth_method: none
 api.healthcheck.oauth2_issuer: http://localhost:8080/realms/moat
 api.healthcheck.oauth2_audience: account
