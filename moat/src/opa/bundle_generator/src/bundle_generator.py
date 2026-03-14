@@ -28,42 +28,68 @@ class Bundle:
 
 
 class BundleGenerator:
+    DEFAULT_POLICY_DIRECTORY: str = "_defaults"
+    REGO_FILE_PATTERN = re.compile(r"(?!.*_test\.rego$).*\.rego$")
+    SUPPORTED_STATIC_DATA_EXTENSIONS: set[str] = {".json", ".yaml", ".yml"}
+
     def _get_revision(self) -> str:
         return datetime.datetime.now(datetime.UTC).isoformat()
 
-    def __init__(self, session=None, platform: str = "trino"):
+    def __init__(self, session=None, platform: str | None = None):
         self.session = session
-        self.platform = platform
         self.bundle_filename = "bundle.tar.gz"
 
         config: BundleGeneratorConfig = BundleGeneratorConfig().load()
+        self.platform = platform or config.default_platform
+        self.static_rego_root_path: str = config.static_rego_file_path
+        self.source_directories: list[str] = BundleGenerator.resolve_source_directories(
+            static_rego_root_path=self.static_rego_root_path,
+            platform=self.platform,
+        )
+
         self.bundle_directory: str = f"{config.temp_directory}/{uuid.uuid4()}"
-        self.data_directory: str = f"{self.bundle_directory}/{platform}"
-        self.static_rego_file_path: str = f"{config.static_rego_file_path}/{platform}"
+        self.data_directory: str = f"{self.bundle_directory}/{self.platform}"
+        self.static_rego_file_path: str = os.path.join(
+            self.static_rego_root_path, self.platform
+        )
 
         self.data_file_path: str = os.path.join(
-            self.bundle_directory, f"{platform}", "data.json"
+            self.bundle_directory, f"{self.platform}", "data.json"
         )
         self.manifest_file_path: str = os.path.join(self.bundle_directory, ".manifest")
 
     def get_rego_policy_file_path_list(self) -> list[str]:
         logger.info(
-            f"Getting rego policy file path list from {self.static_rego_file_path}"
+            f"Getting rego policy file path list from {self.source_directories}"
         )
-        return [
-            os.path.join(self.static_rego_file_path, file)
-            for file in os.listdir(self.static_rego_file_path)
-            if re.match(rf"(?!.*_test.rego).*\.rego", file)
-        ]
+        rego_file_map: dict[str, str] = BundleGenerator._build_static_file_map(
+            source_directories=self.source_directories,
+            include_rego=True,
+            include_static_data=False,
+        )
+        return sorted(rego_file_map.values())
 
     def __enter__(self) -> Bundle:
         os.makedirs(os.path.join(self.data_directory), exist_ok=True)
 
-        # Copy all .rego files from static_rego_file_path to bundle_directory
-        [
-            shutil.copy(file_path, self.bundle_directory)
-            for file_path in self.get_rego_policy_file_path_list()
-        ]
+        static_file_map: dict[str, str] = BundleGenerator._build_static_file_map(
+            source_directories=self.source_directories,
+            include_rego=True,
+            include_static_data=True,
+        )
+
+        reserved_data_file_path = os.path.join(self.platform, "data.json")
+        if reserved_data_file_path in static_file_map:
+            logger.warning(
+                f"Ignoring static file '{reserved_data_file_path}' because it is reserved for generated runtime data for platform '{self.platform}'"
+            )
+            static_file_map.pop(reserved_data_file_path)
+
+        # Copy all static policy docs to bundle_directory while preserving nested paths.
+        for relative_path, file_path in static_file_map.items():
+            target_file_path = os.path.join(self.bundle_directory, relative_path)
+            os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+            shutil.copy(file_path, target_file_path)
 
         # write the data file
         with open(self.data_file_path, "w") as f:
@@ -87,7 +113,8 @@ class BundleGenerator:
                         ],  # asserts that the bundle has all namespaces. no external data or policy
                         "metadata": {
                             "policy_hash": BundleGenerator.get_policy_docs_hash(
-                                self.static_rego_file_path
+                                static_rego_file_path=self.static_rego_root_path,
+                                platform=self.platform,
                             )
                         },
                     }
@@ -110,7 +137,8 @@ class BundleGenerator:
             f"Generated bundle with output: {result.stdout}  Error: {result.stderr}"
         )
         policy_hash: str = BundleGenerator.get_policy_docs_hash(
-            self.static_rego_file_path
+            static_rego_file_path=self.static_rego_root_path,
+            platform=self.platform,
         )
         return Bundle(
             directory=self.bundle_directory,
@@ -122,22 +150,106 @@ class BundleGenerator:
         shutil.rmtree(self.bundle_directory, ignore_errors=True)
 
     @staticmethod
-    def get_policy_docs_hash(static_rego_file_path: str) -> str:
-        """Returns the hash of the policy docs for the given platform."""
-        rego_files: list[str] = [
-            file
-            for file in os.listdir(static_rego_file_path)
-            if re.match(rf"(?!.*_test.rego).*\.rego", file)
-        ]
+    def get_supported_platforms(static_rego_root_path: str | None = None) -> list[str]:
+        config: BundleGeneratorConfig = BundleGeneratorConfig().load()
+        static_rego_root_path = static_rego_root_path or config.static_rego_file_path
+
+        if not os.path.isdir(static_rego_root_path):
+            logger.warning(
+                f"Static rego root path '{static_rego_root_path}' does not exist"
+            )
+            return []
+
+        platforms: list[str] = sorted(
+            [
+                entry
+                for entry in os.listdir(static_rego_root_path)
+                if os.path.isdir(os.path.join(static_rego_root_path, entry))
+                and entry != BundleGenerator.DEFAULT_POLICY_DIRECTORY
+                and not entry.startswith(".")
+            ]
+        )
+        return platforms
+
+    @staticmethod
+    def resolve_source_directories(
+        static_rego_root_path: str, platform: str
+    ) -> list[str]:
+        platform_directory = os.path.join(static_rego_root_path, platform)
+        if not os.path.isdir(platform_directory):
+            raise ValueError(
+                f"No static policy directory found for platform '{platform}' in '{static_rego_root_path}'"
+            )
+
+        source_directories: list[str] = []
+        default_policy_directory = os.path.join(
+            static_rego_root_path, BundleGenerator.DEFAULT_POLICY_DIRECTORY
+        )
+        if os.path.isdir(default_policy_directory):
+            source_directories.append(default_policy_directory)
+        source_directories.append(platform_directory)
+        return source_directories
+
+    @staticmethod
+    def _build_static_file_map(
+        source_directories: list[str], include_rego: bool, include_static_data: bool
+    ) -> dict[str, str]:
+        static_file_map: dict[str, str] = {}
+
+        for source_directory in source_directories:
+            for root, _, files in os.walk(source_directory):
+                for filename in files:
+                    extension = os.path.splitext(filename)[1].lower()
+                    include_file = False
+                    if include_rego and BundleGenerator.REGO_FILE_PATTERN.match(
+                        filename
+                    ):
+                        include_file = True
+                    if (
+                        include_static_data
+                        and extension in BundleGenerator.SUPPORTED_STATIC_DATA_EXTENSIONS
+                    ):
+                        include_file = True
+
+                    if not include_file:
+                        continue
+
+                    absolute_path = os.path.join(root, filename)
+                    relative_path = os.path.relpath(absolute_path, source_directory)
+                    # Later directories override earlier ones (platform over defaults)
+                    static_file_map[relative_path] = absolute_path
+
+        return static_file_map
+
+    @staticmethod
+    def get_policy_docs_hash(static_rego_file_path: str, platform: str | None = None) -> str:
+        """Returns the hash of the static policy docs for the given platform."""
+        if platform:
+            source_directories = BundleGenerator.resolve_source_directories(
+                static_rego_root_path=static_rego_file_path,
+                platform=platform,
+            )
+            static_file_map: dict[str, str] = BundleGenerator._build_static_file_map(
+                source_directories=source_directories,
+                include_rego=True,
+                include_static_data=True,
+            )
+            static_file_map.pop(os.path.join(platform, "data.json"), None)
+        else:
+            static_file_map = BundleGenerator._build_static_file_map(
+                source_directories=[static_rego_file_path],
+                include_rego=True,
+                include_static_data=True,
+            )
 
         hasher = hashlib.md5()
-        for file in rego_files:
-            with open(os.path.join(static_rego_file_path, file), "rb") as f:
+        for relative_path in sorted(static_file_map.keys()):
+            with open(static_file_map[relative_path], "rb") as f:
                 hasher.update(f.read())
 
         hash_str: str = hasher.hexdigest()
         logger.info(
-            f"Computing hash of policy docs in {static_rego_file_path} as {hash_str}"
+            f"Computing hash of policy docs in {static_rego_file_path} for platform '{platform}' as {hash_str}"
         )
         return hash_str
 
