@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -376,6 +376,17 @@
     <span class="md-ellipsis">
       
         Bundle Generator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy-layout-for-multiple-platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy Layout For Multiple Platforms
       
     </span>
   </a>
@@ -966,6 +977,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#policy-layout-for-multiple-platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy Layout For Multiple Platforms
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1011,6 +1033,32 @@ This is to avoid recreating the bundle several times when multiple updates are d
 <p>The bundle generator will produce bundle tarballs consisting of a <code>json</code> data object, <code>rego</code> policy documents and a <code>manifest</code>. The
 <code>rego</code> policy files should be mounted at your chosen location, and this location configured using <code>bundle_generator.static_rego_file_path</code>.
 The policy files will be provided in the bundle without modification, however the test files are removed to reduce the volume.</p>
+<h2 id="policy-layout-for-multiple-platforms">Policy Layout For Multiple Platforms</h2>
+<p>Moat supports serving separate bundles per platform from a single policy root.</p>
+<ul>
+<li><code>bundle_generator.static_rego_file_path</code> points at a directory containing one folder per platform.</li>
+<li>Optional shared defaults can be defined in <code>_defaults</code> and are merged into every platform.</li>
+<li>Platform files override defaults when they share the same relative path.</li>
+<li>Rego and static data files are discovered recursively, so nested <code>rules/</code>, <code>static_rules/</code>, and <code>data/</code> folders are supported.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-text">opa/
+  _defaults/
+    rules/
+      common.rego
+    data/
+      entitlements.json
+  trino/
+    rules/
+      allow.rego
+    static_rules/
+      masking.rego
+  spark/
+    rules/
+      allow.rego
+</code></pre>
+<p>Generated runtime metadata from Moat is always written to <code>&lt;platform&gt;/data.json</code> in the bundle.
+Static files at that exact path are ignored to prevent collisions.</p>
 
 
 

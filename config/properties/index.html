@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -794,6 +794,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bundle_generatordefault_platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bundle_generator.default_platform
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#commondb_connection_string" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1473,6 +1484,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#bundle_generatordefault_platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bundle_generator.default_platform
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#commondb_connection_string" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2051,10 +2073,10 @@
 <h2 id="bundle_generatorstatic_rego_file_path"><code>bundle_generator.static_rego_file_path</code></h2>
 <ul>
 <li>Type: <code>string</code></li>
-<li>Default: <code>opa/trino</code></li>
-<li>Example: <code>opa/trino</code></li>
+<li>Default: <code>opa</code></li>
+<li>Example: <code>opa</code></li>
 </ul>
-<p>The path to static Rego files used for bundle generation.</p>
+<p>The root path containing platform policy folders used for bundle generation.</p>
 <h2 id="bundle_generatortemp_directory"><code>bundle_generator.temp_directory</code></h2>
 <ul>
 <li>Type: <code>string</code></li>
@@ -2062,6 +2084,13 @@
 <li>Example: <code>/tmp/moat-bundles</code></li>
 </ul>
 <p>The temporary directory for bundle generation.</p>
+<h2 id="bundle_generatordefault_platform"><code>bundle_generator.default_platform</code></h2>
+<ul>
+<li>Type: <code>string</code></li>
+<li>Default: <code>trino</code></li>
+<li>Example: <code>trino</code></li>
+</ul>
+<p>Default platform used when no platform is explicitly provided.</p>
 <h2 id="commondb_connection_string"><code>common.db_connection_string</code></h2>
 <ul>
 <li>Type: <code>string</code></li>
