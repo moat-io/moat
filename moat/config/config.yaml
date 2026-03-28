@@ -14,6 +14,7 @@ database.seed_data_path: "moat/seed_data"
 opa_client.timeout_seconds: "0.1"
 
 bundle_generator.temp_directory: /tmp
+bundle_generator.default_platform: trino
 
 bundler.minimum_retention_days: 7
 bundler.bundle_minimum_count: 1

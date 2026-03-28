@@ -26,40 +26,56 @@ class BundleService:
 
     @staticmethod
     def refresh_bundle(
-        database: Database, event_logger: EventLogger, platform: str = "trino"
+        database: Database, event_logger: EventLogger, platform: str | None = None
     ) -> None:
         with database.Session() as session:
-            if BundleService.bundle_requires_refresh(
-                session=session, platform=platform
-            ):
-                try:
-                    opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
-                        session=session, platform=platform
-                    )
+            platforms: list[str] = (
+                [platform] if platform else BundleGenerator.get_supported_platforms()
+            )
 
-                    log: str = f"Bundle generated for platform: {platform}"
-                    context: dict = {
-                        "platform": platform,
-                        "etag": opa_bundle.e_tag,
-                        "policy_hash": opa_bundle.policy_hash,
-                        "state": "success",
-                    }
-                    session.commit()
+            if not platforms:
+                logger.warning("No supported platforms found for bundle refresh")
 
-                    event_logger.log_event(
-                        asset="bundle", action="generate", log=log, context=context
-                    )
+            for target_platform in platforms:
+                log: str = f"Bundle generated for platform: {target_platform}"
+                if BundleService.bundle_requires_refresh(
+                    session=session, platform=target_platform
+                ):
+                    try:
+                        opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
+                            session=session, platform=target_platform
+                        )
 
-                except Exception as e:
-                    logger.error(
-                        f"Error generating bundle for platform: {platform} :: {e}"
-                    )
-                    event_logger.log_event(
-                        asset="bundle",
-                        action="generate",
-                        log=log,
-                        context={"state": "failure", "error": str(e)},
-                    )
+                        context: dict = {
+                            "platform": target_platform,
+                            "etag": opa_bundle.e_tag,
+                            "policy_hash": opa_bundle.policy_hash,
+                            "state": "success",
+                        }
+                        session.commit()
+
+                        event_logger.log_event(
+                            asset="bundle", action="generate", log=log, context=context
+                        )
+
+                    except Exception as e:
+                        logger.error(
+                            f"Error generating bundle for platform: {target_platform} :: {e}"
+                        )
+                        event_logger.log_event(
+                            asset="bundle",
+                            action="generate",
+                            log=log,
+                            context={
+                                "platform": target_platform,
+                                "state": "failure",
+                                "error": str(e),
+                            },
+                        )
+                        session.rollback()
+                else:
+                    logger.info(f"No bundle refresh required for {target_platform}")
+
             BundleService.clean_up_bundle_storage(session, event_logger)
 
     @staticmethod
@@ -93,7 +109,8 @@ class BundleService:
         )
 
         policy_hash: str = BundleGenerator.get_policy_docs_hash(
-            static_rego_file_path=bundle_generator.static_rego_file_path
+            static_rego_file_path=bundle_generator.static_rego_root_path,
+            platform=platform,
         )
 
         latest_object_date: datetime = BundleService.get_latest_object_date(session)

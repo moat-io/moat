@@ -219,3 +219,28 @@ def test_clean_up_bundle_storage_keeps_minimum_per_platform(
                 assert "trino_newer_bundle.tar.gz" in os.listdir(tmp_path)
                 assert "spark_old_bundle.tar.gz" in os.listdir(tmp_path)
                 assert "spark_newer_bundle.tar.gz" in os.listdir(tmp_path)
+
+
+def test_refresh_bundle_refreshes_all_supported_platforms(database: Database):
+    event_logger = mock.Mock()
+    with mock.patch(
+        "services.bundle.src.bundle_service.BundleGenerator.get_supported_platforms",
+        return_value=["spark", "trino"],
+    ):
+        with mock.patch.object(
+            BundleService, "bundle_requires_refresh", return_value=True
+        ) as mock_requires_refresh:
+            with mock.patch.object(
+                BundleService, "generate_bundle"
+            ) as mock_generate_bundle:
+                mock_bundle = mock.Mock()
+                mock_bundle.e_tag = "etag"
+                mock_bundle.policy_hash = "hash"
+                mock_generate_bundle.return_value = mock_bundle
+
+                BundleService.refresh_bundle(
+                    database=database, event_logger=event_logger
+                )
+
+    assert mock_requires_refresh.call_count == 2
+    assert mock_generate_bundle.call_count == 2
