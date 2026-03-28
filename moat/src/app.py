@@ -14,6 +14,7 @@ from views import (
     principals_bp,
     policies_bp,
     root_bp,
+    opa_bundles_bp,
 )
 from app_config import AppConfigModelBase
 from app_logger import Logger, get_logger
@@ -55,6 +56,7 @@ def create_app(database: Database | None = None) -> Flask:
     flask_app.register_blueprint(healthz_bp)
     flask_app.register_blueprint(resources_bp)
     flask_app.register_blueprint(policies_bp)
+    flask_app.register_blueprint(opa_bundles_bp)
 
     # enable APIs
     flask_app.register_blueprint(bundle_api_bp)
