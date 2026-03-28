@@ -4,10 +4,10 @@ This document lists all available configuration properties for Moat
 
 ## `bundle_generator.static_rego_file_path`
 * Type: `string`
-* Default: `opa/trino`
-* Example: `opa/trino`
+* Default: `opa`
+* Example: `opa`
 
-The path to static Rego files used for bundle generation.
+The root path containing platform policy folders used for bundle generation.
 
 ## `bundle_generator.temp_directory`
 * Type: `string`
@@ -15,6 +15,13 @@ The path to static Rego files used for bundle generation.
 * Example: `/tmp/moat-bundles`
 
 The temporary directory for bundle generation.
+
+## `bundle_generator.default_platform`
+* Type: `string`
+* Default: `trino`
+* Example: `trino`
+
+Default platform used when no platform is explicitly provided.
 
 ## `common.db_connection_string`
 * Type: `string`

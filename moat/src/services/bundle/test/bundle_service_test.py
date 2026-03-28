@@ -8,6 +8,27 @@ from services.bundle import BundleService
 from services.bundle.src.bundler_config import BundlerConfig
 
 
+def _create_opa_bundle(
+    session,
+    platform: str,
+    directory: str,
+    filename: str,
+    record_updated_date: datetime,
+) -> None:
+    opa_bundle_dbo: OpaBundleDbo = OpaBundleDbo()
+    opa_bundle_dbo.platform = platform
+    opa_bundle_dbo.e_tag = filename
+    opa_bundle_dbo.bundle_filename = filename
+    opa_bundle_dbo.bundle_directory = directory
+    opa_bundle_dbo.policy_hash = filename
+    opa_bundle_dbo.record_updated_date = record_updated_date
+    session.add(opa_bundle_dbo)
+    session.flush()
+
+    with open(os.path.join(directory, filename), "w", encoding="utf-8") as f:
+        f.write(filename)
+
+
 def test_bundle_requires_refresh(database: Database, tmp_path: Path):
     with database.Session() as session:
         # with no bundle defined, must be created
@@ -108,7 +129,9 @@ def test_generate_bundle(database: Database, tmp_path):
 
         # clean up the bundle storage
         with database.Session() as session:
-            BundleService.clean_up_bundle_storage(session=session)
+            BundleService.clean_up_bundle_storage(
+                session=session, event_logger=mock.Mock()
+            )
             session.commit()
 
         with database.Session() as session:
@@ -121,3 +144,103 @@ def test_generate_bundle(database: Database, tmp_path):
             # the old file should have been deleted
             assert len(os.listdir(tmp_path)) == 1
             assert first_bundle_filename not in os.listdir(tmp_path)
+
+
+def test_clean_up_bundle_storage_keeps_minimum_per_platform(
+    database: Database, tmp_path: Path
+):
+    with mock.patch.object(BundlerConfig, "bundle_retention_days", 1):
+        with mock.patch.object(BundlerConfig, "bundle_minimum_count", 2):
+            with database.Session() as session:
+                # delete all bundles
+                session.query(OpaBundleDbo).delete()
+                session.commit()
+                _create_opa_bundle(
+                    session=session,
+                    platform="trino",
+                    directory=str(tmp_path),
+                    filename="trino_oldest_bundle.tar.gz",
+                    record_updated_date=datetime.now(UTC) - timedelta(days=10),
+                )
+                _create_opa_bundle(
+                    session=session,
+                    platform="trino",
+                    directory=str(tmp_path),
+                    filename="trino_old_bundle.tar.gz",
+                    record_updated_date=datetime.now(UTC) - timedelta(days=9),
+                )
+                _create_opa_bundle(
+                    session=session,
+                    platform="trino",
+                    directory=str(tmp_path),
+                    filename="trino_newer_bundle.tar.gz",
+                    record_updated_date=datetime.now(UTC) - timedelta(days=8),
+                )
+                _create_opa_bundle(
+                    session=session,
+                    platform="spark",
+                    directory=str(tmp_path),
+                    filename="spark_old_bundle.tar.gz",
+                    record_updated_date=datetime.now(UTC) - timedelta(days=10),
+                )
+                _create_opa_bundle(
+                    session=session,
+                    platform="spark",
+                    directory=str(tmp_path),
+                    filename="spark_newer_bundle.tar.gz",
+                    record_updated_date=datetime.now(UTC) - timedelta(days=9),
+                )
+                session.commit()
+
+            with database.Session() as session:
+                BundleService.clean_up_bundle_storage(
+                    session=session, event_logger=mock.Mock()
+                )
+                session.commit()
+
+            with database.Session() as session:
+                trino_bundles = (
+                    session.query(OpaBundleDbo)
+                    .filter(OpaBundleDbo.platform == "trino")
+                    .order_by(OpaBundleDbo.record_updated_date.desc())
+                    .all()
+                )
+                spark_bundles = (
+                    session.query(OpaBundleDbo)
+                    .filter(OpaBundleDbo.platform == "spark")
+                    .order_by(OpaBundleDbo.record_updated_date.desc())
+                    .all()
+                )
+
+                assert len(trino_bundles) == 2
+                assert len(spark_bundles) == 2
+                assert "trino_oldest_bundle.tar.gz" not in os.listdir(tmp_path)
+                assert "trino_old_bundle.tar.gz" in os.listdir(tmp_path)
+                assert "trino_newer_bundle.tar.gz" in os.listdir(tmp_path)
+                assert "spark_old_bundle.tar.gz" in os.listdir(tmp_path)
+                assert "spark_newer_bundle.tar.gz" in os.listdir(tmp_path)
+
+
+def test_refresh_bundle_refreshes_all_supported_platforms(database: Database):
+    event_logger = mock.Mock()
+    with mock.patch(
+        "services.bundle.src.bundle_service.BundleGenerator.get_supported_platforms",
+        return_value=["spark", "trino"],
+    ):
+        with mock.patch.object(
+            BundleService, "bundle_requires_refresh", return_value=True
+        ) as mock_requires_refresh:
+            with mock.patch.object(
+                BundleService, "generate_bundle"
+            ) as mock_generate_bundle:
+                mock_bundle = mock.Mock()
+                mock_bundle.e_tag = "etag"
+                mock_bundle.policy_hash = "hash"
+                mock_generate_bundle.return_value = mock_bundle
+
+                BundleService.refresh_bundle(
+                    database=database, event_logger=event_logger
+                )
+
+    assert mock_requires_refresh.call_count == 2
+    assert mock_generate_bundle.call_count == 2

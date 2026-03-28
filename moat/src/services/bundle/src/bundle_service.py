@@ -3,6 +3,7 @@ import shutil
 import hashlib
 from database import Database
 from datetime import datetime, timedelta, UTC
+from sqlalchemy import func
 
 from events import EventLogger
 from models import OpaBundleDbo
@@ -20,41 +21,62 @@ logger: Logger = get_logger("services.bundle")
 
 class BundleService:
     @staticmethod
+    def _to_non_negative_int(value: int) -> int:
+        return max(0, value)
+
+    @staticmethod
     def refresh_bundle(
-        database: Database, event_logger: EventLogger, platform: str = "trino"
+        database: Database, event_logger: EventLogger, platform: str | None = None
     ) -> None:
         with database.Session() as session:
-            if BundleService.bundle_requires_refresh(
-                session=session, platform=platform
-            ):
-                try:
-                    opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
-                        session=session, platform=platform
-                    )
+            platforms: list[str] = (
+                [platform] if platform else BundleGenerator.get_supported_platforms()
+            )
 
-                    log: str = f"Bundle generated for platform: {platform}"
-                    context: dict = {
-                        "platform": platform,
-                        "etag": opa_bundle.e_tag,
-                        "policy_hash": opa_bundle.policy_hash,
-                        "state": "success",
-                    }
-                    session.commit()
+            if not platforms:
+                logger.warning("No supported platforms found for bundle refresh")
 
-                    event_logger.log_event(
-                        asset="bundle", action="generate", log=log, context=context
-                    )
+            for target_platform in platforms:
+                log: str = f"Bundle generated for platform: {target_platform}"
+                if BundleService.bundle_requires_refresh(
+                    session=session, platform=target_platform
+                ):
+                    try:
+                        opa_bundle: OpaBundleDbo = BundleService.generate_bundle(
+                            session=session, platform=target_platform
+                        )
 
-                except Exception as e:
-                    logger.error(
-                        f"Error generating bundle for platform: {platform} :: {e}"
-                    )
-                    event_logger.log_event(
-                        asset="bundle",
-                        action="generate",
-                        log=log,
-                        context={"state": "failure", "error": str(e)},
-                    )
+                        context: dict = {
+                            "platform": target_platform,
+                            "etag": opa_bundle.e_tag,
+                            "policy_hash": opa_bundle.policy_hash,
+                            "state": "success",
+                        }
+                        session.commit()
+
+                        event_logger.log_event(
+                            asset="bundle", action="generate", log=log, context=context
+                        )
+
+                    except Exception as e:
+                        logger.error(
+                            f"Error generating bundle for platform: {target_platform} :: {e}"
+                        )
+                        event_logger.log_event(
+                            asset="bundle",
+                            action="generate",
+                            log=log,
+                            context={
+                                "platform": target_platform,
+                                "state": "failure",
+                                "error": str(e),
+                            },
+                        )
+                        session.rollback()
+                else:
+                    logger.info(f"No bundle refresh required for {target_platform}")
+
+            BundleService.clean_up_bundle_storage(session, event_logger)
 
     @staticmethod
     def _get_current_datetime() -> datetime:
@@ -87,7 +109,8 @@ class BundleService:
         )
 
         policy_hash: str = BundleGenerator.get_policy_docs_hash(
-            static_rego_file_path=bundle_generator.static_rego_file_path
+            static_rego_file_path=bundle_generator.static_rego_root_path,
+            platform=platform,
         )
 
         latest_object_date: datetime = BundleService.get_latest_object_date(session)
@@ -182,23 +205,65 @@ class BundleService:
         return opa_bundle
 
     @staticmethod
-    def clean_up_bundle_storage(session) -> None:
-        logger.info(f"Cleaning up bundle storage")
+    def clean_up_bundle_storage(session, event_logger: EventLogger) -> None:
+        logger.info("Cleaning up bundle storage")
         config: BundlerConfig = BundlerConfig().load()
-        cutoff_date = datetime.now() - timedelta(days=config.bundle_retention_days)
+        retention_days = BundleService._to_non_negative_int(
+            value=config.bundle_retention_days,
+        )
+        min_bundle_count = BundleService._to_non_negative_int(
+            value=config.bundle_minimum_count,
+        )
+        cutoff_date = datetime.now(UTC) - timedelta(days=retention_days)
+
+        platform_bundle_counts = dict(
+            session.query(
+                OpaBundleDbo.platform,
+                func.count(OpaBundleDbo.opa_bundle_id),
+            )
+            .group_by(OpaBundleDbo.platform)
+            .all()
+        )
+        max_deletions_by_platform = {
+            platform: max(0, bundle_count - min_bundle_count)
+            for platform, bundle_count in platform_bundle_counts.items()
+        }
+        deleted_bundles_by_platform = dict.fromkeys(platform_bundle_counts, 0)
 
         old_bundles = (
             session.query(OpaBundleDbo)
             .filter(OpaBundleDbo.record_updated_date < cutoff_date)
+            .order_by(
+                OpaBundleDbo.platform.asc(),
+                OpaBundleDbo.record_updated_date.asc(),
+                OpaBundleDbo.opa_bundle_id.asc(),
+            )
             .all()
         )
 
         for bundle in old_bundles:
+            deleted_count = deleted_bundles_by_platform.get(bundle.platform, 0)
+            max_deletions = max_deletions_by_platform.get(bundle.platform, 0)
+
+            if deleted_count >= max_deletions:
+                continue
+
             bundle_path = os.path.join(bundle.bundle_directory, bundle.bundle_filename)
             if os.path.exists(bundle_path):
                 os.remove(bundle_path)
             session.delete(bundle)
-            logger.info(f"Deleted bundle {bundle.bundle_filename}")
+            deleted_bundles_by_platform[bundle.platform] = deleted_count + 1
+            event_logger.log_event(
+                asset="bundle",
+                action="delete",
+                log=f"Deleted bundle {bundle.bundle_filename}",
+                context={
+                    "platform": bundle.platform,
+                    "bundle_filename": bundle.bundle_filename,
+                    "bundle_date": bundle.record_updated_date,
+                    "cutoff_date": cutoff_date,
+                },
+            )
 
     @staticmethod
     def get_current_bundle_metadata(session, platform: str) -> OpaBundleDbo:
