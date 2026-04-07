@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import desc, or_
 
 from models import OpaBundleDbo
+from repositories import BundleRepository
 
 
 class BundlesController:
@@ -16,22 +17,13 @@ class BundlesController:
     }
 
     @staticmethod
-    def get_bundles_paginated(
+    def get_all_bundles_paginated(
         session,
         sort_col_name: str,
         page_number: int,
         page_size: int,
         search_term: str,
-        scope: str = "platform",
     ) -> tuple[int, list[dict]]:
-        if scope == "all":
-            return BundlesController._get_generic_all_bundles(
-                session=session,
-                search_term=search_term,
-                page_number=page_number,
-                page_size=page_size,
-            )
-
         query = session.query(OpaBundleDbo)
         if search_term:
             wildcard = f"%{search_term}%"
@@ -56,7 +48,7 @@ class BundlesController:
         return total_count, [BundlesController._to_row(bundle) for bundle in bundles]
 
     @staticmethod
-    def _get_generic_all_bundles(
+    def get_latest_by_platform_paginated(
         session, search_term: str, page_number: int, page_size: int
     ) -> tuple[int, list[dict]]:
         bundles = (
@@ -81,6 +73,7 @@ class BundlesController:
             ),
             reverse=True,
         )
+        # rows has one entry per platform, ordered by record_updated_date descending
 
         all_row = BundlesController._build_all_row(rows)
         if all_row:
@@ -116,10 +109,10 @@ class BundlesController:
         )
 
         return {
+            "id": latest_record.get("id"),
             "platform": "all",
-            "bundle_filename": f"{len(platform_rows)} latest platform bundles",
             "e_tag": latest_record.get("e_tag"),
-            "policy_hash": "aggregate",
+            "policy_hash": "",
             "record_updated_date": latest_record.get("record_updated_date"),
             "size_bytes": total_size,
             "scope": "all",
@@ -127,13 +120,21 @@ class BundlesController:
         }
 
     @staticmethod
+    def get_bundle_by_id(session, bundle_id: int) -> OpaBundleDbo | None:
+        return BundleRepository.get_bundle_by_id(session=session, bundle_id=bundle_id)
+
+    @staticmethod
     def _to_row(bundle: OpaBundleDbo) -> dict:
-        bundle_path = os.path.join(bundle.bundle_directory, bundle.bundle_filename)
-        size_bytes: int | None = (
-            os.path.getsize(bundle_path) if os.path.isfile(bundle_path) else None
+        size_bytes: (
+            int | None
+        ) = (  # TODO capture the size when created so the UI path doesn't need this
+            os.path.getsize(bundle.bundle_path)
+            if os.path.isfile(bundle.bundle_path)
+            else None
         )
 
         return {
+            "id": bundle.opa_bundle_id,
             "platform": bundle.platform,
             "bundle_filename": bundle.bundle_filename,
             "e_tag": bundle.e_tag,
