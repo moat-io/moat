@@ -1,4 +1,5 @@
 import os
+from contextlib import suppress
 from typing import Any, Generator
 
 import pytest
@@ -31,6 +32,17 @@ def database_empty() -> Generator[Database, Any, None]:
         janitor_class = MysqlDatabaseJanitor
     else:
         raise ValueError(f"Unsupported database protocol: {db.config.protocol}")
+    # if we debug and do not clean up then there can be issues recreating the database without doing a docker-compose down
+    with suppress(Exception):
+        janitor_class(
+            user=db.config.user,
+            password=db.config.password,
+            host=db.config.host,
+            port=db.config.port,
+            dbname=db.config.database,
+            version=16,
+            connection_timeout=2,
+        ).drop()
 
     with janitor_class(
         user=db.config.user,

@@ -1,0 +1,50 @@
+{% include "partials/common/app-state-table-vars.html" %}
+{% from "partials/common/table-footer-macro.html" import table_footer_macro %}
+
+<div class="flex flex-col">
+    <div class="overflow-x-auto">
+        <div class="inline-block min-w-full align-middle">
+            <div class="overflow-hidden shadow">
+                <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                    <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Platform
+                        </th>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Bundle
+                        </th>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            ETag
+                        </th>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Policy Hash
+                        </th>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Updated
+                        </th>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Size
+                        </th>
+                        <th scope="col"
+                            class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                            Endpoint
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    {% include 'partials/bundles/bundles-table-tr.html' %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ table_footer_macro("bundles", query_state) }}

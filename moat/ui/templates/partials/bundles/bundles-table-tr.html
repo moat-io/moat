@@ -1,0 +1,37 @@
+{% for bundle in bundles %}
+    <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+        <td class="p-4 text-sm font-medium text-gray-900 dark:text-white">
+            {{ bundle.platform }}
+        </td>
+        <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+            {{ bundle.bundle_filename }}
+        </td>
+        <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400 break-all">
+            {{ bundle.e_tag }}
+        </td>
+        <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400 break-all">
+            {{ bundle.policy_hash }}
+        </td>
+        <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+            {% if bundle.record_updated_date %}
+                {{ bundle.record_updated_date }}
+            {% else %}
+                -
+            {% endif %}
+        </td>
+        <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+            {% if bundle.size_bytes %}
+                {{ bundle.size_bytes | filesizeformat }}
+            {% else %}
+                -
+            {% endif %}
+        </td>
+        <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+            {% if bundle.bundle_url %}
+                <code>{{ bundle.bundle_url }}</code>
+            {% else %}
+                <span class="italic">Generic summary row</span>
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
