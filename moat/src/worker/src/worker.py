@@ -23,20 +23,32 @@ class Worker:
         )
 
         while True:
-            try:
-                logger.info("Starting bundle refresh")
-                BundleService.refresh_bundle(
-                    database=self.database, event_logger=self.event_logger
-                )
+            self._refresh_bundle()
 
-            except Exception as e:
-                logger.error(f"Error refreshing bundle: {e}")
-
-            finally:
-                self._wait()
+            self._wait()
 
     def _wait(self):
         logger.info(f"Sleeping for {self.config.interval_s} seconds")
         time.sleep(self.config.interval_s)
 
         self.event_logger.log_event(asset="worker", action="heartbeat")
+
+    def _refresh_bundle(self) -> None:
+        try:
+            logger.info("Starting bundle refresh")
+            BundleService.refresh_bundle(
+                database=self.database, event_logger=self.event_logger
+            )
+
+        except Exception as e:
+            logger.error(f"Error refreshing bundle: {e}")
+
+    def _clean_up_bundle_storage(self) -> None:
+        try:
+            with self.database.Session() as session:
+                BundleService.clean_up_bundle_storage(
+                    session=session, event_logger=self.event_logger
+                )
+                session.commit()
+        except Exception as e:
+            logger.error(f"Error cleaning up bundle storage: {e}")
