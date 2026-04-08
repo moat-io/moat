@@ -206,8 +206,10 @@ class BundleService:
 
     @staticmethod
     def clean_up_bundle_storage(session, event_logger: EventLogger) -> None:
-        logger.info("Cleaning up bundle storage")
         config: BundlerConfig = BundlerConfig().load()
+        logger.info(
+            f"Cleaning up bundles older than {config.bundle_retention_days} days"
+        )
         retention_days = BundleService._to_non_negative_int(
             value=config.bundle_retention_days,
         )
@@ -241,6 +243,7 @@ class BundleService:
             .all()
         )
 
+        logger.info(f"Deleting {len(old_bundles)} old bundles")
         for bundle in old_bundles:
             deleted_count = deleted_bundles_by_platform.get(bundle.platform, 0)
             max_deletions = max_deletions_by_platform.get(bundle.platform, 0)
@@ -251,8 +254,14 @@ class BundleService:
             bundle_path = os.path.join(bundle.bundle_directory, bundle.bundle_filename)
             if os.path.exists(bundle_path):
                 os.remove(bundle_path)
+            else:
+                logger.warning(
+                    f"Attempted to delete bundle file which does not exist: {bundle_path}"
+                )
+
             session.delete(bundle)
             deleted_bundles_by_platform[bundle.platform] = deleted_count + 1
+            logger.info(f"Deleted bundle {bundle.e_tag}")
             event_logger.log_event(
                 asset="bundle",
                 action="delete",
@@ -260,8 +269,8 @@ class BundleService:
                 context={
                     "platform": bundle.platform,
                     "bundle_filename": bundle.bundle_filename,
-                    "bundle_date": bundle.record_updated_date,
-                    "cutoff_date": cutoff_date,
+                    "bundle_date": bundle.record_updated_date.isoformat(),
+                    "cutoff_date": cutoff_date.isoformat(),
                 },
             )
 
