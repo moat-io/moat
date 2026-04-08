@@ -24,7 +24,7 @@ class Worker:
 
         while True:
             self._refresh_bundle()
-
+            self._clean_up_bundle_storage()
             self._wait()
 
     def _wait(self):

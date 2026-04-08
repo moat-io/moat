@@ -76,8 +76,6 @@ class BundleService:
                 else:
                     logger.info(f"No bundle refresh required for {target_platform}")
 
-            BundleService.clean_up_bundle_storage(session, event_logger)
-
     @staticmethod
     def _get_current_datetime() -> datetime:
         return datetime.now()
