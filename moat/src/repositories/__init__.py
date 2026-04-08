@@ -5,3 +5,5 @@ from .src.principal_repository import PrincipalRepository
 from .src.repository_base import RepositoryBase
 from .src.resource_repository import ResourceRepository
 from .src.principal_group_repository import PrincipalGroupRepository
+
+from .src.bundle_repository import BundleRepository
