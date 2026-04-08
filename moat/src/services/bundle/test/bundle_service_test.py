@@ -129,6 +129,8 @@ def test_generate_bundle(database: Database, tmp_path):
 
         # clean up the bundle storage
         with database.Session() as session:
+            assert session.query(OpaBundleDbo).count() == 2
+
             BundleService.clean_up_bundle_storage(
                 session=session, event_logger=mock.Mock()
             )
