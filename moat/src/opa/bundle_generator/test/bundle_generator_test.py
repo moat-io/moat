@@ -2,11 +2,13 @@ import json
 from unittest import mock
 import os
 import subprocess
+from types import SimpleNamespace
 
 from database import Database
 from sqlalchemy import text
 
 from ..src.bundle_generator import BundleGenerator
+from ..src.bundle_generator_config import BundleGeneratorConfig
 
 
 def test_get_rego_policy_file_list():
@@ -113,3 +115,72 @@ def test_generate_data_objects_in_data_object(database: Database):
         )
 
     assert sorted(actual.keys()) == sorted(expected.keys())
+
+
+def test_get_supported_platforms(tmp_path):
+    (tmp_path / "_defaults").mkdir()
+    (tmp_path / "trino").mkdir()
+    (tmp_path / "spark").mkdir()
+    (tmp_path / ".hidden").mkdir()
+
+    with mock.patch.object(
+        BundleGeneratorConfig,
+        "load",
+        return_value=SimpleNamespace(static_rego_file_path=str(tmp_path)),
+    ):
+        assert BundleGenerator.get_supported_platforms() == ["spark", "trino"]
+
+
+def test_get_rego_policy_file_list_with_defaults_and_nested_files(tmp_path):
+    policy_root = tmp_path / "rego"
+    (policy_root / "_defaults" / "rules").mkdir(parents=True)
+    (policy_root / "spark" / "rules").mkdir(parents=True)
+    (policy_root / "_defaults" / "rules" / "default.rego").write_text(
+        "package moat.spark", encoding="utf-8"
+    )
+    (policy_root / "_defaults" / "rules" / "default_test.rego").write_text(
+        "package moat.spark", encoding="utf-8"
+    )
+    (policy_root / "spark" / "rules" / "platform.rego").write_text(
+        "package moat.spark", encoding="utf-8"
+    )
+
+    with mock.patch.object(
+        BundleGeneratorConfig,
+        "load",
+        return_value=SimpleNamespace(
+            temp_directory=str(tmp_path),
+            static_rego_file_path=str(policy_root),
+            default_platform="trino",
+        ),
+    ):
+        bundle_generator = BundleGenerator(platform="spark")
+        files = bundle_generator.get_rego_policy_file_path_list()
+
+    assert files == sorted(
+        [
+            str(policy_root / "_defaults" / "rules" / "default.rego"),
+            str(policy_root / "spark" / "rules" / "platform.rego"),
+        ]
+    )
+
+
+def test_get_policy_docs_hash_platform_includes_defaults_and_static_data(tmp_path):
+    policy_root = tmp_path / "rego"
+    (policy_root / "_defaults" / "static").mkdir(parents=True)
+    (policy_root / "spark" / "rules").mkdir(parents=True)
+    (policy_root / "_defaults" / "static" / "lookups.json").write_text(
+        '{"entitlements": ["read"]}', encoding="utf-8"
+    )
+    (policy_root / "spark" / "rules" / "platform.rego").write_text(
+        "package moat.spark\nimport rego.v1", encoding="utf-8"
+    )
+
+    hash_without_platform = BundleGenerator.get_policy_docs_hash(
+        static_rego_file_path=str(policy_root / "spark")
+    )
+    hash_with_platform = BundleGenerator.get_policy_docs_hash(
+        static_rego_file_path=str(policy_root), platform="spark"
+    )
+
+    assert hash_without_platform != hash_with_platform

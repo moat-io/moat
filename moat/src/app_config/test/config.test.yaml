@@ -4,4 +4,5 @@ logger.root_level: "INFO"
 common.overridden: "base"
 
 common.boolean_value: "true"
-common.int_value: "345"
+common.str_int_value: "345"
+common.int_value: 345

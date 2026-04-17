@@ -1,0 +1,45 @@
+{% for bundle in bundles %}
+<tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+    <td class="w-4 p-4">
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+        <div class="text-base font-semibold text-gray-900 dark:text-white">
+            <span class="full-timestamp" data-time="{{ bundle.record_updated_date.isoformat() }}"></span>
+        </div>
+        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+            <span class="timeago" data-time="{{ bundle.record_updated_date.isoformat() }}"></span>
+        </div>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+        <div class="text-sm font-mono text-gray-500 dark:text-gray-400">{{ bundle.platform }}</div>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+        <table class="w-full">
+            <tr>
+                <td>E-tag:</td>
+                <td class="text-sm font-mono text-gray-500 dark:text-gray-400">
+                    <a href="{{ url_for('bundles.download', bundle_id=bundle.id) }}" download class="hover:underline">{{ bundle.e_tag }} ↓</a>
+                </td>
+            </tr>
+            <tr>
+                <td>Hash:</td>
+                <td class="text-sm font-mono text-gray-500 dark:text-gray-400">{{ bundle.policy_hash }}</td>
+            </tr>
+        </table>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+        <div class="text-sm font-mono text-gray-500 dark:text-gray-400">
+            {% if bundle.size_bytes %}
+                {{ bundle.size_bytes | filesizeformat }}
+            {% endif %}
+        </div>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+        <div class="text-sm font-mono text-gray-500 dark:text-gray-400">
+            {% if bundle.bundle_url %}
+                <code>{{ bundle.bundle_url }}</code>
+            {% endif %}
+        </div>
+    </td>
+</tr>
+{% endfor %}

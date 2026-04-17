@@ -11,6 +11,7 @@ def test_constructor():
     assert common_config_model.overridden == "base"
     assert common_config_model.new_in_layer_2 is None
     assert common_config_model.int_value == 345
+    assert common_config_model.str_int_value == 345
 
 
 def test_constructor_with_override():

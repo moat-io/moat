@@ -21,3 +21,33 @@ Under normal operation, the new bundle should be available to the OPA instance(s
 The bundle generator will produce bundle tarballs consisting of a `json` data object, `rego` policy documents and a `manifest`. The
 `rego` policy files should be mounted at your chosen location, and this location configured using `bundle_generator.static_rego_file_path`.
 The policy files will be provided in the bundle without modification, however the test files are removed to reduce the volume.
+
+## Policy Layout For Multiple Platforms
+Moat supports serving separate bundles per platform from a single policy root.
+
+- `bundle_generator.static_rego_file_path` points at a directory containing one folder per platform.
+- Optional shared defaults can be defined in `_defaults` and are merged into every platform.
+- Platform files override defaults when they share the same relative path.
+- Rego and static data files are discovered recursively, so nested `rules/`, `static_rules/`, and `data/` folders are supported.
+
+Example:
+
+```text
+opa/
+  _defaults/
+    rules/
+      common.rego
+    data/
+      entitlements.json
+  trino/
+    rules/
+      allow.rego
+    static_rules/
+      masking.rego
+  spark/
+    rules/
+      allow.rego
+```
+
+Generated runtime metadata from Moat is always written to `<platform>/data.json` in the bundle.
+Static files at that exact path are ignored to prevent collisions.
