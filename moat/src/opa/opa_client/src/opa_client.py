@@ -1,9 +1,11 @@
 import requests
 from app_logger import Logger, get_logger
+from opa.models.src.opa_bundle_response_model import OpaBundleResponse
 from opa.models.src.opa_query_model import OpaQueryModel
 from opa.models.src.opa_query_response_model import OpaQueryResponseModel
 from opa.models.src.opa_request_model import OpaRequestModel
 from opa.models.src.opa_response_model import OpaResponseModel
+from opa.models.src.trino_opa_request_model import OpaTableResource
 from pydantic import BaseModel
 
 from .opa_client_config import OpaClientConfig
@@ -112,6 +114,80 @@ class OpaClient:
         else:
             return opa_response.result[0].get("action", [])
 
+    def filter_resources_batch(
+        self, username: str, resources: list[OpaTableResource]
+    ) -> list[bool]:
+        """
+        Batch filter resources for a given principal using Trino OPA policies.
+
+        Args:
+            username: The username of the principal
+            resources: List of OpaTableResource objects
+
+        Returns:
+            List of boolean values indicating whether each resource is allowed
+        """
+        payload: dict = {
+            "action": {
+                "operation": "FilterTables",
+                "filterResources": [
+                    {
+                        "table": {
+                            "catalogName": resource.catalog,
+                            "schemaName": resource.schema,
+                            "tableName": resource.table,
+                        }
+                    }
+                    for resource in resources
+                ],
+            },
+            "context": {
+                "identity": {"user": username},
+            },
+        }
+
+        url = self._get_opa_url(path="/v1/data/moat/trino/batch")
+
+        logger.info(f"OPA batch request: url: {url} batch_size: {len(resources)}")
+        results: list[bool] | None = self._send_opa_batch_filter(
+            url=url, payload=payload
+        )
+
+        # Deny everything if the request failed or the response was malformed.
+        if results is None:
+            return [False] * len(resources)
+        return results
+
+    def get_bundle_metadata(self) -> OpaBundleResponse | None:
+        """
+        Fetch the current bundle state from OPA, including the etag of the
+        last successfully activated bundle.
+
+        OPA records bundle metadata (manifest, etag, ...) under the
+        `data.system.bundles` document, keyed by bundle name. Returns an
+        OpaBundleResponse, or None if the request fails.
+        """
+        url: str = self._get_opa_url(path="/v1/data/system/bundles")
+        try:
+            logger.info(f"OPA bundle metadata request: url: {url}")
+            response: requests.Response = requests.get(
+                url=url, timeout=float(self.config.timeout_seconds)
+            )
+        except requests.RequestException as e:
+            logger.exception(f"Unexpected error querying OPA bundle metadata: {e}")
+            return None
+
+        logger.info(
+            f"OPA bundle metadata response: status code: {response.status_code} "
+            f"Body: {response.text}"
+        )
+        if response.status_code != 200:
+            logger.exception(
+                f"OPA returned a non-200 status code: {response.status_code}"
+            )
+            return None
+        return OpaBundleResponse(**response.json())
+
     def _send_opa_authorize_request(
         self, url: str, opa_request: OpaRequestModel
     ) -> bool | None:
@@ -127,6 +203,23 @@ class OpaClient:
         )
         opa_response: OpaQueryResponseModel = OpaQueryResponseModel(**opa_response_dict)
         return opa_response
+
+    def _send_opa_batch_filter(self, url, payload: dict) -> list[bool]:
+        resource_count: int = len(payload["action"]["filterResources"])
+
+        opa_response_dict: dict | None = self._send_opa_request(
+            url=url, opa_request=OpaRequestModel(input=payload)
+        )
+
+        if opa_response_dict is None or "result" not in opa_response_dict:
+            logger.error(f"Unexpected OPA batch response format: {opa_response_dict}")
+            return [False] * resource_count
+
+        # OPA returns the indices of the resources it allows; expand that into a
+        # boolean per requested resource, preserving the input order.
+        allowed_indices: set[int] = set(opa_response_dict["result"])
+        resource_count: int = len(payload["action"]["filterResources"])
+        return [index in allowed_indices for index in range(resource_count)]
 
     def _send_opa_request(
         self, url: str, opa_request: OpaRequestModel | OpaQueryModel

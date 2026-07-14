@@ -27,7 +27,12 @@ class BundleService:
     @staticmethod
     def refresh_bundle(
         database: Database, event_logger: EventLogger, platform: str | None = None
-    ) -> None:
+    ) -> list[str]:
+        """
+        Returns a list of platforms for which bundles were generated.
+        """
+        updated_bundle_platforms: list[str] = []
+
         with database.Session() as session:
             platforms: list[str] = (
                 [platform] if platform else BundleGenerator.get_supported_platforms()
@@ -53,6 +58,7 @@ class BundleService:
                             "state": "success",
                         }
                         session.commit()
+                        updated_bundle_platforms.append(target_platform)
 
                         event_logger.log_event(
                             asset="bundle", action="generate", log=log, context=context
@@ -75,6 +81,7 @@ class BundleService:
                         session.rollback()
                 else:
                     logger.info(f"No bundle refresh required for {target_platform}")
+        return updated_bundle_platforms
 
     @staticmethod
     def _get_current_datetime() -> datetime:

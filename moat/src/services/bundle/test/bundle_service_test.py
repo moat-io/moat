@@ -240,9 +240,10 @@ def test_refresh_bundle_refreshes_all_supported_platforms(database: Database):
                 mock_bundle.policy_hash = "hash"
                 mock_generate_bundle.return_value = mock_bundle
 
-                BundleService.refresh_bundle(
+                updated_bundle_platforms: list[str] = BundleService.refresh_bundle(
                     database=database, event_logger=event_logger
                 )
+                assert updated_bundle_platforms == ["spark", "trino"]
 
     assert mock_requires_refresh.call_count == 2
     assert mock_generate_bundle.call_count == 2

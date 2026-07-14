@@ -2,15 +2,15 @@ from typing import Tuple
 
 from datetime import datetime
 from models import (
+    PlatformDto,
     ResourceAttributeStagingDbo,
     ResourceDbo,
     ResourceStagingDbo,
     ResourceAttributeDbo,
-    ResourceHistoryDbo,
-    ResourceAttributeHistoryDbo,
 )
+from sqlalchemy import distinct
 from sqlalchemy.orm import Query
-from sqlalchemy.sql import text, func
+from sqlalchemy.sql import text
 
 from .repository_base import RepositoryBase
 
@@ -30,6 +30,12 @@ class ResourceRepository(RepositoryBase):
             .order_by(ResourceDbo.fq_name)
         )
         return query.count(), query.all()
+
+    @staticmethod
+    def list_platforms(session) -> list[PlatformDto]:
+        """Get distinct platforms from the resources table."""
+        platforms = session.query(distinct(ResourceDbo.platform)).all()
+        return [PlatformDto(name=p[0]) for p in platforms if p[0]]
 
     @staticmethod
     def get_all_with_search_and_pagination(
