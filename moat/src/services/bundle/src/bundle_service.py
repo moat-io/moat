@@ -232,10 +232,10 @@ class BundleService:
 
         old_bundles = (
             session.query(OpaBundleDbo)
-            .filter(OpaBundleDbo.record_updated_date < cutoff_date)
+            .filter(OpaBundleDbo.record_created_date < cutoff_date)
             .order_by(
                 OpaBundleDbo.platform.asc(),
-                OpaBundleDbo.record_updated_date.asc(),
+                OpaBundleDbo.record_created_date.asc(),
                 OpaBundleDbo.opa_bundle_id.asc(),
             )
             .all()
