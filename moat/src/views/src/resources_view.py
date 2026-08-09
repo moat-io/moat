@@ -4,6 +4,8 @@ from flask_pydantic import validate
 from views.controllers import ResourcesController
 from views.models import BreadcrumbsVm, TableQueryVm
 
+from .csv_response import format_attributes, make_csv_response
+
 bp = Blueprint("resources", __name__, url_prefix="/resources")
 
 TABLES_SORT_KEY: str = "fq_name"
@@ -22,6 +24,28 @@ def index_tables():
         "partials/resources/resources-search.html",
         query_state=query_state,
         breadcrumbs=breadcrumbs,
+    )
+
+
+@bp.route("/download", methods=["GET"])
+def download_csv():
+    with g.database.Session.begin() as session:
+        _, resources = ResourcesController.get_all_resources(session=session)
+
+        rows: list[list[str]] = [
+            [
+                resource.fq_name,
+                resource.platform,
+                resource.object_type,
+                format_attributes(resource.attributes),
+            ]
+            for resource in resources
+        ]
+
+    return make_csv_response(
+        file_name="resources.csv",
+        header=["fq_name", "platform", "object_type", "attributes"],
+        rows=rows,
     )
 
 

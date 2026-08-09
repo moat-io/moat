@@ -43,6 +43,11 @@ class PrincipalsController:
         # )
 
     @staticmethod
+    def get_all_principals(session) -> Tuple[int, list[PrincipalDbo]]:
+        repo: PrincipalRepository = PrincipalRepository()
+        return repo.get_all(session=session)
+
+    @staticmethod
     def get_principal_by_id(session, principal_id: int) -> PrincipalDbo:
         repo: PrincipalRepository = PrincipalRepository()
         return repo.get_by_id(session=session, principal_id=principal_id)

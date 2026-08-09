@@ -3,6 +3,8 @@ from flask_pydantic import validate
 from views.controllers import PrincipalsController
 from views.models import TableQueryVm
 
+from .csv_response import format_attributes, make_csv_response
+
 bp = Blueprint("principals", __name__, url_prefix="/principals")
 
 
@@ -41,6 +43,39 @@ def principals_table(query: TableQueryVm):
 
     response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
     return response
+
+
+@bp.route("/download", methods=["GET"])
+def download_csv():
+    with g.database.Session.begin() as session:
+        _, principals = PrincipalsController.get_all_principals(session=session)
+
+        rows: list[list[str]] = [
+            [
+                principal.user_name,
+                principal.first_name,
+                principal.last_name,
+                principal.email,
+                principal.source_type,
+                principal.active,
+                format_attributes(principal.attributes),
+            ]
+            for principal in principals
+        ]
+
+    return make_csv_response(
+        file_name="principals.csv",
+        header=[
+            "user_name",
+            "first_name",
+            "last_name",
+            "email",
+            "source_type",
+            "active",
+            "attributes",
+        ],
+        rows=rows,
+    )
 
 
 @bp.route("/<principal_id>/history-modal", methods=["GET"])
