@@ -80,8 +80,11 @@ class RepositoryBase:
     def get_latest_timestamp_for_model(
         session, model: type[MetadataDboMixin | BaseModel]
     ) -> datetime:
+        history_model: Type[BaseModel] = RepositoryBase.get_model_by_name(
+            table_name=f"{model.__tablename__}_history"
+        )
         latest_change_timestamp: datetime = session.query(
-            func.max(model.record_updated_date)
+            func.max(history_model.history_record_created_date)
         ).scalar()
         return latest_change_timestamp
 
