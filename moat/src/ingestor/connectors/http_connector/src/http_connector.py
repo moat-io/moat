@@ -282,7 +282,7 @@ class HttpConnector(ConnectorBase):
                 attribute_mapping=attribute_mapping,
                 target_class=PrincipalMultipleAttributes,
             )
-            # if no attribute multi then append a attribute dio without attributes
+            # if no attribute_multi then append an attribute dio without attributes
             if not obj.attributes_multi:
                 continue
             merged = {}
