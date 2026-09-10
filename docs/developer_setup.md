@@ -56,7 +56,7 @@ alembic -c moat/alembic.ini upgrade head
 flask --app moat.src.app run --debug --port 8000
 
 # seed the database
-python moat/moat/src/seed_db.py
+python moat/src/_scripts/seed_db.py
 
 # watch the UI changes (optional)
 cd moat/ui

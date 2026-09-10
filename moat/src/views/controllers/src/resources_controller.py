@@ -22,6 +22,10 @@ class ResourcesController:
     #     return table
 
     @staticmethod
+    def get_all_resources(session) -> Tuple[int, list[ResourceDbo]]:
+        return ResourceRepository.get_all(session=session)
+
+    @staticmethod
     def get_tables_paginated_with_access(
         session,
         logged_in_user: str | None,

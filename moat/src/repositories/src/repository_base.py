@@ -245,38 +245,42 @@ class RepositoryBase:
         dialect: str = "postgresql",
     ) -> str:
         """
-        The merge delete statement actually executes an update
-        The process ID is set and the record is marked as inactive
+        Deletes the records from the target table whose 'merge_keys' are no longer
+        present in the source (staging) table.
 
-        When the trigger proc is called on the update, the function
-        should insert a row in the history table with the new proc id
-        and delete the record from the target table
+        The record is hard deleted rather than flagged inactive. The history trigger
+        on the target table writes a 'D' row before the record disappears, so the
+        removal remains auditable - which is why the ingestion process id is not
+        stamped on the target row first.
+
+        'not exists' is used rather than 'except' as the 'except' set operator is
+        not supported by MySQL, including RDS MySQL.
         """
-        merge_keys_str: str = ", ".join(merge_keys)
-        where_clause: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
+        match_clause: str = " and ".join(
+            [
+                f"(src.{c} = tgt.{c} or (src.{c} is null and tgt.{c} is null))"
+                for c in merge_keys
+            ]
+        )
+        not_exists_clause: str = (
+            f"not exists ("
+            f"select 1 from {source_model.__tablename__} src where {match_clause}"
+            f")"
+        )
 
         if dialect == "mysql":
+            # the multi table delete syntax is used as aliasing the target of a
+            # single table delete is only supported from MySQL 8.0.16
             return dedent(
                 f"""
-                    update {target_model.__tablename__} tgt
-                    join (
-                        select {merge_keys_str} from {target_model.__tablename__}
-                        except
-                        select {merge_keys_str} from {source_model.__tablename__}
-                    ) src on {where_clause} and tgt.active
-                    set ingestion_process_id = {ingestion_process_id}, active = false
+                delete tgt from {target_model.__tablename__} tgt
+                where {not_exists_clause}
                 """
             )
 
         return dedent(
             f"""
-                update {target_model.__tablename__} tgt
-                set ingestion_process_id = {ingestion_process_id}, active = false
-                from (
-                    select {merge_keys_str} from {target_model.__tablename__}
-                    except
-                    select {merge_keys_str} from {source_model.__tablename__}
-                ) src
-                where {where_clause} and tgt.active
-                """
+            delete from {target_model.__tablename__} tgt
+            where {not_exists_clause}
+            """
         )

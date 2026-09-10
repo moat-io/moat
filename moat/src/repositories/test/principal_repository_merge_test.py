@@ -90,7 +90,7 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert 1 == len([p for p in principals if p.ingestion_process_id == 2])
         assert count == 3
 
-    # scenario 3: update target tables - includes two soft deletes
+    # scenario 3: update target tables - includes two deletes
     with database_empty.Session.begin() as session:
         principal: PrincipalDbo = repo.get_by_id(session=session, principal_id=1)
         assert principal.first_name == "Abigail"
@@ -118,7 +118,7 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         )
         assert insert_row_count == 0
         assert update_row_count == 1
-        assert deactivate_row_count == 2  # two soft deletes
+        assert deactivate_row_count == 2  # two deletes
         session.commit()
 
     # test it
@@ -128,11 +128,8 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert principal.last_name == "Hathaway"
 
         count, principals = repo.get_all(session=session)
-        # three records should be changed
-        assert 3 == len([p for p in principals if p.ingestion_process_id == 3])
-        assert 3 == count
-
-        # anne should be active, the others not
-        assert next(p for p in principals if p.first_name == "Anne").active
-        assert not next(p for p in principals if p.first_name == "Frank").active
-        assert not next(p for p in principals if p.first_name == "Boris").active
+        # only the record present in staging should remain
+        assert 1 == count
+        assert principals[0].first_name == "Anne"
+        assert principals[0].ingestion_process_id == 3
+        assert principals[0].active
