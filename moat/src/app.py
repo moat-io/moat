@@ -8,6 +8,7 @@ from apis.scim2 import (
     scim2_users_bp,
     scim2_groups_bp,
 )
+from apis.entitlements import entitlements_bp
 from views import (
     resources_bp,
     healthz_bp,
@@ -21,6 +22,7 @@ from app_logger import Logger, get_logger
 from events import EventLogger, EventDto
 from database import Database
 from flask import Flask, g, request, jsonify
+from flask_smorest import Api
 from werkzeug.exceptions import HTTPException
 
 logger: Logger = get_logger("app")
@@ -46,6 +48,12 @@ def create_app(database: Database | None = None) -> Flask:
     )
     flask_app.secret_key = flask_config.secret_key
 
+    # OpenAPI / flask-smorest configuration
+    flask_app.config["API_TITLE"] = "Moat API"
+    flask_app.config["API_VERSION"] = "v1"
+    flask_app.config["OPENAPI_VERSION"] = "3.0.2"
+    flask_app.config["OPENAPI_URL_PREFIX"] = "/"
+
     # Database
     database: Database = Database()
     database.connect()
@@ -64,6 +72,11 @@ def create_app(database: Database | None = None) -> Flask:
     flask_app.register_blueprint(status_api_bp)
     flask_app.register_blueprint(healthcheck_bp)
     # flask_app.register_blueprint(resource_bp)
+
+    # flask-smorest API (serves /openapi.json and generates the spec for
+    # smorest blueprints registered through it)
+    api = Api(flask_app)
+    api.register_blueprint(entitlements_bp)
 
     # Register SCIM2 blueprints
     flask_app.register_blueprint(scim2_service_provider_config_bp)
