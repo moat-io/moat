@@ -213,7 +213,9 @@ class RepositoryBase:
 
         set_stmt: str = ", ".join([f"{c} = src.{c}" for c in update_cols])
         join_stmt: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
-        where_stmt: str = " or ".join([f"tgt.{c} <> src.{c}" for c in update_cols])
+        where_stmt: str = " or ".join(
+            [f"tgt.{c} <> src.{c}" for c in update_cols] + ["tgt.active is not true"]
+        )
 
         if dialect == "mysql":
             set_stmt: str = ", ".join([f"tgt.{c} = src.{c}" for c in update_cols])
@@ -221,7 +223,7 @@ class RepositoryBase:
                 f"""
                 UPDATE {target_model.__tablename__} tgt
                 JOIN {source_model.__tablename__} src ON {join_stmt}
-                SET {set_stmt}, tgt.ingestion_process_id = {str(ingestion_process_id)}
+                SET {set_stmt}, tgt.active = true, tgt.ingestion_process_id = {str(ingestion_process_id)}
                 WHERE {where_stmt}
                 """
             )
@@ -230,7 +232,7 @@ class RepositoryBase:
         return dedent(
             f"""
             update {target_model.__tablename__} tgt
-            set {set_stmt}, ingestion_process_id = {str(ingestion_process_id)}
+            set {set_stmt}, active = true, ingestion_process_id = {str(ingestion_process_id)}
             from {source_model.__tablename__} src
             where {join_stmt} and ({where_stmt})
             """
