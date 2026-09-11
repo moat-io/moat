@@ -133,3 +133,26 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert principals[0].first_name == "Anne"
         assert principals[0].ingestion_process_id == 3
         assert principals[0].active
+
+    # scenario 4: a principal deactivated outside of ingestion - by SCIM for
+    # example - is reactivated when the source still reports it, even though
+    # none of the other columns have changed
+    with database_empty.Session.begin() as session:
+        principal: PrincipalDbo = repo.get_by_id(session=session, principal_id=1)
+        principal.active = False
+        session.commit()
+
+    # merge it - the staging table still holds the same single record
+    with database_empty.Session.begin() as session:
+        insert_row_count, update_row_count = repo.merge_staging(
+            session=session, ingestion_process_id=4
+        )
+        assert insert_row_count == 0
+        assert update_row_count == 1
+        session.commit()
+
+    # test it
+    with database_empty.Session.begin() as session:
+        principal: PrincipalDbo = repo.get_by_id(session=session, principal_id=1)
+        assert principal.active
+        assert principal.ingestion_process_id == 4
