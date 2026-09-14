@@ -25,6 +25,25 @@ npm install
 npm run build
 ```
 
+### Front end stack
+
+| | |
+| --- | --- |
+| CSS | Tailwind CSS 4 |
+| Components | Flowbite 4 (CSS plugin + JS, both from npm) |
+| Interactivity | htmx 2, plus a small amount of vanilla JS in `moat/ui/js` |
+
+Tailwind 4 is configured in CSS, not JavaScript - there is no `tailwind.config.js`.
+The theme, the `dark` variant, the template `@source` globs and the Flowbite plugin
+all live at the top of `moat/ui/css/input.css`.
+
+`npm run build` produces two artefacts, both gitignored and rebuilt by the Dockerfile:
+
+* `moat/ui/static/css/output.css` - Tailwind CLI
+* `moat/ui/static/js/app.bundle.js` - webpack
+
+Use `npm start` to watch both while developing.
+
 ## Code Formatting
 ```bash
 # in project root

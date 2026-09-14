@@ -24,3 +24,5 @@ cryptography==46.0.1
 PyMySQL==1.1.2
 pytest-mysql==3.1.0
 flask-smorest==0.47.0
+fastmcp==3.2.4
+httpx==0.28.1

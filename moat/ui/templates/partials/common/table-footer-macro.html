@@ -1,19 +1,59 @@
-{% macro table_footer_macro(view_prefix, query_state) %}
+{% macro table_footer_macro(view_prefix, query_state, page_size_options=None, has_filter_panel=True) %}
+{% set filter_include = (", #" ~ view_prefix ~ "-filter-form") if has_filter_panel else "" %}
+{% set includes = "#app-state-sort-key, #app-state-sort-ascending, #app-state-search-term, #app-state-page-size, #app-state-scope" ~ filter_include %}
+{# the page-size select supplies page_size itself, so the hidden input is left out to avoid sending it twice #}
+{% set page_size_includes = "#app-state-sort-key, #app-state-sort-ascending, #app-state-search-term, #app-state-scope" ~ filter_include %}
 <div class="sticky bottom-0 right-0 items-center w-full p-4 bg-white border-t border-gray-200 sm:flex sm:justify-between dark:bg-gray-800 dark:border-gray-700">
-    <div class="flex items-center mb-4 sm:mb-0">
-        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Showing <span
-                class="font-semibold text-gray-900 dark:text-white">{{ query_state.page_start_record }} - {{ query_state.page_end_record }}</span> of <span
-                class="font-semibold text-gray-900 dark:text-white"> {{ query_state.record_count }} </span>
+
+    <div class="flex items-center gap-4 mb-4 sm:mb-0">
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+            {% if query_state.record_count %}
+            Showing <span class="font-semibold text-gray-900 dark:text-white">{{ query_state.page_start_record }} - {{ query_state.page_end_record }}</span>
+            of <span class="font-semibold text-gray-900 dark:text-white">{{ query_state.record_count }}</span>
+            {% else %}
+            No results
+            {% endif %}
         </span>
+
+        {% if page_size_options %}
+        <label class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+            <span class="sr-only">Rows per page</span>
+            <select id="{{ view_prefix }}-page-size"
+                    name="page_size"
+                    hx-get="/{{ view_prefix }}/table"
+                    hx-target="#{{ view_prefix }}-table"
+                    hx-indicator="#{{ view_prefix }}-table-body-wrapper, #page-progress"
+                    hx-include="{{ page_size_includes }}"
+                    class="py-1 pl-2 pr-7 text-sm text-gray-700 bg-transparent border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:text-gray-300 dark:border-gray-600">
+                {% for option in page_size_options %}
+                <option value="{{ option }}" {{ 'selected' if option == query_state.page_size }}>{{ option }} / page</option>
+                {% endfor %}
+            </select>
+        </label>
+        {% endif %}
+
+        {# density is a client-side preference; it never needs a round trip #}
+        <button type="button"
+                data-moat-density-toggle
+                title="Toggle row density"
+                class="inline-flex items-center p-1.5 text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <span class="sr-only">Toggle row density</span>
+        </button>
     </div>
+
     <div class="flex items-center space-x-3">
         <button
            hx-get="/{{ view_prefix }}/table"
            hx-target="#{{ view_prefix }}-table"
-           hx-include="#app-state-sort-key, #app-state-search-term, #app-state-page-size, #app-state-scope"
+           hx-indicator="#{{ view_prefix }}-table-body-wrapper, #page-progress"
+           hx-include="{{ includes }}"
            hx-vals='{"page_number": "{{ query_state.previous_page_number }}"}'
            {{ "disabled" if query_state.previous_page_disabled }}
-           class="inline-flex items-center justify-center flex-1 px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+           class="inline-flex items-center justify-center flex-1 px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
             <svg class="w-5 h-5 mr-1 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd"
                       d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -24,10 +64,11 @@
         <button
            hx-get="/{{ view_prefix }}/table"
            hx-target="#{{ view_prefix }}-table"
-           hx-include="#app-state-sort-key, #app-state-search-term, #app-state-page-size, #app-state-scope"
+           hx-indicator="#{{ view_prefix }}-table-body-wrapper, #page-progress"
+           hx-include="{{ includes }}"
            hx-vals='{"page_number": "{{ query_state.next_page_number }}"}'
            {{ "disabled" if query_state.next_page_disabled }}
-           class="inline-flex items-center justify-center flex-1 px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+           class="inline-flex items-center justify-center flex-1 px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
             Next
             <svg class="w-5 h-5 ml-1 -mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd"
