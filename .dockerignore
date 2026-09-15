@@ -1,0 +1,7 @@
+# Keep host-built artefacts out of the image: a macOS node_modules/venv copied
+# into the Linux image breaks native bindings (and bloats the build context).
+**/node_modules
+venv/
+.git/
+**/__pycache__/
+*.pyc

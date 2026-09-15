@@ -92,11 +92,17 @@ curl localhost:3000/api/v1/healthcheck
 ```
 
 ## Updating packages
+
+`requirements.txt` is hash-pinned, and `pip-compile` only resolves for the platform it
+runs on. Compiling on macOS drops Linux-only transitive dependencies (e.g. `secretstorage`
+and `jeepney`, pulled in by `keyring`), which makes the container build fail with
+`In --require-hashes mode, all requirements must have their versions pinned with ==`.
+Always compile inside a Linux container matching the image base:
+
 ```bash
 # make changes to requirements.in
-source venv/bin/activate
-pip install pip-tools
-pip-compile --generate-hashes requirements.in > requirements.txt
+docker run --rm -v "$PWD":/w -w /w python:3.12-slim-bookworm bash -c \
+  "pip install pip-tools && pip-compile --generate-hashes --no-emit-index-url requirements.in"
 ```
 
 ## Building the container image
