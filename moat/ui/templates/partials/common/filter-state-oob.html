@@ -1,3 +1,4 @@
+{% from "partials/common/macro-attribute-rows.html" import attribute_rows %}
 {#
   Out-of-band updates sent with every table render.
 
@@ -8,6 +9,10 @@
 
   Expects: filter_prefix, download_url, query_state
 #}
+
+{# the attribute rows, so an added or removed filter redraws the list - and hands
+   back an empty picker - without the panel being re-rendered #}
+{{ attribute_rows(filter_prefix, query_state, out_of_band=True) }}
 
 <span id="{{ filter_prefix }}-filter-badge"
       hx-swap-oob="true"
@@ -56,7 +61,7 @@
     <button type="button"
             onclick="moatClearFilters('{{ filter_prefix }}')"
             class="text-xs font-medium text-gray-500 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white">
-        Clear all
+        Reset filters
     </button>
     {% endif %}
 </div>

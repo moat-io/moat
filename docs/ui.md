@@ -38,11 +38,19 @@ Filter semantics:
 
 * Values selected within one facet are **OR**'d - ticking two platforms widens the result set.
 * Different facets are **AND**'ed - a platform and an object type must both match.
-* Attribute filters follow the same rule: two values of the same attribute key widen the
-  result set, two different keys narrow it.
+* Attribute filters are listed one per row under **Attribute**, each removable on its
+  own, and a row is added by picking an attribute and then one of its values. Every row
+  has to match, so each one added narrows the result set - including two rows on the
+  same attribute, which returns the records carrying *both* values rather than either.
+  A record may satisfy the rows from different attribute entries; they do not have to
+  sit on one. There is no operator to set: every row counts.
+* A multi valued attribute is filtered one value at a time. An attribute stored as
+  `Domain = 123,321,431` is offered in the value dropdown as `123`, `321` and `431`
+  separately, and selecting `321` matches the record. The whole joined string is never
+  offered as a value. The row itself still displays the attribute as stored.
 
 Applied filters appear as chips beneath the search box and can be removed individually,
-or all at once with **Clear all**. The filter panel, the search box, the column sort and
+or all at once with **Reset filters**. The filter panel, the search box, the column sort and
 the pagination controls all post the same query state, so they compose freely.
 
 ## CSV Download

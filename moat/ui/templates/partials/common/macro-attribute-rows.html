@@ -1,0 +1,43 @@
+{#
+  The applied attribute filters, one row each.
+
+  A row shows the attribute, its value, and a button to drop it. There are no
+  operators to set: rows on the same attribute widen the result, rows on
+  different attributes narrow it, which is the only reading a plain list of
+  filters has.
+
+  The list is redrawn out of band on every table render, so the panel always
+  shows the filters that produced the rows on screen. The hidden inputs the form
+  posts live in '{prefix}-attr-inputs'; the picker that adds a row sits below
+  this block, in the panel itself.
+#}
+
+{% macro attribute_rows(prefix, query_state, out_of_band=False) %}
+<div id="{{ prefix }}-attr-rows"
+     {% if out_of_band %}hx-swap-oob="true"{% endif %}
+     class="space-y-2 empty:hidden">
+
+    {% for condition in query_state.attribute_conditions %}
+    <div class="flex items-center gap-2">
+        <span class="flex-1 min-w-0 px-2 py-1.5 text-sm text-gray-700 border border-gray-200 rounded-lg bg-gray-50 truncate dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+              title="{{ condition['key'] }}: {{ condition['value'] }}">
+            <span class="font-semibold">{{ condition['key'] }}</span>
+            <span class="text-gray-400 dark:text-gray-500">=</span>
+            {{ condition['value'] }}
+        </span>
+
+        <button type="button"
+                data-moat-remove-filter
+                data-prefix="{{ prefix }}"
+                data-name="attributes"
+                data-value="{{ condition['input_value'] }}"
+                aria-label="Remove the {{ condition['key'] }} filter"
+                class="shrink-0 inline-flex items-center justify-center w-6 h-6 text-gray-500 rounded-full hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 12h14"/>
+            </svg>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}

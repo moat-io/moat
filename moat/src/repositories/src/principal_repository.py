@@ -171,15 +171,15 @@ class PrincipalRepository(RepositoryBase):
 
     @staticmethod
     def get_attribute_values(session, attribute_key: str) -> list[str]:
-        """Distinct values for one attribute key, for the dependent value dropdown."""
-        rows = (
-            session.query(PrincipalAttributeDbo.attribute_value)
-            .filter(PrincipalAttributeDbo.attribute_key == attribute_key)
-            .distinct()
-            .order_by(PrincipalAttributeDbo.attribute_value)
-            .all()
+        """
+        Distinct values for one attribute key, for the dependent value dropdown.
+        Multi valued attributes are offered one component at a time.
+        """
+        return RepositoryBase._get_attribute_values(
+            session=session,
+            attribute_model=PrincipalAttributeDbo,
+            attribute_key=attribute_key,
         )
-        return [row[0] for row in rows if row[0] is not None]
 
     @staticmethod
     def get_by_id(session, principal_id: int) -> PrincipalDbo:

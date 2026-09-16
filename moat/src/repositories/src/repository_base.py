@@ -170,6 +170,45 @@ class RepositoryBase:
         return query
 
     @staticmethod
+    def split_attribute_values(attribute_value: str | None) -> list[str]:
+        """
+        A single attribute row may carry several values joined by commas
+        (`Commercial = 'Sales,HR,IT'`). Everything the user sees and filters on
+        is one of those components, not the joined string, so this is the one
+        place that decides where the boundaries are - matching how the OPA
+        bundle flattens the same values.
+        """
+        if not attribute_value:
+            return []
+        return [value.strip() for value in attribute_value.split(",") if value.strip()]
+
+    @staticmethod
+    def _get_component_value_column(attribute_model: Type[BaseModel]) -> NamedColumn:
+        """
+        The attribute value wrapped in delimiters and stripped of the spaces that
+        may surround them, so a single component can be matched with a `like`
+        against ',component,' without a leading or trailing component being
+        missed.
+        """
+        return func.replace(
+            func.replace(
+                func.concat(",", attribute_model.attribute_value, ","), ", ", ","
+            ),
+            " ,",
+            ",",
+        )
+
+    @staticmethod
+    def _get_component_like_pattern(attribute_value: str) -> str:
+        escaped: str = (
+            attribute_value.strip()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        return f"%,{escaped},%"
+
+    @staticmethod
     def _get_attribute_filter_query(
         query: Query,
         model: Type[BaseModel],
@@ -177,31 +216,65 @@ class RepositoryBase:
         attributes: list[AttributeDto] | None = None,
     ) -> Query:
         """
-        Restricts to rows carrying *all* of the supplied attribute key/value
-        pairs. Pairs sharing a key are OR'd together, so selecting two values of
-        the same attribute widens rather than eliminates the result set, which is
-        what a faceted filter UI is expected to do.
+        Restricts to rows carrying *every* one of the supplied attribute
+        key/value pairs, including pairs sharing a key: filtering `Commercial`
+        on both 'HR' and 'IT' returns the records carrying both, not either.
+
+        A correlated EXISTS per pair, rather than one over a joined attribute
+        row, so the pairs may be satisfied by different attribute rows of the
+        same record.
+
+        A value matches a single component of the stored attribute, so the filter
+        offered for `Commercial = 'Sales,HR,IT'` is 'Sales', not the whole
+        joined string.
         """
         if not attributes:
             return query
 
-        values_by_key: dict[str, list[str]] = {}
-        for attribute in attributes:
-            values_by_key.setdefault(attribute.attribute_key, []).append(
-                attribute.attribute_value
-            )
+        component_value = RepositoryBase._get_component_value_column(
+            attribute_model=attribute_model
+        )
 
-        for attribute_key, attribute_values in values_by_key.items():
+        for attribute in attributes:
             query = query.filter(
                 exists().where(
                     and_(
                         attribute_model.fq_name == model.fq_name,
-                        attribute_model.attribute_key == attribute_key,
-                        attribute_model.attribute_value.in_(attribute_values),
+                        attribute_model.attribute_key == attribute.attribute_key,
+                        component_value.like(
+                            RepositoryBase._get_component_like_pattern(
+                                attribute_value=attribute.attribute_value
+                            ),
+                            escape="\\",
+                        ),
                     )
                 )
             )
         return query
+
+    @staticmethod
+    def _get_attribute_values(
+        session, attribute_model: Type[BaseModel], attribute_key: str
+    ) -> list[str]:
+        """
+        Distinct values for one attribute key, for the dependent value dropdown.
+
+        Multi valued attributes are broken into their components so the dropdown
+        offers 'Sales', 'HR' and 'IT' rather than the single unusable entry
+        'Sales,HR,IT'.
+        """
+        rows = (
+            session.query(attribute_model.attribute_value)
+            .filter(attribute_model.attribute_key == attribute_key)
+            .distinct()
+            .all()
+        )
+
+        values: set[str] = set()
+        for row in rows:
+            values.update(RepositoryBase.split_attribute_values(attribute_value=row[0]))
+
+        return sorted(values)
 
     @staticmethod
     def _get_column_filter_query(
