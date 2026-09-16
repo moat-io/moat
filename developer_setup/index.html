@@ -354,6 +354,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
     
@@ -365,10 +392,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
   
@@ -386,8 +413,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -477,10 +504,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
             
   
   
@@ -498,8 +525,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -589,10 +616,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
             
   
   
@@ -610,8 +637,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -851,6 +878,17 @@
     <span class="md-ellipsis">
       
         Installation of dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#front-end-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Front end stack
       
     </span>
   </a>
@@ -1128,6 +1166,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#front-end-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Front end stack
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1342,6 +1391,38 @@ cd moat/ui
 npm install
 npm run build
 </code></pre>
+<h3 id="front-end-stack">Front end stack</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CSS</td>
+<td>Tailwind CSS 4</td>
+</tr>
+<tr>
+<td>Components</td>
+<td>Flowbite 4 (CSS plugin + JS, both from npm)</td>
+</tr>
+<tr>
+<td>Interactivity</td>
+<td>htmx 2, plus a small amount of vanilla JS in <code>moat/ui/js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Tailwind 4 is configured in CSS, not JavaScript - there is no <code>tailwind.config.js</code>.
+The theme, the <code>dark</code> variant, the template <code>@source</code> globs and the Flowbite plugin
+all live at the top of <code>moat/ui/css/input.css</code>.</p>
+<p><code>npm run build</code> produces two artefacts, both gitignored and rebuilt by the Dockerfile:</p>
+<ul>
+<li><code>moat/ui/static/css/output.css</code> - Tailwind CLI</li>
+<li><code>moat/ui/static/js/app.bundle.js</code> - webpack</li>
+</ul>
+<p>Use <code>npm start</code> to watch both while developing.</p>
 <h2 id="code-formatting">Code Formatting</h2>
 <pre><code class="language-bash"># in project root
 isort --profile black moat/src
@@ -1386,10 +1467,14 @@ rm -rf instance
 curl localhost:3000/api/v1/healthcheck
 </code></pre>
 <h2 id="updating-packages">Updating packages</h2>
+<p><code>requirements.txt</code> is hash-pinned, and <code>pip-compile</code> only resolves for the platform it
+runs on. Compiling on macOS drops Linux-only transitive dependencies (e.g. <code>secretstorage</code>
+and <code>jeepney</code>, pulled in by <code>keyring</code>), which makes the container build fail with
+<code>In --require-hashes mode, all requirements must have their versions pinned with ==</code>.
+Always compile inside a Linux container matching the image base:</p>
 <pre><code class="language-bash"># make changes to requirements.in
-source venv/bin/activate
-pip install pip-tools
-pip-compile --generate-hashes requirements.in &gt; requirements.txt
+docker run --rm -v &quot;$PWD&quot;:/w -w /w python:3.12-slim-bookworm bash -c \
+  &quot;pip install pip-tools &amp;&amp; pip-compile --generate-hashes --no-emit-index-url requirements.in&quot;
 </code></pre>
 <h2 id="building-the-container-image">Building the container image</h2>
 <pre><code class="language-bash">podman build -t moat/moat .

@@ -9,8 +9,10 @@
       
       
       
-        <link rel="prev" href="../extensions/">
+        <link rel="prev" href="../ui/">
       
+      
+        <link rel="next" href="../provisioning/scim/">
       
       
         
@@ -21,7 +23,7 @@
     
     
       
-        <title>Release Notes - Moat</title>
+        <title>MCP Server - Moat</title>
       
     
     
@@ -62,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#release-notes" class="md-skip">
+        <a href="#mcp-server" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Release Notes
+              MCP Server
             
           </span>
         </div>
@@ -350,10 +352,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../mcp/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Server
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -369,6 +398,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#which-endpoints-become-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which endpoints become tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting the server
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Starting the server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registering-with-claude-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registering with Claude Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registering-with-claude-desktop-any-mcpservers-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registering with Claude Desktop / any mcpServers config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verifying-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying it works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -851,37 +994,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Notes
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../release_notes/" class="md-nav__link">
         
   
   
@@ -897,187 +1013,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unreleased
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Unreleased">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Breaking Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#0210" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        0.21.0
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="0.21.0">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#major-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Major Features
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#breaking-changes_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Breaking Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration Changes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration Changes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#bundle_generatorstatic_rego_file_path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        bundle_generator.static_rego_file_path
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#database-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Documentation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1109,22 +1044,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
+  <a href="#which-endpoints-become-tools" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unreleased
+        Which endpoints become tools
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting the server
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Starting the server">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#registering-with-claude-code" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Features
+        Registering with Claude Code
       
     </span>
   </a>
@@ -1132,10 +1089,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixes" class="md-nav__link">
+  <a href="#registering-with-claude-desktop-any-mcpservers-config" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fixes
+        Registering with Claude Desktop / any mcpServers config
       
     </span>
   </a>
@@ -1143,21 +1100,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
+  <a href="#http-transport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#breaking-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Breaking Changes
+        HTTP transport
       
     </span>
   </a>
@@ -1170,102 +1116,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#0210" class="md-nav__link">
+  <a href="#verifying-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        0.21.0
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="0.21.0">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#major-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Major Features
+        Verifying it works
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#breaking-changes_1" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking Changes
+        Troubleshooting
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration Changes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Configuration Changes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#bundle_generatorstatic_rego_file_path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        bundle_generator.static_rego_file_path
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#database-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Documentation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1297,101 +1165,137 @@
   
 
 
-<h1 id="release-notes">Release Notes</h1>
-<h2 id="unreleased">Unreleased</h2>
-<h3 id="features">Features</h3>
-<ul>
-<li><strong>Advanced filtering</strong>: the principals and resources views gain a filter panel with
-  facets built from live data - source, platform, object type, active status and
-  attribute key/value. Values within a facet are OR'd; different facets are AND'ed.
-  Applied filters show as removable chips, and attribute pills in the table are
-  clickable to filter by them. See <a href="../ui/">User Interface</a>.</li>
-<li><strong>CSV download honours the filters</strong>: <code>/principals/download</code> and
-  <code>/resources/download</code> now accept the same query parameters as the table and run the
-  same query, so the export always matches what is on screen. Pagination is not
-  applied - the export is the whole result set.</li>
-<li><strong>Filter state in the URL</strong>: filters, search, sort and page are pushed to the address
-  bar, so a filtered view can be bookmarked, shared and refreshed.</li>
-<li><strong>MCP server documentation</strong>: how to expose an endpoint as a tool, how to start the
-  server and how to register it with a client. See <a href="../mcp/">MCP Server</a>.</li>
-<li><strong>UI</strong>: row detail now opens in a side drawer rather than a modal; tables gain sticky
-  headers, a rows-per-page selector, a density toggle, loading indicators, skeleton
-  rows and proper empty states; <code>/</code> focuses search and <code>Esc</code> clears it.</li>
-</ul>
-<h3 id="fixes">Fixes</h3>
-<ul>
-<li><strong>User entitlements API returned 500</strong> (<code>GET /api/entitlements/v1/users</code>). It passed
-  <code>source_type</code> to a repository method that did not accept it. As this is the only
-  endpoint tagged <code>mcp</code>, the MCP server's only tool was non-functional.</li>
-<li><strong>Multi-term search was broken</strong>: terms were AND'ed against a single joined attribute
-  row, so a search such as <code>finance admin</code> could never match. Each term is now matched
-  with a correlated <code>EXISTS</code>.</li>
-<li><strong>Resources sort control raised <code>KeyError</code></strong>: it sorted on <code>databases.database_name</code>,
-  a column that does not exist. It now sorts on <code>fq_name</code> and toggles direction.</li>
-<li><strong>Bundles sort control did nothing</strong>: its <code>hx-target</code> named <code>#opa-bundles-table</code>,
-  which is not present in the page.</li>
-<li><strong>Attribute filters containing a colon were corrupted</strong> by splitting on every colon
-  rather than the first.</li>
-<li>Removed a dead <code>scope=schemas</code> branch in the resources view that called a
-  commented-out controller method.</li>
-<li>Fixed an unparseable class on <code>&lt;body&gt;</code> (<code>dark:bg-gray-900bg-gray-50</code>).</li>
-</ul>
-<h3 id="dependencies">Dependencies</h3>
-<ul>
-<li><code>fastmcp</code> and <code>httpx</code> are now declared in <code>requirements.in</code>; they were imported by
-  <code>moat/src/mcp_serve.py</code> but never declared.</li>
-<li>Front end upgraded to <strong>htmx 2</strong>, <strong>Tailwind CSS 4</strong> and <strong>Flowbite 4</strong>.</li>
-<li>Tailwind 4 is configured in CSS; <code>moat/ui/tailwind.config.js</code> has been removed and
-    its contents moved into <code>moat/ui/css/input.css</code>.</li>
-<li>Flowbite's JS is now imported from npm instead of a vendored copy in
-    <code>moat/ui/js/flowbite.js</code>, keeping its JS and CSS versions in step.</li>
-<li><code>apexcharts</code> and the unused <code>moat/ui/js/charts.js</code> have been removed.</li>
-</ul>
-<h3 id="breaking-changes">Breaking Changes</h3>
-<ul>
-<li>The resources CSV export gains an <code>active</code> column, so the header is now
-  <code>fq_name,platform,object_type,active,attributes</code>. Any downstream parser that pins
-  column positions needs updating.</li>
-<li><code>GET /principals/&lt;id&gt;/history-modal</code> is now <code>GET /principals/&lt;id&gt;/detail</code> and renders
-  the drawer contents (identity and attributes as well as history).</li>
-</ul>
-<h2 id="0210">0.21.0</h2>
-<h3 id="major-features">Major Features</h3>
-<ul>
-<li><strong>MySQL Support</strong>: Added MySQL as a backend database option alongside PostgreSQL. Users can now choose between PostgreSQL and MySQL based on their infrastructure requirements.</li>
-</ul>
-<h3 id="breaking-changes_1">Breaking Changes</h3>
-<ul>
-<li><strong>Database Schema Recreation Required</strong>: Due to significant changes in the database schema to support multiple database backends, <strong>all existing PostgreSQL databases must be recreated</strong>. Please backup your data before upgrading and follow the migration guide in the deployment documentation.</li>
-</ul>
-<h3 id="configuration-changes">Configuration Changes</h3>
-<ul>
-<li>New configuration files added:</li>
-<li><code>moat/config/config.docker.mysql.yaml</code> - MySQL Docker configuration</li>
-<li><code>moat/config/unittest/config.mysql.yaml</code> - MySQL unit test configuration</li>
-<li>PostgreSQL unit test config moved to <code>moat/config/unittest/config.postgres.yaml</code></li>
-</ul>
-<h4 id="bundle_generatorstatic_rego_file_path">bundle_generator.static_rego_file_path</h4>
-<p>This configuration option now has the <code>platform</code> value appended in code, so this should be removed:
-- <strong>Existing:</strong> <code>bundle_generator.static_rego_file_path: "/opt/moat/opa/trino"</code>
-- <strong>New:</strong> <code>bundle_generator.static_rego_file_path: "/opt/moat/opa"</code></p>
-<h3 id="database-changes">Database Changes</h3>
-<ul>
-<li>Consolidated all migrations into a single migration: <code>cd68c92b9b9c</code></li>
-<li>Added database-agnostic array and datetime handling</li>
-<li>Enhanced merge functionality to support both PostgreSQL and MySQL</li>
-<li>Improved history table implementation for cross-database compatibility</li>
-</ul>
-<h3 id="testing">Testing</h3>
-<ul>
-<li>Added MySQL unit test fixture</li>
-<li>Updated all repository and service tests to work with both database backends</li>
-</ul>
-<h3 id="documentation">Documentation</h3>
-<ul>
-<li>Updated deployment documentation with MySQL setup instructions</li>
-<li>Updated developer setup guide with MySQL configuration</li>
-</ul>
+<h1 id="mcp-server">MCP Server</h1>
+<p>Moat ships an <a href="https://modelcontextprotocol.io">MCP</a> server that exposes selected Moat
+APIs as tools, so an LLM client (Claude Code, Claude Desktop, or any other MCP client)
+can query Moat directly.</p>
+<p>The server is <code>moat/src/mcp_serve.py</code>. It does not reimplement anything: it reads the
+Flask app's OpenAPI document at runtime and turns each matching operation into an MCP
+tool via <code>FastMCP.from_openapi</code>.</p>
+<h2 id="which-endpoints-become-tools">Which endpoints become tools</h2>
+<p>Only operations tagged <code>mcp</code> are exposed. Everything else is explicitly excluded, so
+adding an API to Moat does <em>not</em> silently publish it to LLM clients.</p>
+<p>To publish an endpoint, tag it in the <code>flask-smorest</code> blueprint:</p>
+<pre><code class="language-python">@bp.route(&quot;&quot;, methods=[&quot;GET&quot;])
+@bp.doc(tags=[&quot;mcp&quot;])          # &lt;- this is what makes it an MCP tool
+@bp.arguments(UserEntitlementQuerySchema, location=&quot;query&quot;)
+@bp.response(200, PaginatedEntitlementSchema)
+def list_user_entitlements(query_args):
+    ...
+</code></pre>
+<p>The endpoint must be registered through the <code>flask_smorest.Api</code> object in <code>app.py</code>
+(<code>api.register_blueprint(...)</code>), not <code>flask_app.register_blueprint(...)</code> - only the
+former contributes to <code>/openapi.json</code>.</p>
+<p>Currently exposed:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Endpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Paginated_list_of_user_entitlements</code></td>
+<td><code>GET /api/entitlements/v1/users</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="configuration">Configuration</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MOAT_BASE_URL</code></td>
+<td><code>http://127.0.0.1:8001</code></td>
+<td>Moat instance the tools call</td>
+</tr>
+<tr>
+<td><code>MOAT_OPENAPI_URL</code></td>
+<td><code>$MOAT_BASE_URL/openapi.json</code></td>
+<td>Where the spec is read from</td>
+</tr>
+<tr>
+<td><code>MOAT_MCP_TAG</code></td>
+<td><code>mcp</code></td>
+<td>OpenAPI tag that marks an operation as a tool</td>
+</tr>
+</tbody>
+</table>
+<h2 id="starting-the-server">Starting the server</h2>
+<p>The Moat app must already be running - the MCP server fetches its OpenAPI document at
+startup and will fail immediately if Moat is unreachable.</p>
+<pre><code class="language-bash"># 1. start Moat (defaults assume port 8001)
+export PYTHONPATH=moat/src
+flask --app moat.src.app run --port 8001
+
+# 2. start the MCP server over stdio, in a second shell
+export PYTHONPATH=moat/src
+export MOAT_BASE_URL=http://127.0.0.1:8001
+python moat/src/mcp_serve.py
+</code></pre>
+<p>Running it by hand like this is mostly a smoke test - <code>stdio</code> transport expects a client
+on the other end of the pipe. Normally the client launches the process itself.</p>
+<h3 id="registering-with-claude-code">Registering with Claude Code</h3>
+<pre><code class="language-bash">claude mcp add moat \
+  --env PYTHONPATH=moat/src \
+  --env MOAT_BASE_URL=http://127.0.0.1:8001 \
+  -- .venv/bin/python moat/src/mcp_serve.py
+</code></pre>
+<h3 id="registering-with-claude-desktop-any-mcpservers-config">Registering with Claude Desktop / any <code>mcpServers</code> config</h3>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;moat&quot;: {
+      &quot;command&quot;: &quot;.venv/bin/python&quot;,
+      &quot;args&quot;: [&quot;moat/src/mcp_serve.py&quot;],
+      &quot;env&quot;: {
+        &quot;PYTHONPATH&quot;: &quot;moat/src&quot;,
+        &quot;MOAT_BASE_URL&quot;: &quot;http://127.0.0.1:8001&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<h3 id="http-transport">HTTP transport</h3>
+<p>For a shared/remote deployment, run it over HTTP instead of stdio:</p>
+<pre><code class="language-bash">fastmcp run moat/src/mcp_serve.py:mcp --transport http --port 8002
+</code></pre>
+<h2 id="verifying-it-works">Verifying it works</h2>
+<p>With Moat running, check the endpoint that backs the tool returns 200:</p>
+<pre><code class="language-bash">curl -s http://127.0.0.1:8001/api/entitlements/v1/users?page_size=2
+
+# confirm the operation is tagged and present in the spec
+curl -s http://127.0.0.1:8001/openapi.json | jq '.paths[&quot;/api/entitlements/v1/users&quot;].get.tags'
+</code></pre>
+<p>Then list and call the tools through an MCP client:</p>
+<pre><code class="language-bash">PYTHONPATH=moat/src MOAT_BASE_URL=http://127.0.0.1:8001 python - &lt;&lt;'PY'
+import asyncio
+from fastmcp import Client
+from mcp_serve import build_mcp
+
+async def main():
+    async with Client(build_mcp()) as client:
+        tools = await client.list_tools()
+        print(&quot;tools:&quot;, [t.name for t in tools])
+        result = await client.call_tool(tools[0].name, {&quot;page_size&quot;: 1})
+        print(result.content[0].text)
+
+asyncio.run(main())
+PY
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong><code>httpx.ConnectError</code> on startup</strong> - Moat is not running, or <code>MOAT_BASE_URL</code> points at
+the wrong port. The MCP server reads the spec eagerly at import time.</p>
+<p><strong>No tools listed</strong> - nothing in the spec carries the <code>mcp</code> tag. Check the blueprint is
+registered via <code>api.register_blueprint</code> and that <code>@bp.doc(tags=["mcp"])</code> is present.</p>
+<p><strong>Tool returns a 500</strong> - the tool is a thin proxy, so the fault is in the underlying
+Moat endpoint. Call it with <code>curl</code> and read the Flask log.</p>
 
 
 
