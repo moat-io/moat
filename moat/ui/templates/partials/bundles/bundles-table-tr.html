@@ -1,3 +1,4 @@
+{% from "partials/common/table-empty-state.html" import table_empty_state %}
 {% for bundle in bundles %}
 <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
     <td class="w-4 p-4">
@@ -42,4 +43,6 @@
         </div>
     </td>
 </tr>
+{% else %}
+{{ table_empty_state(8, 'bundles', None, query_state) }}
 {% endfor %}

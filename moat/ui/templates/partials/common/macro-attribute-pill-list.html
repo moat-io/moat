@@ -1,7 +1,7 @@
 {% from "partials/common/macro-attribute-pill.html" import attribute_pill %}
 
-{% macro attribute_pill_list(attribute_list) %}
+{% macro attribute_pill_list(attribute_list, filter_prefix=None) %}
 {% for attribute in attribute_list | sort(attribute='attribute_key') %}
-    {{ attribute_pill(attribute.attribute_key, attribute.attribute_value) }}
+    {{ attribute_pill(attribute.attribute_key, attribute.attribute_value, filter_prefix) }}
 {% endfor %}
 {% endmacro %}

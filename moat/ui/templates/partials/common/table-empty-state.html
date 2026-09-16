@@ -1,0 +1,38 @@
+{#
+  Shared empty state.
+
+  Distinguishes "nothing here yet" from "your filters excluded everything", and in
+  the latter case offers the way out rather than leaving the user to find the
+  Clear all button themselves.
+#}
+{% macro table_empty_state(column_count, noun, filter_prefix=None, query_state=None) %}
+{% set filtered = query_state is not none and (query_state.filter_count or query_state.search_term) %}
+<tr>
+    <td colspan="{{ column_count }}" class="px-4 py-12">
+        <div class="flex flex-col items-center justify-center text-center">
+            <svg class="w-10 h-10 mb-3 text-gray-300 dark:text-gray-600" aria-hidden="true"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M4 6h16M4 12h16M4 18h7m6 3a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 0 3 3"/>
+            </svg>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">
+                {% if filtered %}No {{ noun }} match these filters{% else %}No {{ noun }} yet{% endif %}
+            </p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {% if filtered %}
+                Try removing a filter or broadening the search.
+                {% else %}
+                {{ noun | capitalize }} appear here once they have been ingested.
+                {% endif %}
+            </p>
+            {% if filtered and filter_prefix %}
+            <button type="button"
+                    onclick="moatClearFilters('{{ filter_prefix }}'); moatClearSearch('{{ filter_prefix }}');"
+                    class="mt-4 inline-flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                Clear filters
+            </button>
+            {% endif %}
+        </div>
+    </td>
+</tr>
+{% endmacro %}

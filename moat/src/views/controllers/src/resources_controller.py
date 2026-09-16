@@ -1,7 +1,6 @@
 from typing import Tuple
 
 from app_logger import Logger, get_logger
-
 from models import AttributeDto, ResourceDbo
 
 # from models.src.dtos.schema_dto import SchemaDto
@@ -26,6 +25,39 @@ class ResourcesController:
         return ResourceRepository.get_all(session=session)
 
     @staticmethod
+    def get_resources_matching_filter(
+        session,
+        sort_col_name: str = "fq_name",
+        sort_ascending: bool = True,
+        search_term: str = "",
+        platform: list[str] = None,
+        object_type: list[str] = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] = None,
+    ) -> Tuple[int, list[ResourceDbo]]:
+        """Unpaginated counterpart of the table query, for CSV download."""
+        return ResourceRepository.get_all_with_search(
+            session=session,
+            sort_col_name=sort_col_name,
+            sort_ascending=sort_ascending,
+            search_term=search_term,
+            platform=platform,
+            object_type=object_type,
+            active=active,
+            attributes=attributes,
+        )
+
+    @staticmethod
+    def get_filter_options(session) -> dict[str, list[str]]:
+        return ResourceRepository.get_filter_options(session=session)
+
+    @staticmethod
+    def get_attribute_values(session, attribute_key: str) -> list[str]:
+        return ResourceRepository.get_attribute_values(
+            session=session, attribute_key=attribute_key
+        )
+
+    @staticmethod
     def get_tables_paginated_with_access(
         session,
         logged_in_user: str | None,
@@ -34,13 +66,22 @@ class ResourcesController:
         page_size: int,
         search_term: str,
         attributes: list[AttributeDto] = None,
+        platform: list[str] = None,
+        object_type: list[str] = None,
+        active: bool | None = None,
+        sort_ascending: bool = True,
     ) -> Tuple[int, list[ResourceDbo]]:
         table_count, tables = ResourceRepository.get_all_with_search_and_pagination(
             session=session,
             sort_col_name=sort_col_name,
             page_number=page_number,
             page_size=page_size,
+            sort_ascending=sort_ascending,
             search_term=search_term,
+            platform=platform,
+            object_type=object_type,
+            active=active,
+            attributes=attributes,
         )
 
         # if logged_in_user:

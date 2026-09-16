@@ -1,3 +1,5 @@
+{% from "partials/common/detail-drawer.html" import drawer_trigger %}
+{% from "partials/common/table-empty-state.html" import table_empty_state %}
 {% for policy in policies %}
     <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
         <td class="w-4 p-4">
@@ -14,12 +16,9 @@
         </td>
         <td class="p-4 space-x-2 whitespace-nowrap">
             <button
-                    hx-get="/policies/{{ policy.id }}/detail-modal"
-                    hx-target="#policy-detail-modal-content"
-                    data-modal-target="policy-detail-modal"
-                    data-modal-toggle="policy-detail-modal"
+                    {{ drawer_trigger('policy-detail-drawer', '/policies/' ~ policy.id ~ '/detail-modal') }}
                     type="button"
-                    id="policy-detail-button"
+                    id="policy-detail-button-{{ policy.id }}"
                     class="inline-flex items-center px-3 py-2 text-xs font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
             >
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -32,4 +31,6 @@
             </button>
         </td>
     </tr>
+{% else %}
+{{ table_empty_state(6, 'policies', None, None) }}
 {% endfor %}

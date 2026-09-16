@@ -1,0 +1,9 @@
+{# Options for the attribute-value select, swapped in when the key select changes. #}
+{% if values %}
+<option value="">Select a value...</option>
+{% for value in values %}
+<option value="{{ value }}">{{ value }}</option>
+{% endfor %}
+{% else %}
+<option value="">{{ 'No values found' if attribute_key else 'Select a key first' }}</option>
+{% endif %}

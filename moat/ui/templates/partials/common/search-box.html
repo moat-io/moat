@@ -1,0 +1,54 @@
+{#
+  Shared search box.
+
+  `value` is seeded from the query state so a bookmarked/refreshed URL reopens with
+  its search term intact. The initial table load is triggered from here (`load`),
+  which is also what pulls the filter form's state in on first paint.
+#}
+
+{% macro search_box(prefix, placeholder, query_state, extra_includes='', has_filter_panel=True) %}
+<form class="sm:pr-3" onsubmit="return false;">
+    <label for="{{ prefix }}-search" class="sr-only">Search</label>
+    <div class="relative w-48 mt-1 sm:w-64 xl:w-96">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                 fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+        </div>
+
+        <input type="text" name="search_term"
+               id="{{ prefix }}-search"
+               data-moat-search
+               value="{{ query_state.search_term }}"
+               autocomplete="off"
+               onkeydown="return event.key != 'Enter';"
+               hx-get="/{{ prefix }}/table"
+               hx-trigger="load, keyup changed delay:0.2s, search, click from:#{{ prefix }}-search-clear"
+               hx-target="#{{ prefix }}-table"
+               hx-indicator="#{{ prefix }}-table-body-wrapper, #page-progress"
+               hx-include="#app-state-sort-key, #app-state-sort-ascending, #app-state-page-size{% if has_filter_panel %}, #{{ prefix }}-filter-form{% endif %}{{ extra_includes }}"
+               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 pl-9 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+               placeholder="{{ placeholder }}">
+
+        {# hint doubles as the clear button once there is something to clear #}
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+            <kbd data-moat-search-hint
+                 class="hidden px-1.5 py-0.5 text-xs font-semibold text-gray-400 border border-gray-300 rounded-sm sm:inline-block dark:text-gray-500 dark:border-gray-600">/</kbd>
+            <button type="button"
+                    id="{{ prefix }}-search-clear"
+                    data-moat-search-clear
+                    onclick="moatClearSearch('{{ prefix }}')"
+                    aria-label="Clear search"
+                    class="hidden p-1 text-gray-400 rounded-sm hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</form>
+{% endmacro %}

@@ -1,10 +1,10 @@
 {% include "partials/common/app-state-table-vars.html" %}
 {% from "partials/common/table-footer-macro.html" import table_footer_macro %}
 
-<div class="flex flex-col">
+<div class="flex flex-col moat-busy" id="bundles-table-body-wrapper">
     <div class="overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
-            <div class="overflow-hidden shadow">
+            <div class="overflow-hidden shadow-sm">
                 <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                     <thead class="bg-gray-100 dark:bg-gray-700">
                     <tr>
@@ -16,7 +16,7 @@
                                 Created
                                 <a href="#"
                                    hx-get="/opa_bundles/table"
-                                   hx-target="#opa-bundles-table"
+                                   hx-target="#bundles-table"
                                    hx-include="#app-state-sort-key, #app-state-search-term, #app-state-page-size"
                                    hx-vals='{"sort_key": "record_created"}'>
                                     <svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -33,7 +33,7 @@
                                 Platform
                                 <a href="#"
                                    hx-get="/opa_bundles/table"
-                                   hx-target="#opa-bundles-table"
+                                   hx-target="#bundles-table"
                                    hx-include="#app-state-sort-key, #app-state-search-term, #app-state-page-size"
                                    hx-vals='{"sort_key": "platform"}'>
                                     <svg class="w-3 h-3 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -73,4 +73,4 @@
     </div>
 </div>
 
-{{ table_footer_macro("bundles", query_state) }}
+{{ table_footer_macro("bundles", query_state, None, False) }}

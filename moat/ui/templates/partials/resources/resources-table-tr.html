@@ -1,3 +1,4 @@
+{% from "partials/common/table-empty-state.html" import table_empty_state %}
 {% for table in tables %}
 <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
     {% if compact == False %}
@@ -19,9 +20,9 @@
     {% endif %}
     <td class="p-4 whitespace-nowrap">
         {% if table.object_type == 'table' %}
-        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ table.object_type | capitalize }}</span>
+        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">{{ table.object_type | capitalize }}</span>
         {% else %}
-        <span class="bg-purple-100 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">{{ table.object_type | capitalize }}</span>
+        <span class="bg-purple-100 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-purple-900 dark:text-purple-300">{{ table.object_type | capitalize }}</span>
         {% endif %}
     </td>
     <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
@@ -33,14 +34,10 @@
     </td>
     {% if query_state.scope == "tables" %}
     <td class="p-4 mx-auto text-sm font-normal text-gray-500 dark:text-gray-400">
-        {{ attribute_pill_list(table.attributes) }}
+        {{ attribute_pill_list(table.attributes, 'resources') }}
     </td>
     {% endif %}
 </tr>
 {% else %}
-<tr>
-    <td colspan="5" class="p-4 text-sm font-normal text-center text-gray-500 dark:text-gray-400">
-        No resources found
-    </td>
-</tr>
+{{ table_empty_state(5, 'resources', 'resources', query_state) }}
 {% endfor %}

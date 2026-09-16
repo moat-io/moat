@@ -1,13 +1,15 @@
+import re
+from datetime import datetime
 from textwrap import dedent
 from typing import Tuple, Type
-from datetime import datetime
+
 from database import BaseModel
 from models import AttributeDto, MetadataDboMixin
-from sqlalchemy import desc, or_
-from sqlalchemy.sql import text, func
+from sqlalchemy import and_, desc, exists, or_
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.orm import ColumnProperty, Query, class_mapper
+from sqlalchemy.sql import func, text
 from sqlalchemy.sql.elements import NamedColumn
 
 
@@ -123,6 +125,98 @@ class RepositoryBase:
 
         results: list[BaseModel] = query.all()
         return count, results
+
+    @staticmethod
+    def _split_search_terms(search_term: str) -> list[str]:
+        """Search boxes accept several terms separated by spaces and/or commas."""
+        if not search_term:
+            return []
+        return [
+            term.strip() for term in re.split(r"[,\s]+", search_term) if term.strip()
+        ]
+
+    @staticmethod
+    def _get_attribute_search_query(
+        query: Query,
+        model: Type[BaseModel],
+        attribute_model: Type[BaseModel],
+        search_columns: list[NamedColumn],
+        search_term: str = "",
+    ) -> Query:
+        """
+        Applies a free text search across the model's own columns and its
+        attribute key/values.
+
+        Each whitespace/comma separated term must match somewhere (AND between
+        terms, OR across the columns and attributes). A correlated EXISTS is used
+        rather than a join so that a row is not required to satisfy every term
+        from a *single* attribute row, and so that no duplicate rows are produced.
+        """
+        for term in RepositoryBase._split_search_terms(search_term=search_term):
+            query = query.filter(
+                or_(
+                    *[column.ilike(f"%{term}%") for column in search_columns],
+                    exists().where(
+                        and_(
+                            attribute_model.fq_name == model.fq_name,
+                            or_(
+                                attribute_model.attribute_key.ilike(f"%{term}%"),
+                                attribute_model.attribute_value.ilike(f"%{term}%"),
+                            ),
+                        )
+                    ),
+                )
+            )
+        return query
+
+    @staticmethod
+    def _get_attribute_filter_query(
+        query: Query,
+        model: Type[BaseModel],
+        attribute_model: Type[BaseModel],
+        attributes: list[AttributeDto] | None = None,
+    ) -> Query:
+        """
+        Restricts to rows carrying *all* of the supplied attribute key/value
+        pairs. Pairs sharing a key are OR'd together, so selecting two values of
+        the same attribute widens rather than eliminates the result set, which is
+        what a faceted filter UI is expected to do.
+        """
+        if not attributes:
+            return query
+
+        values_by_key: dict[str, list[str]] = {}
+        for attribute in attributes:
+            values_by_key.setdefault(attribute.attribute_key, []).append(
+                attribute.attribute_value
+            )
+
+        for attribute_key, attribute_values in values_by_key.items():
+            query = query.filter(
+                exists().where(
+                    and_(
+                        attribute_model.fq_name == model.fq_name,
+                        attribute_model.attribute_key == attribute_key,
+                        attribute_model.attribute_value.in_(attribute_values),
+                    )
+                )
+            )
+        return query
+
+    @staticmethod
+    def _get_column_filter_query(
+        query: Query, column: NamedColumn, values: list[str] | None
+    ) -> Query:
+        """Restricts a column to one of the supplied values. Empty means no filter."""
+        if not values:
+            return query
+        return query.filter(column.in_(values))
+
+    @staticmethod
+    def _get_distinct_values(session, column: NamedColumn) -> list[str]:
+        """Distinct non-null values for a column, for populating filter dropdowns."""
+        rows = session.query(column).distinct().order_by(column).all()
+        return [row[0] for row in rows if row[0] is not None]
 
     @staticmethod
     def _get_search_query(

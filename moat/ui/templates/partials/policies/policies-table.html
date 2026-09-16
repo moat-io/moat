@@ -2,10 +2,10 @@
 {% from "partials/common/macro-attribute-pill-list.html" import attribute_pill_list %}
 {% from "partials/common/table-footer-macro.html" import table_footer_macro %}
 
-<div class="flex flex-col">
+<div class="flex flex-col moat-busy" id="policies-table-body-wrapper">
     <div class="overflow-x-auto">
         <div class="inline-block min-w-full align-middle">
-            <div class="overflow-hidden shadow">
+            <div class="overflow-hidden shadow-sm">
                 <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                     <thead class="bg-gray-100 dark:bg-gray-700">
                     <tr>
@@ -46,4 +46,4 @@
         </div>
     </div>
 </div>
-{{ table_footer_macro("policies", query_state) }}
+{{ table_footer_macro("policies", query_state, None, False) }}

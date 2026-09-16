@@ -1,18 +1,28 @@
-from typing import Tuple
-from datetime import datetime
 import re
+from datetime import datetime
+from typing import Tuple
+
 from models import (
+    AttributeDto,
     PrincipalAttributeDbo,
+    PrincipalAttributeHistoryDbo,
     PrincipalAttributeStagingDbo,
     PrincipalDbo,
-    PrincipalStagingDbo,
     PrincipalHistoryDbo,
-    PrincipalAttributeHistoryDbo,
+    PrincipalStagingDbo,
 )
-from sqlalchemy import union_all, or_, and_, desc
+from sqlalchemy import and_, desc, or_, union_all
 from sqlalchemy.orm import Query
-from sqlalchemy.sql import text, func
+from sqlalchemy.sql import func, text
+
 from .repository_base import RepositoryBase
+
+PRINCIPAL_SEARCH_COLUMNS = [
+    PrincipalDbo.user_name,
+    PrincipalDbo.first_name,
+    PrincipalDbo.last_name,
+    PrincipalDbo.email,
+]
 
 
 class PrincipalRepository(RepositoryBase):
@@ -38,6 +48,41 @@ class PrincipalRepository(RepositoryBase):
         return query.count(), query.all()
 
     @staticmethod
+    def _get_filtered_query(
+        session,
+        search_term: str = "",
+        source_type: list[str] | None = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] | None = None,
+    ) -> Query:
+        """
+        The single definition of 'which principals match the current filters'.
+        Shared by the paginated table and the CSV download so the two can never
+        drift apart.
+        """
+        query: Query = session.query(PrincipalDbo)
+
+        query = RepositoryBase._get_attribute_search_query(
+            query=query,
+            model=PrincipalDbo,
+            attribute_model=PrincipalAttributeDbo,
+            search_columns=PRINCIPAL_SEARCH_COLUMNS,
+            search_term=search_term,
+        )
+        query = RepositoryBase._get_column_filter_query(
+            query=query, column=PrincipalDbo.source_type, values=source_type
+        )
+        if active is not None:
+            query = query.filter(PrincipalDbo.active == active)
+        query = RepositoryBase._get_attribute_filter_query(
+            query=query,
+            model=PrincipalDbo,
+            attribute_model=PrincipalAttributeDbo,
+            attributes=attributes,
+        )
+        return query
+
+    @staticmethod
     def get_all_with_search_and_pagination(
         session,
         sort_col_name: str,
@@ -45,47 +90,20 @@ class PrincipalRepository(RepositoryBase):
         page_size: int,
         sort_ascending: bool = True,
         search_term: str = "",
+        source_type: list[str] | str | None = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] | None = None,
     ) -> Tuple[int, list[PrincipalDbo]]:
-        # Build subquery to get distinct principal_ids with search filter
-        subquery = (
-            session.query(PrincipalDbo.principal_id)
-            .outerjoin(
-                PrincipalAttributeDbo,
-                PrincipalDbo.fq_name == PrincipalAttributeDbo.fq_name,
-            )
-            .distinct(PrincipalDbo.principal_id)
-        )
+        # callers with a single source (e.g. the entitlements API) may pass a string
+        if isinstance(source_type, str):
+            source_type = [source_type]
 
-        # Apply search filter across multiple fields
-        # Split search_term on spaces and/or commas, then apply with AND relationship
-        if search_term:
-            # Split on spaces and/or commas and filter out empty strings
-            search_terms = [
-                term.strip()
-                for term in re.split(r"[,\s]+", search_term)
-                if term.strip()
-            ]
-            print(search_terms)
-
-            # Apply each term with OR across fields, then AND all terms together
-            term_filters = []
-            for term in search_terms:
-                term_filters.append(
-                    or_(
-                        PrincipalDbo.user_name.ilike(f"%{term}%"),
-                        PrincipalAttributeDbo.attribute_key.ilike(f"%{term}%"),
-                        PrincipalAttributeDbo.attribute_value.ilike(f"%{term}%"),
-                    )
-                )
-
-            if term_filters:
-                subquery = subquery.filter(and_(*term_filters))
-
-        subquery = subquery.subquery()
-
-        # Main query: join principals with the filtered subquery
-        query: Query = session.query(PrincipalDbo).join(
-            subquery, PrincipalDbo.principal_id == subquery.c.principal_id
+        query: Query = PrincipalRepository._get_filtered_query(
+            session=session,
+            search_term=search_term,
+            source_type=source_type,
+            active=active,
+            attributes=attributes,
         )
 
         # Get count before pagination
@@ -108,6 +126,60 @@ class PrincipalRepository(RepositoryBase):
 
         results: list[PrincipalDbo] = query.all()
         return count, results
+
+    @staticmethod
+    def get_all_with_search(
+        session,
+        sort_col_name: str = "user_name",
+        sort_ascending: bool = True,
+        search_term: str = "",
+        source_type: list[str] | str | None = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] | None = None,
+    ) -> Tuple[int, list[PrincipalDbo]]:
+        """Every principal matching the filters, unpaginated. Used by the CSV download."""
+        if isinstance(source_type, str):
+            source_type = [source_type]
+
+        query: Query = PrincipalRepository._get_filtered_query(
+            session=session,
+            search_term=search_term,
+            source_type=source_type,
+            active=active,
+            attributes=attributes,
+        )
+
+        sort_column = RepositoryBase.get_column_by_name(
+            table_name=PrincipalDbo.__tablename__, column_name=sort_col_name
+        )
+        query = query.order_by(sort_column if sort_ascending else desc(sort_column))
+
+        results: list[PrincipalDbo] = query.all()
+        return len(results), results
+
+    @staticmethod
+    def get_filter_options(session) -> dict[str, list[str]]:
+        """Distinct values used to populate the advanced filter controls."""
+        return {
+            "source_types": RepositoryBase._get_distinct_values(
+                session=session, column=PrincipalDbo.source_type
+            ),
+            "attribute_keys": RepositoryBase._get_distinct_values(
+                session=session, column=PrincipalAttributeDbo.attribute_key
+            ),
+        }
+
+    @staticmethod
+    def get_attribute_values(session, attribute_key: str) -> list[str]:
+        """Distinct values for one attribute key, for the dependent value dropdown."""
+        rows = (
+            session.query(PrincipalAttributeDbo.attribute_value)
+            .filter(PrincipalAttributeDbo.attribute_key == attribute_key)
+            .distinct()
+            .order_by(PrincipalAttributeDbo.attribute_value)
+            .all()
+        )
+        return [row[0] for row in rows if row[0] is not None]
 
     @staticmethod
     def get_by_id(session, principal_id: int) -> PrincipalDbo:

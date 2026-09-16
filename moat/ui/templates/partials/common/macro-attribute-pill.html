@@ -1,11 +1,28 @@
-{% macro attribute_pill(attribute_key, attribute_value) %}
-    {% if attribute_key %}
-    <a href="#" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-semibold me-2 my-1 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-blue-400 border border-blue-400 inline-flex items-center justify-center whitespace-nowrap">
-        {{ attribute_key }}: {{ attribute_value | replace(',', ', ') }}
-    </a>
-    {% else %}
-    <a href="#" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-xs font-semibold me-2 my-1 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-yellow-400 border border-blue-400 inline-flex items-center justify-center whitespace-nowrap">
-        {{ attribute_value | replace(',', ', ') }}
-    </a>
-    {% endif %}
+{#
+  An attribute pill.
+
+  When `filter_prefix` is given the pill becomes a button that applies itself as a
+  filter on that view. Elsewhere (modals, policy detail) there is no filter form to
+  drive, so it renders as a plain span rather than the dead `<a href="#">` it used
+  to be.
+#}
+{% macro attribute_pill(attribute_key, attribute_value, filter_prefix=None) %}
+{% set palette = 'bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-gray-700 dark:text-blue-400 border-blue-400' if attribute_key
+                 else 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-gray-700 dark:text-yellow-400 border-yellow-400' %}
+{% set base = 'text-xs font-semibold me-2 my-1 px-2.5 py-0.5 rounded border inline-flex items-center justify-center whitespace-nowrap' %}
+{% if filter_prefix and attribute_key %}
+<button type="button"
+        data-moat-apply-filter
+        data-prefix="{{ filter_prefix }}"
+        data-key="{{ attribute_key }}"
+        data-value="{{ attribute_value }}"
+        title="Filter by {{ attribute_key }}: {{ attribute_value }}"
+        class="{{ base }} {{ palette }} cursor-pointer focus:ring-2 focus:ring-primary-300 dark:focus:ring-primary-800">
+    {{ attribute_key }}: {{ attribute_value | replace(',', ', ') }}
+</button>
+{% else %}
+<span class="{{ base }} {{ palette }}">
+    {% if attribute_key %}{{ attribute_key }}: {% endif %}{{ attribute_value | replace(',', ', ') }}
+</span>
+{% endif %}
 {% endmacro %}

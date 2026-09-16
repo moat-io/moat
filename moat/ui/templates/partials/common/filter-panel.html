@@ -1,0 +1,270 @@
+{#
+  Advanced filter panel.
+
+  All filter controls live inside a single <form id="{prefix}-filter-form">. Every
+  request that renders the table includes that form, so the table, the row count
+  and the CSV download link are always derived from exactly the same query state.
+
+  facets: list of {'name', 'label', 'values'} - rendered as checkbox groups
+  attribute_keys: distinct attribute keys, for the key/value attribute filter
+#}
+
+{% macro filter_panel(prefix, query_state, facets, attribute_keys) %}
+<form id="{{ prefix }}-filter-form"
+      class="relative"
+      onsubmit="return false;"
+      hx-get="/{{ prefix }}/table"
+      hx-target="#{{ prefix }}-table"
+      hx-trigger="change target:.moat-filter-input, moat:filters-changed"
+      hx-indicator="#{{ prefix }}-table-body-wrapper, #page-progress"
+      hx-include="#{{ prefix }}-search, #app-state-sort-key, #app-state-sort-ascending, #app-state-page-size, #app-state-scope">
+
+    <button id="{{ prefix }}-filter-button"
+            data-dropdown-toggle="{{ prefix }}-filter-dropdown"
+            data-dropdown-placement="bottom-end"
+            type="button"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700">
+        <svg class="w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M7 12h10M10 18h4"/>
+        </svg>
+        Filters
+        <span id="{{ prefix }}-filter-badge"
+              class="ms-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-semibold rounded-full {{ 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' if query_state.filter_count else 'hidden' }}">
+            {{ query_state.filter_count }}
+        </span>
+    </button>
+
+    <div id="{{ prefix }}-filter-dropdown"
+         class="z-50 hidden w-80 p-4 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Advanced filters</h3>
+            <button type="button"
+                    onclick="moatClearFilters('{{ prefix }}')"
+                    class="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400">
+                Clear all
+            </button>
+        </div>
+
+        <div class="space-y-4 max-h-96 overflow-y-auto">
+
+            {% for facet in facets %}
+            {% if facet['values'] %}
+            <div>
+                <h4 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    {{ facet['label'] }}
+                </h4>
+                <div class="space-y-1.5">
+                    {% for value in facet['values'] %}
+                    <label class="flex items-center text-sm text-gray-700 cursor-pointer dark:text-gray-300">
+                        <input type="checkbox"
+                               class="moat-filter-input w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                               name="{{ facet['name'] }}"
+                               value="{{ value }}"
+                               {{ 'checked' if value in (query_state[facet['name']] or []) }}>
+                        <span class="ms-2">{{ value }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <div>
+                <h4 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    Status
+                </h4>
+                <div class="space-y-1.5">
+                    {% for option_value, option_label in [('any', 'Any'), ('true', 'Active'), ('false', 'Inactive')] %}
+                    <label class="flex items-center text-sm text-gray-700 cursor-pointer dark:text-gray-300">
+                        <input type="radio"
+                               class="moat-filter-input w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                               name="active"
+                               value="{{ option_value }}"
+                               {{ 'checked' if query_state.active == option_value }}>
+                        <span class="ms-2">{{ option_label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if attribute_keys %}
+            <div>
+                <h4 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                    Attribute
+                </h4>
+                <div class="space-y-2">
+                    {# not .moat-filter-input: changing the key must not re-run the table query #}
+                    <select id="{{ prefix }}-attr-key"
+                            name="attribute_key"
+                            hx-get="/{{ prefix }}/attribute-values"
+                            hx-trigger="change"
+                            hx-target="#{{ prefix }}-attr-value"
+                            class="block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="">Select a key...</option>
+                        {% for attribute_key in attribute_keys %}
+                        <option value="{{ attribute_key }}">{{ attribute_key }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="{{ prefix }}-attr-value"
+                            name="attribute_value"
+                            class="block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="">Select a key first</option>
+                    </select>
+
+                    <button type="button"
+                            onclick="moatAddAttributeFilter('{{ prefix }}')"
+                            class="w-full px-3 py-2 text-sm font-medium text-primary-700 border border-primary-700 rounded-lg hover:bg-primary-700 hover:text-white dark:text-primary-400 dark:border-primary-400 dark:hover:bg-primary-600 dark:hover:text-white">
+                        Add attribute filter
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# selected attribute filters are carried as hidden inputs so they post with the form #}
+        <div id="{{ prefix }}-attr-inputs">
+            {% for attribute in query_state.attributes or [] %}
+            <input type="hidden" name="attributes" value="{{ attribute }}">
+            {% endfor %}
+        </div>
+    </div>
+</form>
+{% endmacro %}
+
+
+{% macro filter_scripts() %}
+<script>
+    function moatFilterForm(prefix) {
+        return document.getElementById(prefix + '-filter-form');
+    }
+
+    function moatFiltersChanged(prefix) {
+        const form = moatFilterForm(prefix);
+        if (form) {
+            form.dispatchEvent(new CustomEvent('moat:filters-changed', {bubbles: false}));
+        }
+    }
+
+    function moatAddAttributeFilter(prefix) {
+        const key = document.getElementById(prefix + '-attr-key');
+        const value = document.getElementById(prefix + '-attr-value');
+        if (!key || !value || !key.value || !value.value) {
+            return;
+        }
+
+        const filterValue = key.value + ':' + value.value;
+        const container = document.getElementById(prefix + '-attr-inputs');
+        const existing = container.querySelector('input[value="' + CSS.escape(filterValue) + '"]');
+        if (existing) {
+            return;
+        }
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'attributes';
+        input.value = filterValue;
+        container.appendChild(input);
+
+        moatFiltersChanged(prefix);
+    }
+
+    // clicking an attribute pill in a row applies it as a filter
+    function moatApplyAttributeFilter(prefix, attributeKey, attributeValue) {
+        const container = document.getElementById(prefix + '-attr-inputs');
+        if (!container) {
+            return;
+        }
+
+        const filterValue = attributeKey + ':' + attributeValue;
+        if (container.querySelector('input[value="' + CSS.escape(filterValue) + '"]')) {
+            return;
+        }
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'attributes';
+        input.value = filterValue;
+        container.appendChild(input);
+
+        moatFiltersChanged(prefix);
+    }
+
+    function moatRemoveFilter(prefix, name, value) {
+        const form = moatFilterForm(prefix);
+        if (!form) {
+            return;
+        }
+
+        const selector = '[name="' + name + '"][value="' + CSS.escape(value) + '"]';
+        const input = form.querySelector(selector);
+        if (!input) {
+            return;
+        }
+
+        if (input.type === 'hidden') {
+            input.remove();
+        } else {
+            input.checked = false;
+        }
+
+        moatFiltersChanged(prefix);
+    }
+
+    function moatResetActive(prefix) {
+        const form = moatFilterForm(prefix);
+        const anyOption = form && form.querySelector('[name="active"][value="any"]');
+        if (anyOption) {
+            anyOption.checked = true;
+            moatFiltersChanged(prefix);
+        }
+    }
+
+    function moatClearFilters(prefix) {
+        const form = moatFilterForm(prefix);
+        if (!form) {
+            return;
+        }
+
+        form.querySelectorAll('input[type="checkbox"]').forEach(function (input) {
+            input.checked = false;
+        });
+        form.querySelectorAll('#' + prefix + '-attr-inputs input').forEach(function (input) {
+            input.remove();
+        });
+
+        const anyOption = form.querySelector('[name="active"][value="any"]');
+        if (anyOption) {
+            anyOption.checked = true;
+        }
+
+        moatFiltersChanged(prefix);
+    }
+
+    // Chips are re-rendered out of band on every table response, so removal is
+    // handled by delegation. The page shell survives htmx navigation between
+    // views, so the listener is registered exactly once.
+    if (!window.moatFilterChipsBound) {
+        window.moatFilterChipsBound = true;
+        document.addEventListener('click', function (event) {
+            const removeButton = event.target.closest('[data-moat-remove-filter]');
+            if (removeButton) {
+                const prefix = removeButton.dataset.prefix;
+                if (removeButton.dataset.name === 'active') {
+                    moatResetActive(prefix);
+                } else {
+                    moatRemoveFilter(prefix, removeButton.dataset.name, removeButton.dataset.value);
+                }
+                return;
+            }
+
+            const pill = event.target.closest('[data-moat-apply-filter]');
+            if (pill) {
+                moatApplyAttributeFilter(pill.dataset.prefix, pill.dataset.key, pill.dataset.value);
+            }
+        });
+    }
+</script>
+{% endmacro %}

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" class="dark">
 {% include 'partials/head.html' %}
-<body class="bg-white dark:bg-gray-900bg-gray-50 dark:bg-gray-800">
+<body class="bg-gray-50 dark:bg-gray-900">
 
 {% include 'partials/navbar-dashboard.html' %}
 
@@ -9,8 +9,12 @@
     {% include 'partials/sidebar.html' %}
     <div id="main-content" class="relative w-full h-full overflow-y-auto bg-gray-50 lg:ml-64 dark:bg-gray-900">
 
+        <div id="page-progress" class="htmx-indicator fixed top-0 left-0 right-0 z-[60] h-0.5 overflow-hidden bg-transparent">
+            <div class="w-full h-full origin-left bg-primary-600 animate-progress dark:bg-primary-500"></div>
+        </div>
+
         <div id="toast-success"
-             class="invisible fixed top-20 right-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-700"
+             class="invisible fixed top-20 right-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-gray-700"
              role="alert">
             <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
                 <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
@@ -33,7 +37,7 @@
         </div>
 
         <main id="main"
-              hx-get="/principals/"
+              hx-get="{{ initial_view_url | default('/principals/', true) }}"
               hx-target="#main"
               hx-trigger="load"
         >

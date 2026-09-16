@@ -1,0 +1,62 @@
+{#
+  Out-of-band updates sent with every table render.
+
+  The filter badge, the active-filter chips and the CSV download link all live in
+  the page header, which is rendered once and never replaced. Swapping them out of
+  band on each table response is what keeps the download link carrying exactly the
+  filters that produced the rows on screen.
+
+  Expects: filter_prefix, download_url, query_state
+#}
+
+<span id="{{ filter_prefix }}-filter-badge"
+      hx-swap-oob="true"
+      class="ms-2 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-semibold rounded-full {{ 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' if query_state.filter_count else 'hidden' }}">
+    {{ query_state.filter_count }}
+</span>
+
+<a id="{{ filter_prefix }}-download-csv"
+   hx-swap-oob="true"
+   href="{{ query_state.download_url(download_url) }}"
+   title="Downloads every row matching the current filters"
+   class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+    <svg class="w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4v12m0 0-4-4m4 4 4-4M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>
+    </svg>
+    Download CSV
+    <span class="ms-2 px-1.5 py-0.5 text-xs font-semibold rounded-sm bg-primary-800 dark:bg-primary-700">
+        {{ query_state.record_count }}
+    </span>
+</a>
+
+<div id="{{ filter_prefix }}-filter-chips" hx-swap-oob="true" class="flex flex-wrap items-center gap-2">
+    {% for chip in query_state.filter_chips %}
+    <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-primary-800 bg-primary-100 rounded-full dark:bg-primary-900 dark:text-primary-200">
+        <span class="font-semibold">{{ chip['label'] }}:</span>
+        <span class="ms-1">{{ chip['display'] }}</span>
+        {# values come from the database, so they are carried as attributes rather
+           than interpolated into an inline handler #}
+        <button type="button"
+                data-moat-remove-filter
+                data-prefix="{{ filter_prefix }}"
+                data-name="{{ chip['name'] }}"
+                data-value="{{ chip['value'] }}"
+                class="inline-flex items-center justify-center w-4 h-4 ms-1.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800"
+                aria-label="Remove {{ chip['label'] }} filter">
+            <svg class="w-2 h-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+        </button>
+    </span>
+    {% endfor %}
+
+    {% if query_state.filter_count %}
+    <button type="button"
+            onclick="moatClearFilters('{{ filter_prefix }}')"
+            class="text-xs font-medium text-gray-500 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white">
+        Clear all
+    </button>
+    {% endif %}
+</div>

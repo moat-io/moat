@@ -1,18 +1,22 @@
+from datetime import datetime
 from typing import Tuple
 
-from datetime import datetime
 from models import (
+    AttributeDto,
+    ResourceAttributeDbo,
+    ResourceAttributeHistoryDbo,
     ResourceAttributeStagingDbo,
     ResourceDbo,
-    ResourceStagingDbo,
-    ResourceAttributeDbo,
     ResourceHistoryDbo,
-    ResourceAttributeHistoryDbo,
+    ResourceStagingDbo,
 )
+from sqlalchemy import desc
 from sqlalchemy.orm import Query
-from sqlalchemy.sql import text, func
+from sqlalchemy.sql import func, text
 
 from .repository_base import RepositoryBase
+
+RESOURCE_SEARCH_COLUMNS = [ResourceDbo.fq_name]
 
 
 class ResourceRepository(RepositoryBase):
@@ -32,6 +36,45 @@ class ResourceRepository(RepositoryBase):
         return query.count(), query.all()
 
     @staticmethod
+    def _get_filtered_query(
+        session,
+        search_term: str = "",
+        platform: list[str] | None = None,
+        object_type: list[str] | None = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] | None = None,
+    ) -> Query:
+        """
+        The single definition of 'which resources match the current filters'.
+        Shared by the paginated table and the CSV download so the two can never
+        drift apart.
+        """
+        query: Query = session.query(ResourceDbo)
+
+        query = RepositoryBase._get_attribute_search_query(
+            query=query,
+            model=ResourceDbo,
+            attribute_model=ResourceAttributeDbo,
+            search_columns=RESOURCE_SEARCH_COLUMNS,
+            search_term=search_term,
+        )
+        query = RepositoryBase._get_column_filter_query(
+            query=query, column=ResourceDbo.platform, values=platform
+        )
+        query = RepositoryBase._get_column_filter_query(
+            query=query, column=ResourceDbo.object_type, values=object_type
+        )
+        if active is not None:
+            query = query.filter(ResourceDbo.active == active)
+        query = RepositoryBase._get_attribute_filter_query(
+            query=query,
+            model=ResourceDbo,
+            attribute_model=ResourceAttributeDbo,
+            attributes=attributes,
+        )
+        return query
+
+    @staticmethod
     def get_all_with_search_and_pagination(
         session,
         sort_col_name: str,
@@ -39,17 +82,90 @@ class ResourceRepository(RepositoryBase):
         page_size: int,
         sort_ascending: bool = True,
         search_term: str = "",
+        platform: list[str] | None = None,
+        object_type: list[str] | None = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] | None = None,
     ) -> Tuple[int, list[ResourceDbo]]:
-        return RepositoryBase._get_all_with_search_and_pagination(
-            model=ResourceDbo,
+        query: Query = ResourceRepository._get_filtered_query(
             session=session,
-            sort_col_name=sort_col_name,
-            page_number=page_number,
-            page_size=page_size,
-            sort_ascending=sort_ascending,
             search_term=search_term,
-            search_column_names=["fq_name"],
+            platform=platform,
+            object_type=object_type,
+            active=active,
+            attributes=attributes,
         )
+
+        count: int = query.count()
+
+        if sort_col_name:
+            sort_column = RepositoryBase.get_column_by_name(
+                table_name=ResourceDbo.__tablename__, column_name=sort_col_name
+            )
+            query = query.order_by(sort_column if sort_ascending else desc(sort_column))
+
+        query = RepositoryBase._get_pagination_query(
+            query=query, page_number=page_number, page_size=page_size
+        )
+
+        results: list[ResourceDbo] = query.all()
+        return count, results
+
+    @staticmethod
+    def get_all_with_search(
+        session,
+        sort_col_name: str = "fq_name",
+        sort_ascending: bool = True,
+        search_term: str = "",
+        platform: list[str] | None = None,
+        object_type: list[str] | None = None,
+        active: bool | None = None,
+        attributes: list[AttributeDto] | None = None,
+    ) -> Tuple[int, list[ResourceDbo]]:
+        """Every resource matching the filters, unpaginated. Used by the CSV download."""
+        query: Query = ResourceRepository._get_filtered_query(
+            session=session,
+            search_term=search_term,
+            platform=platform,
+            object_type=object_type,
+            active=active,
+            attributes=attributes,
+        )
+
+        sort_column = RepositoryBase.get_column_by_name(
+            table_name=ResourceDbo.__tablename__, column_name=sort_col_name
+        )
+        query = query.order_by(sort_column if sort_ascending else desc(sort_column))
+
+        results: list[ResourceDbo] = query.all()
+        return len(results), results
+
+    @staticmethod
+    def get_filter_options(session) -> dict[str, list[str]]:
+        """Distinct values used to populate the advanced filter controls."""
+        return {
+            "platforms": RepositoryBase._get_distinct_values(
+                session=session, column=ResourceDbo.platform
+            ),
+            "object_types": RepositoryBase._get_distinct_values(
+                session=session, column=ResourceDbo.object_type
+            ),
+            "attribute_keys": RepositoryBase._get_distinct_values(
+                session=session, column=ResourceAttributeDbo.attribute_key
+            ),
+        }
+
+    @staticmethod
+    def get_attribute_values(session, attribute_key: str) -> list[str]:
+        """Distinct values for one attribute key, for the dependent value dropdown."""
+        rows = (
+            session.query(ResourceAttributeDbo.attribute_value)
+            .filter(ResourceAttributeDbo.attribute_key == attribute_key)
+            .distinct()
+            .order_by(ResourceAttributeDbo.attribute_value)
+            .all()
+        )
+        return [row[0] for row in rows if row[0] is not None]
 
     # TODO base class
     @staticmethod
