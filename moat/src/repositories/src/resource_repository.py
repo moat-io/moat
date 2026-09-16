@@ -157,15 +157,15 @@ class ResourceRepository(RepositoryBase):
 
     @staticmethod
     def get_attribute_values(session, attribute_key: str) -> list[str]:
-        """Distinct values for one attribute key, for the dependent value dropdown."""
-        rows = (
-            session.query(ResourceAttributeDbo.attribute_value)
-            .filter(ResourceAttributeDbo.attribute_key == attribute_key)
-            .distinct()
-            .order_by(ResourceAttributeDbo.attribute_value)
-            .all()
+        """
+        Distinct values for one attribute key, for the dependent value dropdown.
+        Multi valued attributes are offered one component at a time.
+        """
+        return RepositoryBase._get_attribute_values(
+            session=session,
+            attribute_model=ResourceAttributeDbo,
+            attribute_key=attribute_key,
         )
-        return [row[0] for row in rows if row[0] is not None]
 
     # TODO base class
     @staticmethod

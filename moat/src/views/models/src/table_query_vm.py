@@ -76,6 +76,26 @@ class TableQueryVm(BaseModel):
         return attribute_dtos or None
 
     @property
+    def attribute_conditions(self) -> list[dict[str, str]]:
+        """
+        The applied attribute filters, one entry per row of the filter list.
+        'input_value' is what the row's remove button posts back.
+        """
+        conditions: list[dict[str, str]] = []
+        for attribute in self.attributes or []:
+            attribute_key, separator, attribute_value = attribute.partition(":")
+            if not separator:
+                continue
+            conditions.append(
+                {
+                    "key": attribute_key,
+                    "value": attribute_value,
+                    "input_value": attribute,
+                }
+            )
+        return conditions
+
+    @property
     def active_filter(self) -> bool | None:
         """None means 'do not filter on active at all'."""
         if self.active == ACTIVE_TRUE:
