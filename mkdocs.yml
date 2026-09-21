@@ -18,6 +18,7 @@ nav:
   - MCP Server: mcp.md
   - Provisioning:
       - SCIM2.0: provisioning/scim.md
+      - HTTP Connector: provisioning/http_connector.md
       - Resources:  provisioning/resource_ingestion.md
   - Security:
       - API Authentication: security/auth.md
