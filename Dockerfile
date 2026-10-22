@@ -1,3 +1,12 @@
+# Build the UI assets with Node 20+ (required by @tailwindcss/oxide native bindings)
+FROM node:22-bookworm-slim AS ui-builder
+
+WORKDIR /ui
+COPY moat/ui/package.json moat/ui/package-lock.json ./
+RUN npm ci
+COPY moat/ui/ ./
+RUN npm run build
+
 FROM python:3.12-slim-bookworm
 
 # Set default OPA version (can be overridden at build time)
@@ -16,7 +25,7 @@ RUN mkdir -p /app/moat
 WORKDIR /app/moat
 
 # Install Deps
-RUN apt-get update && apt-get install -y curl libexpat1 nodejs npm && \
+RUN apt-get update && apt-get install -y curl libexpat1 && \
     curl -L -o /usr/local/bin/opa https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64_static && \
     chmod 755 /usr/local/bin/opa && \
     apt-get clean && \
@@ -29,10 +38,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code
 COPY moat/ /app/moat/
 
-# Build the UI
-RUN cd /app/moat/ui && \
-    npm install && \
-    npm run build
+# Copy the UI assets built in the ui-builder stage
+COPY --from=ui-builder /ui/static /app/moat/ui/static
 
 # Copy the default policies
 COPY opa/ /app/opa

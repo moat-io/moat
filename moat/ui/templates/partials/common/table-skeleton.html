@@ -1,0 +1,18 @@
+{#
+  Placeholder rows for the first paint.
+
+  The search partial renders the table template inline before any query has run, so
+  without this the user sees a flash of "No results found" that is immediately
+  replaced. Showing skeleton rows instead reads as loading rather than as empty.
+#}
+{% macro table_skeleton(column_count, row_count=8) %}
+{% for _ in range(row_count) %}
+<tr aria-hidden="true">
+    {% for column_index in range(column_count) %}
+    <td class="moat-cell">
+        <div class="moat-skeleton h-4 {{ 'w-4' if column_index == 0 else 'w-3/4' }}"></div>
+    </td>
+    {% endfor %}
+</tr>
+{% endfor %}
+{% endmacro %}

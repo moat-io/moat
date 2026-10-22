@@ -1,0 +1,48 @@
+{#
+  Right-hand detail drawer.
+
+  Replaces the old centre-screen modals. A drawer keeps the filtered list visible
+  behind it, so you can open a row, read it, close it and carry on scanning without
+  losing your place - which is the whole point of a list you have just filtered.
+
+  Rendered once per view, outside the htmx-swapped table, so its content element
+  survives table refreshes and Flowbite only has to bind it once.
+#}
+{% macro detail_drawer(drawer_id, title) %}
+<div id="{{ drawer_id }}"
+     class="fixed top-0 right-0 z-50 h-screen w-full max-w-3xl overflow-y-auto transition-transform translate-x-full bg-white dark:bg-gray-800"
+     tabindex="-1"
+     aria-labelledby="{{ drawer_id }}-label">
+
+    <div class="sticky top-0 z-10 flex items-center justify-between p-4 bg-white border-b border-gray-200 md:p-5 dark:bg-gray-800 dark:border-gray-700">
+        <h3 id="{{ drawer_id }}-label" class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ title }}
+        </h3>
+        <button type="button"
+                data-drawer-hide="{{ drawer_id }}"
+                aria-controls="{{ drawer_id }}"
+                class="inline-flex items-center justify-center w-8 h-8 text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+            <span class="sr-only">Close</span>
+        </button>
+    </div>
+
+    <div id="{{ drawer_id }}-content" class="p-4 md:p-5"></div>
+</div>
+{% endmacro %}
+
+{#
+  Attributes for a button that loads `url` into the drawer and opens it.
+#}
+{% macro drawer_trigger(drawer_id, url) -%}
+hx-get="{{ url }}"
+hx-target="#{{ drawer_id }}-content"
+hx-indicator="#page-progress"
+data-drawer-target="{{ drawer_id }}"
+data-drawer-show="{{ drawer_id }}"
+data-drawer-placement="right"
+aria-controls="{{ drawer_id }}"
+{%- endmacro %}

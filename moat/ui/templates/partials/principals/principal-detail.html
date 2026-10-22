@@ -1,10 +1,52 @@
 {% from "partials/common/macro-attribute-pill.html" import attribute_pill %}
+{% from "partials/common/macro-attribute-pill-list.html" import attribute_pill_list %}
 
-<div class="p-4 md:p-5 space-y-4">
+<div class="space-y-6">
+    <div>
+        <h4 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ principal.first_name }} {{ principal.last_name }}
+        </h4>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ principal.user_name }}</p>
+
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 text-sm">
+            <div>
+                <dt class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Email</dt>
+                <dd class="mt-0.5 text-gray-900 break-all dark:text-white">{{ principal.email or '-' }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Source</dt>
+                <dd class="mt-0.5 text-gray-900 dark:text-white">{{ principal.source_type | capitalize }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Status</dt>
+                <dd class="mt-0.5">
+                    {% if principal.active %}
+                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">Active</span>
+                    {% else %}
+                    <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-sm dark:bg-red-900 dark:text-red-300">Inactive</span>
+                    {% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Fully qualified name</dt>
+                <dd class="mt-0.5 text-gray-900 break-all dark:text-white">{{ principal.fq_name }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <div>
+        <h5 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Attributes</h5>
+        <div class="flex flex-wrap">
+            {{ attribute_pill_list(principal.attributes) }}
+        </div>
+    </div>
+
+    <div>
+        <h5 class="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Attribute history</h5>
     <div class="flex flex-col">
         <div class="overflow-x-auto overflow-y-auto">
             <div class="inline-block min-w-full align-middle">
-                <div class="overflow-hidden shadow">
+                <div class="overflow-hidden shadow-sm">
                     <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
                         <thead class="bg-gray-100 dark:bg-gray-700">
                         <tr>
@@ -39,11 +81,11 @@
                                 </td>
                                 <td class="p-4 whitespace-nowrap">
                                     {% if item.history_change_operation == "I" %}
-                                        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Added</span>
+                                        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">Added</span>
                                     {% elif item.history_change_operation == "U" %}
-                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Updated</span>
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-yellow-900 dark:text-yellow-300">Updated</span>
                                     {% elif item.history_change_operation == "D" %}
-                                        <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Removed</span>
+                                        <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-red-900 dark:text-red-300">Removed</span>
                                     {% endif %}
                                 </td>
                                 <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -57,4 +99,5 @@
             </div>
         </div>
     </div>
+</div>
 </div>

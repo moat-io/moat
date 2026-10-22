@@ -38,8 +38,8 @@ def test_get_merge_update_statement_mysql():
             """
             UPDATE principals tgt
             JOIN principals_staging src ON tgt.source_uid = src.source_uid and tgt.id = src.id
-            SET tgt.first_name = src.first_name, tgt.last_name = src.last_name, tgt.user_name = src.user_name, tgt.email = src.email, tgt.ingestion_process_id = 1234
-            WHERE tgt.first_name <> src.first_name or tgt.last_name <> src.last_name or tgt.user_name <> src.user_name or tgt.email <> src.email
+            SET tgt.first_name = src.first_name, tgt.last_name = src.last_name, tgt.user_name = src.user_name, tgt.email = src.email, tgt.active = true, tgt.ingestion_process_id = 1234
+            WHERE tgt.first_name <> src.first_name or tgt.last_name <> src.last_name or tgt.user_name <> src.user_name or tgt.email <> src.email or tgt.active is not true
         """
         )
         == RepositoryBase._get_merge_update_statement(
@@ -58,9 +58,9 @@ def test_get_merge_update_statement_postgres():
         dedent(
             """
             update principals tgt
-            set first_name = src.first_name, last_name = src.last_name, user_name = src.user_name, email = src.email, ingestion_process_id = 1234
+            set first_name = src.first_name, last_name = src.last_name, user_name = src.user_name, email = src.email, active = true, ingestion_process_id = 1234
             from principals_staging src
-            where tgt.source_uid = src.source_uid and tgt.id = src.id and (tgt.first_name <> src.first_name or tgt.last_name <> src.last_name or tgt.user_name <> src.user_name or tgt.email <> src.email)
+            where tgt.source_uid = src.source_uid and tgt.id = src.id and (tgt.first_name <> src.first_name or tgt.last_name <> src.last_name or tgt.user_name <> src.user_name or tgt.email <> src.email or tgt.active is not true)
             """
         )
         == RepositoryBase._get_merge_update_statement(
@@ -77,15 +77,9 @@ def test_get_merge_deactivate_statement_postgres():
     assert (
         dedent(
             """
-            update principals tgt
-            set ingestion_process_id = 1, active = false
-            from (
-                select source_uid, id from principals
-                except
-                select source_uid, id from principals_staging
-            ) src
-            where tgt.source_uid = src.source_uid and tgt.id = src.id and tgt.active
-        """
+            delete from principals tgt
+            where not exists (select 1 from principals_staging src where (src.source_uid = tgt.source_uid or (src.source_uid is null and tgt.source_uid is null)) and (src.id = tgt.id or (src.id is null and tgt.id is null)))
+            """
         )
         == RepositoryBase._get_merge_deactivate_statement(
             source_model=PrincipalStagingDboMock,
@@ -100,14 +94,9 @@ def test_get_merge_deactivate_statement_mysql():
     assert (
         dedent(
             """
-            update principals tgt
-            join (
-                select source_uid, id from principals
-                except
-                select source_uid, id from principals_staging
-            ) src on tgt.source_uid = src.source_uid and tgt.id = src.id and tgt.active
-            set ingestion_process_id = 1, active = false
-        """
+            delete tgt from principals tgt
+            where not exists (select 1 from principals_staging src where (src.source_uid = tgt.source_uid or (src.source_uid is null and tgt.source_uid is null)) and (src.id = tgt.id or (src.id is null and tgt.id is null)))
+            """
         )
         == RepositoryBase._get_merge_deactivate_statement(
             source_model=PrincipalStagingDboMock,

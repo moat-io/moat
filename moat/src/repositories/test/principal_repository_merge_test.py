@@ -90,7 +90,7 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert 1 == len([p for p in principals if p.ingestion_process_id == 2])
         assert count == 3
 
-    # scenario 3: update target tables - includes two soft deletes
+    # scenario 3: update target tables - includes two deletes
     with database_empty.Session.begin() as session:
         principal: PrincipalDbo = repo.get_by_id(session=session, principal_id=1)
         assert principal.first_name == "Abigail"
@@ -118,7 +118,7 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         )
         assert insert_row_count == 0
         assert update_row_count == 1
-        assert deactivate_row_count == 2  # two soft deletes
+        assert deactivate_row_count == 2  # two deletes
         session.commit()
 
     # test it
@@ -128,11 +128,31 @@ def test_merge_principals_staging(database_empty: Database) -> None:
         assert principal.last_name == "Hathaway"
 
         count, principals = repo.get_all(session=session)
-        # three records should be changed
-        assert 3 == len([p for p in principals if p.ingestion_process_id == 3])
-        assert 3 == count
+        # only the record present in staging should remain
+        assert 1 == count
+        assert principals[0].first_name == "Anne"
+        assert principals[0].ingestion_process_id == 3
+        assert principals[0].active
 
-        # anne should be active, the others not
-        assert next(p for p in principals if p.first_name == "Anne").active
-        assert not next(p for p in principals if p.first_name == "Frank").active
-        assert not next(p for p in principals if p.first_name == "Boris").active
+    # scenario 4: a principal deactivated outside of ingestion - by SCIM for
+    # example - is reactivated when the source still reports it, even though
+    # none of the other columns have changed
+    with database_empty.Session.begin() as session:
+        principal: PrincipalDbo = repo.get_by_id(session=session, principal_id=1)
+        principal.active = False
+        session.commit()
+
+    # merge it - the staging table still holds the same single record
+    with database_empty.Session.begin() as session:
+        insert_row_count, update_row_count = repo.merge_staging(
+            session=session, ingestion_process_id=4
+        )
+        assert insert_row_count == 0
+        assert update_row_count == 1
+        session.commit()
+
+    # test it
+    with database_empty.Session.begin() as session:
+        principal: PrincipalDbo = repo.get_by_id(session=session, principal_id=1)
+        assert principal.active
+        assert principal.ingestion_process_id == 4

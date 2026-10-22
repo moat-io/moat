@@ -1,13 +1,15 @@
+import re
+from datetime import datetime
 from textwrap import dedent
 from typing import Tuple, Type
-from datetime import datetime
+
 from database import BaseModel
 from models import AttributeDto, MetadataDboMixin
-from sqlalchemy import desc, or_
-from sqlalchemy.sql import text, func
+from sqlalchemy import and_, desc, exists, or_
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect as sa_inspect
 from sqlalchemy.orm import ColumnProperty, Query, class_mapper
+from sqlalchemy.sql import func, text
 from sqlalchemy.sql.elements import NamedColumn
 
 
@@ -80,8 +82,11 @@ class RepositoryBase:
     def get_latest_timestamp_for_model(
         session, model: type[MetadataDboMixin | BaseModel]
     ) -> datetime:
+        history_model: Type[BaseModel] = RepositoryBase.get_model_by_name(
+            table_name=f"{model.__tablename__}_history"
+        )
         latest_change_timestamp: datetime = session.query(
-            func.max(model.record_updated_date)
+            func.max(history_model.history_record_created_date)
         ).scalar()
         return latest_change_timestamp
 
@@ -120,6 +125,171 @@ class RepositoryBase:
 
         results: list[BaseModel] = query.all()
         return count, results
+
+    @staticmethod
+    def _split_search_terms(search_term: str) -> list[str]:
+        """Search boxes accept several terms separated by spaces and/or commas."""
+        if not search_term:
+            return []
+        return [
+            term.strip() for term in re.split(r"[,\s]+", search_term) if term.strip()
+        ]
+
+    @staticmethod
+    def _get_attribute_search_query(
+        query: Query,
+        model: Type[BaseModel],
+        attribute_model: Type[BaseModel],
+        search_columns: list[NamedColumn],
+        search_term: str = "",
+    ) -> Query:
+        """
+        Applies a free text search across the model's own columns and its
+        attribute key/values.
+
+        Each whitespace/comma separated term must match somewhere (AND between
+        terms, OR across the columns and attributes). A correlated EXISTS is used
+        rather than a join so that a row is not required to satisfy every term
+        from a *single* attribute row, and so that no duplicate rows are produced.
+        """
+        for term in RepositoryBase._split_search_terms(search_term=search_term):
+            query = query.filter(
+                or_(
+                    *[column.ilike(f"%{term}%") for column in search_columns],
+                    exists().where(
+                        and_(
+                            attribute_model.fq_name == model.fq_name,
+                            or_(
+                                attribute_model.attribute_key.ilike(f"%{term}%"),
+                                attribute_model.attribute_value.ilike(f"%{term}%"),
+                            ),
+                        )
+                    ),
+                )
+            )
+        return query
+
+    @staticmethod
+    def split_attribute_values(attribute_value: str | None) -> list[str]:
+        """
+        A single attribute row may carry several values joined by commas
+        (`Commercial = 'Sales,HR,IT'`). Everything the user sees and filters on
+        is one of those components, not the joined string, so this is the one
+        place that decides where the boundaries are - matching how the OPA
+        bundle flattens the same values.
+        """
+        if not attribute_value:
+            return []
+        return [value.strip() for value in attribute_value.split(",") if value.strip()]
+
+    @staticmethod
+    def _get_component_value_column(attribute_model: Type[BaseModel]) -> NamedColumn:
+        """
+        The attribute value wrapped in delimiters and stripped of the spaces that
+        may surround them, so a single component can be matched with a `like`
+        against ',component,' without a leading or trailing component being
+        missed.
+        """
+        return func.replace(
+            func.replace(
+                func.concat(",", attribute_model.attribute_value, ","), ", ", ","
+            ),
+            " ,",
+            ",",
+        )
+
+    @staticmethod
+    def _get_component_like_pattern(attribute_value: str) -> str:
+        escaped: str = (
+            attribute_value.strip()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        return f"%,{escaped},%"
+
+    @staticmethod
+    def _get_attribute_filter_query(
+        query: Query,
+        model: Type[BaseModel],
+        attribute_model: Type[BaseModel],
+        attributes: list[AttributeDto] | None = None,
+    ) -> Query:
+        """
+        Restricts to rows carrying *every* one of the supplied attribute
+        key/value pairs, including pairs sharing a key: filtering `Commercial`
+        on both 'HR' and 'IT' returns the records carrying both, not either.
+
+        A correlated EXISTS per pair, rather than one over a joined attribute
+        row, so the pairs may be satisfied by different attribute rows of the
+        same record.
+
+        A value matches a single component of the stored attribute, so the filter
+        offered for `Commercial = 'Sales,HR,IT'` is 'Sales', not the whole
+        joined string.
+        """
+        if not attributes:
+            return query
+
+        component_value = RepositoryBase._get_component_value_column(
+            attribute_model=attribute_model
+        )
+
+        for attribute in attributes:
+            query = query.filter(
+                exists().where(
+                    and_(
+                        attribute_model.fq_name == model.fq_name,
+                        attribute_model.attribute_key == attribute.attribute_key,
+                        component_value.like(
+                            RepositoryBase._get_component_like_pattern(
+                                attribute_value=attribute.attribute_value
+                            ),
+                            escape="\\",
+                        ),
+                    )
+                )
+            )
+        return query
+
+    @staticmethod
+    def _get_attribute_values(
+        session, attribute_model: Type[BaseModel], attribute_key: str
+    ) -> list[str]:
+        """
+        Distinct values for one attribute key, for the dependent value dropdown.
+
+        Multi valued attributes are broken into their components so the dropdown
+        offers 'Sales', 'HR' and 'IT' rather than the single unusable entry
+        'Sales,HR,IT'.
+        """
+        rows = (
+            session.query(attribute_model.attribute_value)
+            .filter(attribute_model.attribute_key == attribute_key)
+            .distinct()
+            .all()
+        )
+
+        values: set[str] = set()
+        for row in rows:
+            values.update(RepositoryBase.split_attribute_values(attribute_value=row[0]))
+
+        return sorted(values)
+
+    @staticmethod
+    def _get_column_filter_query(
+        query: Query, column: NamedColumn, values: list[str] | None
+    ) -> Query:
+        """Restricts a column to one of the supplied values. Empty means no filter."""
+        if not values:
+            return query
+        return query.filter(column.in_(values))
+
+    @staticmethod
+    def _get_distinct_values(session, column: NamedColumn) -> list[str]:
+        """Distinct non-null values for a column, for populating filter dropdowns."""
+        rows = session.query(column).distinct().order_by(column).all()
+        return [row[0] for row in rows if row[0] is not None]
 
     @staticmethod
     def _get_search_query(
@@ -210,7 +380,9 @@ class RepositoryBase:
 
         set_stmt: str = ", ".join([f"{c} = src.{c}" for c in update_cols])
         join_stmt: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
-        where_stmt: str = " or ".join([f"tgt.{c} <> src.{c}" for c in update_cols])
+        where_stmt: str = " or ".join(
+            [f"tgt.{c} <> src.{c}" for c in update_cols] + ["tgt.active is not true"]
+        )
 
         if dialect == "mysql":
             set_stmt: str = ", ".join([f"tgt.{c} = src.{c}" for c in update_cols])
@@ -218,7 +390,7 @@ class RepositoryBase:
                 f"""
                 UPDATE {target_model.__tablename__} tgt
                 JOIN {source_model.__tablename__} src ON {join_stmt}
-                SET {set_stmt}, tgt.ingestion_process_id = {str(ingestion_process_id)}
+                SET {set_stmt}, tgt.active = true, tgt.ingestion_process_id = {str(ingestion_process_id)}
                 WHERE {where_stmt}
                 """
             )
@@ -227,7 +399,7 @@ class RepositoryBase:
         return dedent(
             f"""
             update {target_model.__tablename__} tgt
-            set {set_stmt}, ingestion_process_id = {str(ingestion_process_id)}
+            set {set_stmt}, active = true, ingestion_process_id = {str(ingestion_process_id)}
             from {source_model.__tablename__} src
             where {join_stmt} and ({where_stmt})
             """
@@ -242,38 +414,42 @@ class RepositoryBase:
         dialect: str = "postgresql",
     ) -> str:
         """
-        The merge delete statement actually executes an update
-        The process ID is set and the record is marked as inactive
+        Deletes the records from the target table whose 'merge_keys' are no longer
+        present in the source (staging) table.
 
-        When the trigger proc is called on the update, the function
-        should insert a row in the history table with the new proc id
-        and delete the record from the target table
+        The record is hard deleted rather than flagged inactive. The history trigger
+        on the target table writes a 'D' row before the record disappears, so the
+        removal remains auditable - which is why the ingestion process id is not
+        stamped on the target row first.
+
+        'not exists' is used rather than 'except' as the 'except' set operator is
+        not supported by MySQL, including RDS MySQL.
         """
-        merge_keys_str: str = ", ".join(merge_keys)
-        where_clause: str = " and ".join([f"tgt.{c} = src.{c}" for c in merge_keys])
+        match_clause: str = " and ".join(
+            [
+                f"(src.{c} = tgt.{c} or (src.{c} is null and tgt.{c} is null))"
+                for c in merge_keys
+            ]
+        )
+        not_exists_clause: str = (
+            f"not exists ("
+            f"select 1 from {source_model.__tablename__} src where {match_clause}"
+            f")"
+        )
 
         if dialect == "mysql":
+            # the multi table delete syntax is used as aliasing the target of a
+            # single table delete is only supported from MySQL 8.0.16
             return dedent(
                 f"""
-                    update {target_model.__tablename__} tgt
-                    join (
-                        select {merge_keys_str} from {target_model.__tablename__}
-                        except
-                        select {merge_keys_str} from {source_model.__tablename__}
-                    ) src on {where_clause} and tgt.active
-                    set ingestion_process_id = {ingestion_process_id}, active = false
+                delete tgt from {target_model.__tablename__} tgt
+                where {not_exists_clause}
                 """
             )
 
         return dedent(
             f"""
-                update {target_model.__tablename__} tgt
-                set ingestion_process_id = {ingestion_process_id}, active = false
-                from (
-                    select {merge_keys_str} from {target_model.__tablename__}
-                    except
-                    select {merge_keys_str} from {source_model.__tablename__}
-                ) src
-                where {where_clause} and tgt.active
-                """
+            delete from {target_model.__tablename__} tgt
+            where {not_exists_clause}
+            """
         )

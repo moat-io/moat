@@ -184,3 +184,28 @@ def test_get_policy_docs_hash_platform_includes_defaults_and_static_data(tmp_pat
     )
 
     assert hash_without_platform != hash_with_platform
+
+
+def test_build_static_file_map_ignores_kubernetes_configmap_internals(tmp_path):
+    """A ConfigMap mount keeps the real files in a timestamped directory and exposes
+    each key as a top-level symlink, so the files must only be collected once."""
+    policy_directory = tmp_path / "trino"
+    versioned_directory = policy_directory / "..2026_09_14_21_00_13.2750725405"
+    versioned_directory.mkdir(parents=True)
+    (versioned_directory / "batch_mode.rego").write_text(
+        "package moat.trino\nimport rego.v1", encoding="utf-8"
+    )
+    (versioned_directory / "lookups.json").write_text(
+        '{"entitlements": ["read"]}', encoding="utf-8"
+    )
+    (policy_directory / "..data").symlink_to(versioned_directory)
+    (policy_directory / "batch_mode.rego").symlink_to("..data/batch_mode.rego")
+    (policy_directory / "lookups.json").symlink_to("..data/lookups.json")
+
+    static_file_map = BundleGenerator._build_static_file_map(
+        source_directories=[str(policy_directory)],
+        include_rego=True,
+        include_static_data=True,
+    )
+
+    assert sorted(static_file_map.keys()) == ["batch_mode.rego", "lookups.json"]

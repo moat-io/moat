@@ -15,6 +15,7 @@ nav:
   - How it works: how_it_works.md
   - Bundles: bundles.md
   - User Interface: ui.md
+  - MCP Server: mcp.md
   - Provisioning:
       - SCIM2.0: provisioning/scim.md
       - Resources:  provisioning/resource_ingestion.md

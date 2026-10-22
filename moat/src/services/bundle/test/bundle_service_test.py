@@ -124,7 +124,7 @@ def test_generate_bundle(database: Database, tmp_path):
         # make the first bundle older than the retention period
         with database.Session() as session:
             opa_bundle: OpaBundleDbo = session.query(OpaBundleDbo).get(first_bundle_id)
-            opa_bundle.record_updated_date = datetime.now(UTC) - timedelta(days=10)
+            opa_bundle.record_created_date = datetime.now(UTC) - timedelta(days=10)
             session.commit()
 
         # clean up the bundle storage
@@ -194,6 +194,21 @@ def test_clean_up_bundle_storage_keeps_minimum_per_platform(
                 )
                 session.commit()
 
+            # Update record_created_date since record_updated_date is overridden by trigger
+            with database.Session() as session:
+                bundles = session.query(OpaBundleDbo).all()
+                bundle_dates = {
+                    "trino_oldest_bundle.tar.gz": datetime.now(UTC)
+                    - timedelta(days=10),
+                    "trino_old_bundle.tar.gz": datetime.now(UTC) - timedelta(days=9),
+                    "trino_newer_bundle.tar.gz": datetime.now(UTC) - timedelta(days=8),
+                    "spark_old_bundle.tar.gz": datetime.now(UTC) - timedelta(days=10),
+                    "spark_newer_bundle.tar.gz": datetime.now(UTC) - timedelta(days=9),
+                }
+                for bundle in bundles:
+                    bundle.record_created_date = bundle_dates[bundle.bundle_filename]
+                session.commit()
+
             with database.Session() as session:
                 BundleService.clean_up_bundle_storage(
                     session=session, event_logger=mock.Mock()
@@ -204,13 +219,13 @@ def test_clean_up_bundle_storage_keeps_minimum_per_platform(
                 trino_bundles = (
                     session.query(OpaBundleDbo)
                     .filter(OpaBundleDbo.platform == "trino")
-                    .order_by(OpaBundleDbo.record_updated_date.desc())
+                    .order_by(OpaBundleDbo.record_created_date.desc())
                     .all()
                 )
                 spark_bundles = (
                     session.query(OpaBundleDbo)
                     .filter(OpaBundleDbo.platform == "spark")
-                    .order_by(OpaBundleDbo.record_updated_date.desc())
+                    .order_by(OpaBundleDbo.record_created_date.desc())
                     .all()
                 )
 

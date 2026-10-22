@@ -1,10 +1,9 @@
 import './sidebar.js';
-// import './charts.js';
 import './dark-mode.js';
 import './flowbite.js'
 import './toast.js'
+import './tables.js'
 import './editor.js'
-import 'htmx.org';
 import './htmxImport.js'
 import 'htmx-ext-json-enc'
 import moment from "moment";

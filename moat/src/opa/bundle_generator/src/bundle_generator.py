@@ -205,7 +205,13 @@ class BundleGenerator:
         static_file_map: dict[str, str] = {}
 
         for source_directory in source_directories:
-            for root, _, files in os.walk(source_directory):
+            for root, directories, files in os.walk(source_directory):
+                # Kubernetes mounts a ConfigMap as a timestamped directory such as
+                # '..2026_09_14_21_00_13.2750725405' holding the real files, a '..data'
+                # symlink pointing at it, and one symlink per key at the top level.
+                # Walking into the timestamped directory would add every policy file to
+                # the bundle a second time, under a path that changes on every update.
+                directories[:] = [d for d in directories if not d.startswith(".")]
                 for filename in files:
                     extension = os.path.splitext(filename)[1].lower()
                     include_file = False

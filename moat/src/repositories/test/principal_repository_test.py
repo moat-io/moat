@@ -1,5 +1,6 @@
 from database import Database
 from models import (
+    AttributeDto,
     PrincipalAttributeStagingDbo,
     PrincipalDbo,
     PrincipalStagingDbo,
@@ -389,3 +390,187 @@ def test_get_all_with_search_and_pagination_multiple_terms_with_extra_spaces(
         assert count >= 1
         alice = next((p for p in principals if p.user_name == "alice"), None)
         assert alice is not None
+
+
+def _filter_principals(
+    repo: PrincipalRepository, session, attributes: list[AttributeDto]
+) -> set[str]:
+    _, principals = repo.get_all_with_search_and_pagination(
+        session=session,
+        sort_col_name="user_name",
+        page_number=0,
+        page_size=10,
+        sort_ascending=True,
+        attributes=attributes,
+    )
+    return {principal.user_name for principal in principals}
+
+
+# the seeded principals, for the expectations below:
+#
+#   alice   Commercial = 'Marketing,IT,Sales'   Privacy = 'Marketing'
+#   anne    Commercial = 'IT,Marketing,HR'      Privacy = 'IT'
+#   bob     Commercial = 'Sales,HR,IT'          Privacy = 'Sales'
+#   frank   Commercial = 'HR,Sales,Marketing'   Privacy = 'HR'
+
+
+def test_get_attribute_values_splits_multi_valued_attributes(
+    database: Database,
+) -> None:
+    """
+    'Commercial' is seeded as a joined list (e.g. 'Sales,HR,IT'). The filter
+    dropdown must offer each component on its own, never the joined string.
+    """
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        values: list[str] = repo.get_attribute_values(
+            session=session, attribute_key="Commercial"
+        )
+
+        assert values == sorted(values)
+        assert all("," not in value for value in values)
+        assert {"Sales", "HR", "IT"}.issubset(set(values))
+
+
+def test_attribute_filter_matches_a_single_component(database: Database) -> None:
+    """
+    'Sales' matches a value that is exactly 'Sales', and a joined value holding
+    'Sales' as a component wherever it sits in the list:
+
+        bob     Commercial = 'Sales,HR,IT'          - first
+        frank   Commercial = 'HR,Sales,Marketing'   - middle
+        alice   Commercial = 'Marketing,IT,Sales'   - last
+        bob     Privacy    = 'Sales'                - the whole value
+    """
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        assert _filter_principals(
+            repo=repo,
+            session=session,
+            attributes=[
+                AttributeDto(attribute_key="Commercial", attribute_value="Sales")
+            ],
+        ) == {"alice", "bob", "frank"}
+
+        assert _filter_principals(
+            repo=repo,
+            session=session,
+            attributes=[AttributeDto(attribute_key="Privacy", attribute_value="Sales")],
+        ) == {"bob"}
+
+
+def test_attribute_filter_is_not_a_substring_match(database: Database) -> None:
+    """'Sale' is not a value of 'Sales,HR,IT'."""
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        assert (
+            _filter_principals(
+                repo=repo,
+                session=session,
+                attributes=[
+                    AttributeDto(attribute_key="Commercial", attribute_value="Sale")
+                ],
+            )
+            == set()
+        )
+
+
+def test_attribute_filter_escapes_like_wildcards(database: Database) -> None:
+    """A value is matched literally - '%' and '_' are not wildcards."""
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        for attribute_value in ["Sale_", "Sale%", "%"]:
+            assert (
+                _filter_principals(
+                    repo=repo,
+                    session=session,
+                    attributes=[
+                        AttributeDto(
+                            attribute_key="Commercial", attribute_value=attribute_value
+                        )
+                    ],
+                )
+                == set()
+            ), attribute_value
+
+
+def test_attribute_filter_requires_every_condition(database: Database) -> None:
+    """
+    Every filter row has to match, rows on the same attribute included, so each
+    one added narrows the result rather than widening it.
+    """
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        assert _filter_principals(
+            repo=repo,
+            session=session,
+            attributes=[AttributeDto(attribute_key="Commercial", attribute_value="HR")],
+        ) == {"anne", "bob", "frank"}
+
+        # a second value of the same attribute narrows it: alice is already out,
+        # and bob's Commercial has no Marketing
+        assert _filter_principals(
+            repo=repo,
+            session=session,
+            attributes=[
+                AttributeDto(attribute_key="Commercial", attribute_value="HR"),
+                AttributeDto(attribute_key="Commercial", attribute_value="Marketing"),
+            ],
+        ) == {"anne", "frank"}
+
+        # and a row on a different attribute narrows it again
+        assert _filter_principals(
+            repo=repo,
+            session=session,
+            attributes=[
+                AttributeDto(attribute_key="Commercial", attribute_value="HR"),
+                AttributeDto(attribute_key="Commercial", attribute_value="Marketing"),
+                AttributeDto(attribute_key="Privacy", attribute_value="IT"),
+            ],
+        ) == {"anne"}
+
+
+def test_attribute_filter_is_satisfied_across_attribute_rows(
+    database: Database,
+) -> None:
+    """
+    The conditions may be met by different attribute rows of the same principal -
+    a record does not have to carry them all on one row.
+    """
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        assert _filter_principals(
+            repo=repo,
+            session=session,
+            attributes=[
+                AttributeDto(attribute_key="Commercial", attribute_value="Sales"),
+                AttributeDto(attribute_key="Privacy", attribute_value="Sales"),
+                AttributeDto(attribute_key="Employee", attribute_value="True"),
+            ],
+        ) == {"bob"}
+
+
+def test_attribute_filter_returns_nothing_when_no_record_meets_every_condition(
+    database: Database,
+) -> None:
+    """Each principal has a single Privacy value, so two of them meet nobody."""
+    repo: PrincipalRepository = PrincipalRepository()
+
+    with database.Session.begin() as session:
+        assert (
+            _filter_principals(
+                repo=repo,
+                session=session,
+                attributes=[
+                    AttributeDto(attribute_key="Privacy", attribute_value="HR"),
+                    AttributeDto(attribute_key="Privacy", attribute_value="IT"),
+                ],
+            )
+            == set()
+        )
