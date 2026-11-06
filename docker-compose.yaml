@@ -183,11 +183,11 @@ services:
     ports:
       - "8001:8000"
     environment:
-#      CONFIG_FILE_PATH: config/config.docker.yaml
-      CONFIG_FILE_PATH: config/config.docker.mysql.yaml
+      CONFIG_FILE_PATH: config/config.docker.yaml
+#      CONFIG_FILE_PATH: config/config.docker.mysql.yaml
     depends_on:
-#      postgres:
-      mysql:
+      postgres:
+#      mysql:
         condition: service_healthy
     volumes:
       - ./moat/config/:/app/moat/config

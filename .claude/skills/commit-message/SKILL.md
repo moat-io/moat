@@ -17,7 +17,12 @@ the complete, copy-pasteable `git commit` command.
 2. Write a concise imperative subject, preferably following the repository's
    conventional-commit style (`type(scope): summary`) when appropriate. Add a
    short body describing the meaningful changes; avoid listing every file.
-3. Return the message inside a fenced `bash` block as a complete command using
+3. If the user asks to commit, first establish the intended commit scope.
+   Never assume all staged changes belong together: preserve unrelated staged
+   and unstaged work. When committing only specified paths, use a path-limited
+   command such as `git commit --only -- <paths>` so other staged changes are
+   not included. Do not commit unless explicitly asked.
+4. Return the message inside a fenced `bash` block as a complete command using
    one `-m` per paragraph, for example:
 
    ```bash
@@ -27,6 +32,5 @@ the complete, copy-pasteable `git commit` command.
      -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
    ```
 
-4. Do not run the commit command unless the user explicitly asks you to commit.
-   If there are no changes to commit, say so and ask what change the message
+5. If there are no changes to commit, say so and ask what change the message
    should describe rather than inventing one.

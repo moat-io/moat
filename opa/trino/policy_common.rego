@@ -38,8 +38,8 @@ allow if {
 # user should have permissions on >0 objects in the target catalog
 allow if {
   input.action.operation in ["FilterCatalogs", "AccessCatalog"]
-  some data_object in data_objects
-	data_object.object.database == input.action.resource.catalog.name
+  some data_object_key, data_object in data_objects
+	startswith(data_object_key, sprintf("%s.", [input.action.resource.catalog.name]))
 	data_object_is_tagged(data_object)
 	principal_has_all_required_attributes(data_object.attributes)
 }
@@ -58,9 +58,8 @@ allow if {
 
 allow if {
   input.action.operation == "FilterSchemas"
-  some data_object in data_objects
-	data_object.object.database == input.action.resource.schema.catalogName
-	data_object.object.schema == input.action.resource.schema.schemaName
+  some data_object_key, data_object in data_objects
+	startswith(data_object_key, sprintf("%s.%s.", [input.action.resource.schema.catalogName, input.action.resource.schema.schemaName]))
 	data_object_is_tagged(data_object)
 	principal_has_all_required_attributes(data_object.attributes)
 }
@@ -68,8 +67,7 @@ allow if {
 # filter tables
 allow if {
   input.action.operation == "FilterTables"
-  some data_object in data_objects
-	data_object.object == input_table
+  data_object := data_objects[input_table]
 	data_object_is_tagged(data_object)
 	principal_has_all_required_attributes(data_object.attributes)
 }
@@ -85,8 +83,7 @@ allow if {
   input.action.operation == "SelectFromColumns"
 
   # ensure the object is tagged - untagged is otherwise free-for-all
-  some data_object in data_objects
-	data_object.object == input_table
+  data_object := data_objects[input_table]
   data_object_is_tagged(data_object)
 
   # ensure all attrs on object exist on principal

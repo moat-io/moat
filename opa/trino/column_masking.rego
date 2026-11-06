@@ -12,14 +12,18 @@ principal_has_access_to_column(attributes) if {
   principal_has_all_required_attributes(attributes)
 }
 
-columnmask := {"expression": mask} if {
-  some data_object in data_objects
-	data_object.object.database == input.action.resource.column.catalogName
-	data_object.object.schema == input.action.resource.column.schemaName
-	data_object.object.table == input.action.resource.column.tableName
+# input table name syntax is different in the column mask request
+column_mask_input_table(column) := sprintf("%s.%s.%s", [
+	column.catalogName,
+	column.schemaName,
+	column.tableName
+])
 
-	some column in data_object.columns
-	column.name == input.action.resource.column.columnName
+columnmask := {"expression": mask} if {
+  # get the object and column
+  data_object := data_objects[column_mask_input_table(input.action.resource.column)]
+	column := data_object.columns[input.action.resource.column.columnName]
+
 	# true if not all attrs on the column are on the principal
 	# therefore we should not return a mask
   not principal_has_access_to_column(column.attributes)
@@ -34,15 +38,9 @@ batchcolumnmask contains { "index": i, "viewExpression": { "expression": "NULL" 
   some i
   column_resource := input.action.filterResources[i]
 
-  # find the object
-  some data_object in data_objects
-	data_object.object.database == column_resource.column.catalogName
-	data_object.object.schema == column_resource.column.schemaName
-	data_object.object.table == column_resource.column.tableName
-
-	# and the column
-	some column in data_object.columns
-	column.name == column_resource.column.columnName
+  # get the object and column
+  data_object := data_objects[column_mask_input_table(column_resource.column)]
+	column := data_object.columns[column_resource.column.columnName]
 
   # true if not all attrs on the column are on the principal
 	# therefore we should not return a mask

@@ -43,10 +43,6 @@ elif [ "$1" = "start-demo-server" ]; then
 elif [ "$1" = "start-mock-server" ]; then
     python src/_scripts/mock_apis.py
 
-elif [ "$1" = "start-worker" ]; then
-    echo "Starting worker..."
-    exec python -m cli.src.cli start-worker
-
 # Default: Run the CLI command
 else
     echo "Running CLI command: $@"

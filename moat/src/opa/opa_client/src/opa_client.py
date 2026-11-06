@@ -1,5 +1,6 @@
 import requests
 from app_logger import Logger, get_logger
+from opa.models.src.opa_batch_response_model import OpaBatchResponseModel
 from opa.models.src.opa_query_model import OpaQueryModel
 from opa.models.src.opa_query_response_model import OpaQueryResponseModel
 from opa.models.src.opa_request_model import OpaRequestModel
@@ -72,6 +73,50 @@ class OpaClient:
             url=self._get_opa_url(path="/v1/data/moat/trino/allow"),
             opa_request=opa_request,
         )
+
+    def filter_tables_batch(
+        self,
+        username: str,
+        tables: list[tuple[str, str, str]],
+        path: str = "/v1/data/moat/trino/batch",
+    ) -> list[int]:
+        """
+        Evaluate the FilterTables action against a batch of tables in a single
+        request to OPA's batch endpoint.
+
+        'tables' is a list of (catalog, schema, table) tuples. Returns the
+        indices of the tables the policy allowed, matching the 'batch' rule in
+        opa/trino/batch_mode.rego.
+        """
+        opa_request: OpaRequestModel = OpaRequestModel(
+            input={
+                "action": {
+                    "operation": "FilterTables",
+                    "filterResources": [
+                        {
+                            "table": {
+                                "catalogName": catalog,
+                                "schemaName": schema,
+                                "tableName": table,
+                            }
+                        }
+                        for catalog, schema, table in tables
+                    ],
+                },
+                "context": {
+                    "identity": {"user": username},
+                    "softwareStack": {"Version": "0.1.0"},
+                },
+            }
+        )
+
+        opa_response_dict: dict | None = self._send_opa_request(
+            url=self._get_opa_url(path=path),
+            opa_request=opa_request,
+        )
+        if opa_response_dict is None:
+            return []
+        return OpaBatchResponseModel(**opa_response_dict).result
 
     # TODO move to authz provider
     def filter_schema(self, username: str, database: str, schema: str) -> bool | None:
