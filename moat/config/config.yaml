@@ -13,6 +13,10 @@ database.seed_data_path: "moat/seed_data"
 
 opa_client.timeout_seconds: "0.1"
 
+policy_evaluator.batch_size: "500"
+policy_evaluator.platform: trino
+policy_evaluator.opa_batch_path: /v1/data/moat/trino/batch
+
 bundle_generator.temp_directory: /tmp
 bundle_generator.default_platform: trino
 

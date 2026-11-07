@@ -1,6 +1,7 @@
 import click
 from ingestor import IngestionController
 from models import ObjectTypeEnum
+from policy_evaluator import PolicyEvaluator
 from worker import Worker
 
 
@@ -37,6 +38,12 @@ def ingest(
         object_type=ObjectTypeEnum(object_type),
         deactivate_omitted=deactivate_omitted,
     )
+
+
+@cli.command()
+def evaluate_policy():
+    policy_evaluator: PolicyEvaluator = PolicyEvaluator()
+    policy_evaluator.evaluate()
 
 
 @cli.command()

@@ -9,3 +9,4 @@ from .principal_dbo import (
 from .decision_log_dbo import DecisionLogDbo
 from .ingestion_process_dbo import IngestionProcessDbo
 from .opa_bundle_dbo import OpaBundleDbo
+from .policy_evaluator_result_dbo import PolicyEvaluatorResultDbo

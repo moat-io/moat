@@ -11,6 +11,7 @@ database.port: "5432"
 database.database: "containerdb"
 database.seed_data_path: "/app/moat/seed_data"
 
+opa_client.hostname: opa
 opa_client.timeout_seconds: "0.1"
 
 bundle_generator.temp_directory: /tmp

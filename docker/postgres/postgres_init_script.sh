@@ -153,21 +153,4 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT SELECT ON ALL TABLES IN SCHEMA sales TO trino_user;
     GRANT SELECT ON ALL TABLES IN SCHEMA logistics TO trino_user;
 
-#    CREATE DATABASE warehouse;
-#    GRANT ALL PRIVILEGES ON DATABASE warehouse TO trino_user;
-#    \c warehouse "$POSTGRES_USER";
-#
-#    CREATE SCHEMA IF NOT EXISTS bronze;
-#
-#    CREATE TABLE bronze.customers
-#    (
-#        Id VARCHAR,
-#        CompanyName VARCHAR,
-#        ContactName VARCHAR,
-#        ContactTitle VARCHAR
-#    );
-#
-#    GRANT ALL ON SCHEMA bronze TO trino_user;
-#    GRANT SELECT ON ALL TABLES IN SCHEMA bronze TO trino_user;
-
 EOSQL

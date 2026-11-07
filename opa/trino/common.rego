@@ -9,30 +9,21 @@ principals := data.trino.principals
 input_principal_name := input.context.identity.user
 action := input.action.operation
 
-input_table := {
-	"database": input.action.resource.table.catalogName,
-	"schema": input.action.resource.table.schemaName,
-	"table": input.action.resource.table.tableName
-}
+input_table := sprintf("%s.%s.%s", [
+	input.action.resource.table.catalogName,
+	input.action.resource.table.schemaName,
+	input.action.resource.table.tableName
+])
 
 input_columns := input.action.resource.table.columns
 
-data_object_attributes contains attribute if {
-  some data_object in data_objects
-	data_object.object == input_table
-	some attribute in data_object.attributes
-}
-
 principal_attributes contains attribute if {
-  some principal in principals
-  principal.name == input_principal_name
+  principal := principals[input_principal_name]
   some attribute in principal.attributes
 }
 
 principal_exists(principal_name) if {
-  principal_name
-  some principal in principals
-  principal.name == principal_name
+  principal := principals[principal_name]
 }
 
 data_object_is_tagged(data_object) if {

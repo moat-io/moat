@@ -135,6 +135,59 @@ def test_filter_table():
 
 
 @responses.activate
+def test_filter_tables_batch():
+    responses.add(
+        responses.POST,
+        "http://localhost:8181/v1/data/moat/trino/batch",
+        match=[
+            matchers.json_params_matcher(
+                {
+                    "input": {
+                        "action": {
+                            "operation": "FilterTables",
+                            "filterResources": [
+                                {
+                                    "table": {
+                                        "catalogName": "datalake",
+                                        "schemaName": "hr",
+                                        "tableName": "employees",
+                                    }
+                                },
+                                {
+                                    "table": {
+                                        "catalogName": "datalake",
+                                        "schemaName": "sales",
+                                        "tableName": "orders",
+                                    }
+                                },
+                            ],
+                        },
+                        "context": {
+                            "identity": {"user": "alice"},
+                            "softwareStack": {"Version": "0.1.0"},
+                        },
+                    }
+                }
+            )
+        ],
+        json={"result": [1]},
+        status=200,
+    )
+
+    opa_client: OpaClient = OpaClient()
+
+    # only the second table (index 1) is allowed
+    allowed_indices = opa_client.filter_tables_batch(
+        username="alice",
+        tables=[
+            ("datalake", "hr", "employees"),
+            ("datalake", "sales", "orders"),
+        ],
+    )
+    assert allowed_indices == [1]
+
+
+@responses.activate
 def test_filter_schema():
     responses.add(
         responses.POST,

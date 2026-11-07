@@ -306,6 +306,29 @@ The scheme to use when connecting to OPA. For production deployments, HTTPS shou
 
 The timeout in seconds for OPA client requests.
 
+## `policy_evaluator.batch_size`
+* Type: `integer`
+* Default: `500`
+* Example: `500`
+
+The number of resources sent to OPA's batch endpoint in a single request when
+evaluating policy.
+
+## `policy_evaluator.opa_batch_path`
+* Type: `path`
+* Default: `/v1/data/moat/trino/batch`
+* Example: `/v1/data/moat/trino/batch`
+
+The OPA API path for the batch endpoint used by the policy evaluator's
+`FilterTables` requests.
+
+## `policy_evaluator.platform`
+* Type: `string`
+* Default: `trino`
+* Example: `trino`
+
+The platform whose resources are evaluated by the policy evaluator.
+
 ## `trino_client.host`
 * Type: `string`
 * Default: `<none>`

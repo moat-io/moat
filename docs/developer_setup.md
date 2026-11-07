@@ -113,11 +113,24 @@ podman build -t moat/moat .
 ## Running Ingestion
 ```bash
 export CONFIG_FILE_PATH=moat/config.principal_ingestion.yaml
-cli.py ingest --source=ldap --object-type=principal
+python cli.py ingest --source=ldap --object-type=principal
 
 # or in the container
 docker run moat ingest --connector-name=ldap --object-type=principal
 ```
+
+## Running the Policy Evaluator
+The policy evaluator connects to PostgreSQL and OPA using the Docker Compose
+service names in `config.docker.yaml`. Start those services first, and ensure
+the database has been migrated and populated with principals and resources:
+
+```bash
+podman-compose up -d postgres opa
+./test.sh policy-evaluator
+```
+
+The test script builds and runs the CLI in a one-off `moat` container, using
+`config.docker.yaml`. It does not start or initialize the database.
 
 ## Database Migrations
 `alembic` is used to migrate the database schema
