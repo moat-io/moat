@@ -1,0 +1,17 @@
+{% from "partials/common/search-box.html" import search_box %}
+<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
+    <div class="w-full mb-1">
+        <div class="mb-4">
+            {% include "partials/common/breadcrumbs.html" %}
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">Access Control Lists</h1>
+        </div>
+        <div class="items-center justify-between block sm:flex">
+            <div class="flex items-center mb-4 sm:mb-0">
+                {{ search_box('acls', 'Search principal and resource', query_state, '', False) }}
+            </div>
+        </div>
+    </div>
+</div>
+<div id="acls-table">
+    {% include 'partials/acls/acls-table.html' %}
+</div>

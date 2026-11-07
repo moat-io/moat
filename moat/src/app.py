@@ -15,6 +15,7 @@ from views import (
     principals_bp,
     policies_bp,
     bundles_bp,
+    acls_bp,
     root_bp,
 )
 from app_config import AppConfigModelBase
@@ -65,6 +66,7 @@ def create_app(database: Database | None = None) -> Flask:
     flask_app.register_blueprint(resources_bp)
     flask_app.register_blueprint(policies_bp)
     flask_app.register_blueprint(bundles_bp)
+    flask_app.register_blueprint(acls_bp)
 
     # enable APIs
     flask_app.register_blueprint(bundle_api_bp)
