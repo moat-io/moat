@@ -9,21 +9,25 @@
       
       
       
+        <link rel="prev" href="../bundles/">
+      
+      
+        <link rel="next" href="../ui/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
-        <title>Resource Metadata Ingestion - Moat</title>
+        <title>Policy Evaluator - Moat</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
       
 
@@ -42,7 +46,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,7 +64,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#resource-metadata-ingestion" class="md-skip">
+        <a href="#policy-evaluator" class="md-skip">
           Skip to content
         </a>
       
@@ -76,7 +80,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Moat" class="md-header__button md-logo" aria-label="Moat" data-md-component="logo">
+    <a href=".." title="Moat" class="md-header__button md-logo" aria-label="Moat" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -96,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Resource Metadata Ingestion
+              Policy Evaluator
             
           </span>
         </div>
@@ -186,7 +190,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Moat" class="md-nav__button md-logo" aria-label="Moat" data-md-component="logo">
+    <a href=".." title="Moat" class="md-nav__button md-logo" aria-label="Moat" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -216,7 +220,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -243,7 +247,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../trino_and_opa/" class="md-nav__link">
+      <a href="../trino_and_opa/" class="md-nav__link">
         
   
   
@@ -270,7 +274,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how_it_works/" class="md-nav__link">
+      <a href="../how_it_works/" class="md-nav__link">
         
   
   
@@ -297,7 +301,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../bundles/" class="md-nav__link">
+      <a href="../bundles/" class="md-nav__link">
         
   
   
@@ -321,10 +325,128 @@
       
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy Evaluator
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy Evaluator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-results-are-written" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where results are written
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invoking-from-the-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invoking from the CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../ui/" class="md-nav__link">
+      <a href="../ui/" class="md-nav__link">
         
   
   
@@ -351,7 +473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mcp/" class="md-nav__link">
+      <a href="../mcp/" class="md-nav__link">
         
   
   
@@ -388,10 +510,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
             
   
   
@@ -409,8 +531,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -427,7 +549,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../scim/" class="md-nav__link">
+      <a href="../provisioning/scim/" class="md-nav__link">
         
   
   
@@ -455,7 +577,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../resource_ingestion/" class="md-nav__link">
+      <a href="../provisioning/resource_ingestion/" class="md-nav__link">
         
   
   
@@ -463,118 +585,6 @@
     
   
     Resources
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Security
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Security
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../security/auth/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Authentication
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../security/audit/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Audit
   
 
     
@@ -622,7 +632,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Security
   
 
     
@@ -635,6 +645,118 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -651,7 +773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/deployment/" class="md-nav__link">
+      <a href="../deployment/deployment/" class="md-nav__link">
         
   
   
@@ -679,7 +801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/opa_setup/" class="md-nav__link">
+      <a href="../deployment/opa_setup/" class="md-nav__link">
         
   
   
@@ -707,7 +829,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/configuration/" class="md-nav__link">
+      <a href="../config/configuration/" class="md-nav__link">
         
   
   
@@ -735,7 +857,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/properties/" class="md-nav__link">
+      <a href="../config/properties/" class="md-nav__link">
         
   
   
@@ -763,7 +885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/monitoring/" class="md-nav__link">
+      <a href="../deployment/monitoring/" class="md-nav__link">
         
   
   
@@ -798,7 +920,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../developer_setup/" class="md-nav__link">
+      <a href="../developer_setup/" class="md-nav__link">
         
   
   
@@ -825,7 +947,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../extensions/" class="md-nav__link">
+      <a href="../extensions/" class="md-nav__link">
         
   
   
@@ -852,7 +974,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../release_notes/" class="md-nav__link">
+      <a href="../release_notes/" class="md-nav__link">
         
   
   
@@ -899,58 +1021,46 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#ingesting-resources" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ingesting Resources
+        How it works
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Ingesting Resources">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-sql" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example SQL
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#ingesting-resource-attributes" class="md-nav__link">
+  <a href="#where-results-are-written" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ingesting Resource Attributes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Ingesting Resource Attributes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-sql_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example SQL
+        Where results are written
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#invoking-from-the-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invoking from the CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
   
 </li>
       
@@ -982,93 +1092,104 @@
   
 
 
-<h1 id="resource-metadata-ingestion">Resource Metadata Ingestion</h1>
-<p>Moat currently supports loading resource metadata from <code>trino</code> via SQL/DBAPI.
-Resources are ingested separately to their attributes to allow flexibility of loading from different sources.
-For example, resources could be retrieved from an <code>information_schema</code> and the resource attributes from a data catalog.</p>
-<p>Both sources require the user to supply a query which returns data with specific column names as defined below for each type.
-The output of these queries are loaded into staging tables, then merged into the main tables. This will only succeed if
-the records are unique.</p>
-<h2 id="ingesting-resources">Ingesting Resources</h2>
-<p>The resource ingestion query must return a full set of resources with the following columns:</p>
+<h1 id="policy-evaluator">Policy Evaluator</h1>
+<p>The policy evaluator materializes OPA's <code>FilterTables</code> decisions as a
+queryable snapshot of which principals can access which tables. The results are
+stored in the Moat PostgreSQL database in <code>policy_evaluator_results</code>; consumers
+can query this table instead of requesting the current set of grants from OPA.
+The snapshot is refreshed each time the evaluator runs.</p>
+<h2 id="how-it-works">How it works</h2>
+<p>For the configured <code>policy_evaluator.platform</code>, the evaluator:</p>
+<ol>
+<li>Loads active principals and resources belonging to that platform.</li>
+<li>Selects table resources whose fully qualified name has the form
+   <code>catalog.schema.table</code>.</li>
+<li>For each principal, sends the tables to OPA in batches of
+   <code>policy_evaluator.batch_size</code> (default <code>500</code>). It evaluates the <code>FilterTables</code>
+   operation at <code>policy_evaluator.opa_batch_path</code> (default
+   <code>/v1/data/moat/trino/batch</code>); OPA returns the indices of tables allowed for
+   that principal.</li>
+<li>Reconciles the allowed principal/table pairs with the database rows for the
+   configured platform and action:</li>
+<li>new grants are inserted;</li>
+<li>grants that become allowed again are reactivated;</li>
+<li>grants no longer allowed are soft-deleted by setting <code>active = false</code>.</li>
+</ol>
+<p>Rows are not physically deleted when a grant is revoked. Updates to existing
+rows refresh <code>record_updated_date</code>; <code>record_created_date</code> remains the time the
+grant was first recorded.</p>
+<h2 id="where-results-are-written">Where results are written</h2>
+<p>Results are written to the <code>policy_evaluator_results</code> table in the configured
+Moat database. Each row represents one principal/resource grant:</p>
 <table>
 <thead>
 <tr>
-<th>Column name</th>
-<th>Type</th>
+<th>Column</th>
 <th>Description</th>
-<th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>fq_name</td>
-<td>varchar</td>
-<td>The fully qualified name of the object</td>
-<td><code>database.schema.table</code> or <code>database.schema.table.column</code></td>
+<td><code>principal_fq_name</code></td>
+<td>Fully qualified principal name.</td>
 </tr>
 <tr>
-<td>object_type</td>
-<td>varchar</td>
-<td>The type of the object</td>
-<td><code>table</code> or <code>column</code></td>
+<td><code>resource_fq_name</code></td>
+<td>Fully qualified table resource name.</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Platform evaluated, configured by <code>policy_evaluator.platform</code>.</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>OPA operation evaluated (<code>FilterTables</code>).</td>
+</tr>
+<tr>
+<td><code>active</code></td>
+<td>Whether the grant is currently allowed; revoked grants are retained with <code>false</code>.</td>
+</tr>
+<tr>
+<td><code>record_created_date</code></td>
+<td>When the row was first created.</td>
+</tr>
+<tr>
+<td><code>record_updated_date</code></td>
+<td>When the row was last changed.</td>
 </tr>
 </tbody>
 </table>
-<p>It is preferred to limit this dataset to only include the objects for which OPA should provide access control.
-* Avoid adding all columns to tables which do not have column-level access control
-* Avoid adding tables which are not exposed to users</p>
-<h3 id="example-sql">Example SQL</h3>
-<pre><code class="language-sql">select fq_name, object_type from (
-    select table_catalog || '.' || table_schema || '.' || table_name as fq_name, 'table' as object_type
-    from datalake.information_schema.tables
-    where table_schema &lt;&gt; 'information_schema'
-    union all
-    select table_catalog || '.' || table_schema || '.' || table_name || '.' || column_name as fq_name, 'column' as object_type
-    from datalake.information_schema.columns
-    where table_schema &lt;&gt; 'information_schema'
-)
+<p>For example, query current grants with:</p>
+<pre><code class="language-sql">SELECT principal_fq_name, resource_fq_name
+FROM policy_evaluator_results
+WHERE platform = 'trino'
+  AND action = 'FilterTables'
+  AND active = true;
 </code></pre>
-<h2 id="ingesting-resource-attributes">Ingesting Resource Attributes</h2>
-<p>The resource attribute ingestion query must return a full set of resources with the following columns:</p>
-<table>
-<thead>
-<tr>
-<th>Column name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>fq_name</td>
-<td>varchar</td>
-<td>The fully qualified name of the object</td>
-<td><code>database.schema.table</code> or <code>database.schema.table.column</code></td>
-</tr>
-<tr>
-<td>attribute_key</td>
-<td>varchar</td>
-<td>The key of the attribute</td>
-<td><code>Subject</code></td>
-</tr>
-<tr>
-<td>attribute_value</td>
-<td>varchar</td>
-<td>The value of the attribute</td>
-<td><code>HR</code>, <code>Sales</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="example-sql_1">Example SQL</h3>
-<pre><code class="language-sql">SELECT 
-    table_catalog || '.' || table_schema || '.' || table_name AS fq_name,
-    attribute_key,
-    attribute_value
-FROM datalake.information_schema.tables tbls
-JOIN data_catalog.public.attributes cat on tbls.fq_name = cat.table_name
+<h2 id="invoking-from-the-cli">Invoking from the CLI</h2>
+<p>The Click CLI command is <code>evaluate-policy</code>. Run it in an environment configured
+to connect to both PostgreSQL and OPA. For the repository's Docker Compose
+development environment, start PostgreSQL and OPA, then run:</p>
+<pre><code class="language-bash">podman-compose up -d postgres opa
+./test.sh policy-evaluator
 </code></pre>
+<p>The helper runs <code>python -m cli.src.cli evaluate-policy</code> in a one-off Moat
+container, with <code>CONFIG_FILE_PATH=config/config.docker.yaml</code>. It does not start
+the services, migrate the database, or populate principals and resources.
+Ensure the database is migrated and contains the relevant principals and
+platform resources before invoking the command. In another configured
+environment, invoke the CLI directly:</p>
+<pre><code class="language-bash">python -m cli.src.cli evaluate-policy
+</code></pre>
+<p>or in a container:</p>
+<pre><code class="language-bash">./entrypoint.sh policy-evaluator
+</code></pre>
+<p>The evaluator is suitable for scheduled execution, such as a Kubernetes
+<code>CronJob</code>, to keep the stored snapshot current.</p>
+<h2 id="configuration">Configuration</h2>
+<p>See <a href="../config/properties/">Configuration Properties</a> for
+<code>policy_evaluator.batch_size</code>, <code>policy_evaluator.platform</code>, and
+<code>policy_evaluator.opa_batch_path</code>.</p>
 
 
 
@@ -1118,10 +1239,10 @@ JOIN data_catalog.public.attributes cat on tbls.fq_name = cat.table_name
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.expand", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.expand", "navigation.path"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>
