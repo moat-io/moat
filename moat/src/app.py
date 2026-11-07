@@ -9,6 +9,7 @@ from apis.scim2 import (
     scim2_groups_bp,
 )
 from apis.entitlements import entitlements_bp
+from apis.acls import acls_api_bp
 from views import (
     resources_bp,
     healthz_bp,
@@ -79,6 +80,7 @@ def create_app(database: Database | None = None) -> Flask:
     # smorest blueprints registered through it)
     api = Api(flask_app)
     api.register_blueprint(entitlements_bp)
+    api.register_blueprint(acls_api_bp)
 
     # Register SCIM2 blueprints
     flask_app.register_blueprint(scim2_service_provider_config_bp)

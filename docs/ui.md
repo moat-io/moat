@@ -17,6 +17,28 @@ The search box matches on `fq_name` and on attribute keys and values.
 
 ![Resources UI](images/ui-resources.png)
 
+## Access Control Lists View
+
+The **Access Control Lists** view is available under **Admin**. It displays the
+policy evaluator's recorded access decisions, with one row per principal and
+resource grant.
+
+The table includes the platform, principal, resource, current access status,
+and the timestamp when the grant was first recorded. A green tick indicates
+that access is currently granted; a red cross indicates that it has been
+revoked. Revoked entries remain visible so previous decisions can be reviewed.
+
+Search accepts multiple terms separated by spaces. Every term must match either
+the principal or resource, so terms are combined with **AND**; each term can
+match either field. For example, `alice customers` returns rows where the
+principal or resource contains `alice` and the principal or resource contains
+`customers`.
+
+Click a column heading to sort the table. Use the table footer to change the
+page size and move between pages. Search, sort order, and pagination are kept
+in the URL so the view can be refreshed or shared.
+
+![ui-acls.png](images/ui-acls.png)
 
 ## Policies View
 

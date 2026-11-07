@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Tuple
 
 from models import PolicyEvaluatorResultDbo
@@ -25,6 +26,9 @@ class PolicyEvaluatorResultRepository(RepositoryBase):
         page_size: int,
         sort_ascending: bool = True,
         search_term: str = "",
+        platform: str | None = None,
+        resource_prefix: str | None = None,
+        newer_than: datetime | None = None,
     ) -> Tuple[int, list[PolicyEvaluatorResultDbo]]:
         sort_columns = {
             "platform": PolicyEvaluatorResultDbo.platform,
@@ -38,6 +42,18 @@ class PolicyEvaluatorResultRepository(RepositoryBase):
         )
 
         query: Query = session.query(PolicyEvaluatorResultDbo)
+        if platform:
+            query = query.filter(PolicyEvaluatorResultDbo.platform == platform)
+        if resource_prefix:
+            query = query.filter(
+                PolicyEvaluatorResultDbo.resource_fq_name.startswith(
+                    resource_prefix, autoescape=True
+                )
+            )
+        if newer_than:
+            query = query.filter(
+                PolicyEvaluatorResultDbo.record_created_date > newer_than
+            )
         if search_term:
             for term in search_term.split():
                 wildcard: str = f"%{term}%"
