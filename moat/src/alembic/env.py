@@ -1,4 +1,5 @@
 from logging.config import fileConfig
+
 from alembic import context
 from database import BaseModel, Database
 from models import *  # ignore
@@ -11,8 +12,10 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
+# 'disable_existing_loggers' defaults to True, which would silence every logger
+# already created - including the application's own - for the rest of the process.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # add your model's MetaData object here
 # for 'autogenerate' support

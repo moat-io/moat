@@ -1,0 +1,31 @@
+{% from "partials/common/table-empty-state.html" import table_empty_state %}
+{% for grant in grants %}
+<tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+    <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+        <div class="text-base font-semibold text-gray-900 dark:text-white">{{ grant.principal_fq_name.split('::')[-1] }}</div>
+        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ grant.principal_fq_name }}</div>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 dark:text-gray-400">
+        <div class="text-base font-semibold text-gray-900 dark:text-white">{{ grant.resource_fq_name.split('.')[-1] }}</div>
+        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{{ grant.resource_fq_name }}</div>
+    </td>
+    <td class="p-4 text-base font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+        {{ grant.platform | capitalize }}
+    </td>
+    <td class="p-4 whitespace-nowrap">
+        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">{{ grant.action }}</span>
+    </td>
+    <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
+        {% if grant.record_updated_date %}
+        <div class="text-base font-semibold text-gray-900 dark:text-white">
+            <span class="full-timestamp" data-time="{{ grant.record_updated_date.isoformat() }}"></span>
+        </div>
+        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+            <span class="timeago" data-time="{{ grant.record_updated_date.isoformat() }}"></span>
+        </div>
+        {% endif %}
+    </td>
+</tr>
+{% else %}
+{{ table_empty_state(5, 'grants', None, query_state) }}
+{% endfor %}

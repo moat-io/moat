@@ -1,28 +1,31 @@
 import uuid
-from apis.opa import bundle_api_bp, decision_log_api_bp, status_api_bp
+
+from apis.acl import acl_bp as acl_api_bp
+from apis.entitlements import entitlements_bp
 from apis.healthcheck import healthcheck_bp
+from apis.opa import bundle_api_bp, decision_log_api_bp, status_api_bp
 from apis.scim2 import (
-    scim2_service_provider_config_bp,
+    scim2_groups_bp,
     scim2_resource_types_bp,
     scim2_schemas_bp,
+    scim2_service_provider_config_bp,
     scim2_users_bp,
-    scim2_groups_bp,
-)
-from apis.entitlements import entitlements_bp
-from views import (
-    resources_bp,
-    healthz_bp,
-    principals_bp,
-    policies_bp,
-    bundles_bp,
-    root_bp,
 )
 from app_config import AppConfigModelBase
 from app_logger import Logger, get_logger
-from events import EventLogger, EventDto
 from database import Database
-from flask import Flask, g, request, jsonify
+from events import EventDto, EventLogger
+from flask import Flask, g, jsonify, request
 from flask_smorest import Api
+from views import (
+    acl_bp,
+    bundles_bp,
+    healthz_bp,
+    policies_bp,
+    principals_bp,
+    resources_bp,
+    root_bp,
+)
 from werkzeug.exceptions import HTTPException
 
 logger: Logger = get_logger("app")
@@ -65,6 +68,7 @@ def create_app(database: Database | None = None) -> Flask:
     flask_app.register_blueprint(resources_bp)
     flask_app.register_blueprint(policies_bp)
     flask_app.register_blueprint(bundles_bp)
+    flask_app.register_blueprint(acl_bp)
 
     # enable APIs
     flask_app.register_blueprint(bundle_api_bp)
@@ -77,6 +81,7 @@ def create_app(database: Database | None = None) -> Flask:
     # smorest blueprints registered through it)
     api = Api(flask_app)
     api.register_blueprint(entitlements_bp)
+    api.register_blueprint(acl_api_bp)
 
     # Register SCIM2 blueprints
     flask_app.register_blueprint(scim2_service_provider_config_bp)

@@ -1,0 +1,20 @@
+{% from "partials/common/search-box.html" import search_box %}
+<div class="p-4 bg-white block sm:flex items-center justify-between border-b border-gray-200 lg:mt-1.5 dark:bg-gray-800 dark:border-gray-700">
+    <div class="w-full mb-1">
+        <div class="mb-4">
+            {% include "partials/common/breadcrumbs.html" %}
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">Access Control List</h1>
+            <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                The access the policy evaluator last granted: who may perform which action on which resource.
+            </p>
+        </div>
+        <div class="items-center justify-between block sm:flex md:divide-x md:divide-gray-100 dark:divide-gray-700">
+            <div class="flex items-center mb-4 sm:mb-0">
+                {{ search_box('acl', 'Search by principal, resource, platform or action', query_state, '', False) }}
+            </div>
+        </div>
+    </div>
+</div>
+<div id="acl-table">
+    {% include 'partials/acl/acl-table.html' %}
+</div>

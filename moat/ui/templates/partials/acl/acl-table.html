@@ -1,0 +1,33 @@
+{% include "partials/common/app-state-table-vars.html" %}
+{% from "partials/common/sort-header.html" import sort_header %}
+{% from "partials/common/table-footer-macro.html" import table_footer_macro %}
+{% from "partials/common/table-skeleton.html" import table_skeleton %}
+
+<div class="flex flex-col moat-busy" id="acl-table-body-wrapper">
+    <div class="overflow-auto max-h-[calc(100vh-20rem)] min-h-[12rem]">
+        <div class="inline-block min-w-full align-middle">
+            <div class="shadow-sm">
+                <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                    <thead class="sticky top-0 z-10 bg-gray-100 shadow-xs dark:bg-gray-700">
+                    <tr>
+                        {{ sort_header('acl', 'Principal', 'principal_fq_name', query_state) }}
+                        {{ sort_header('acl', 'Resource', 'resource_fq_name', query_state) }}
+                        {{ sort_header('acl', 'Platform', 'platform', query_state) }}
+                        {{ sort_header('acl', 'Action', 'action', query_state) }}
+                        {{ sort_header('acl', 'Evaluated', 'record_updated_date', query_state) }}
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    {% if initial_load %}
+                        {{ table_skeleton(5) }}
+                    {% else %}
+                        {% include 'partials/acl/acl-table-tr.html' %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ table_footer_macro("acl", query_state, page_size_options, False) }}

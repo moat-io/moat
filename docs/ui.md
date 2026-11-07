@@ -24,6 +24,17 @@ The search box matches on `fq_name` and on attribute keys and values.
 
 ![Policies Detail](images/ui-policies-detail.png)
 
+## Access Control List View
+
+The access the [policy evaluator](policy_evaluator.md) last granted: one row per
+principal, resource, platform and action, newest evaluation timestamp alongside. Only
+the grants that currently hold are listed - a grant the evaluator has since withdrawn
+is retained in the database but is no longer part of the ACL, and is reachable through
+the API with `active=false`.
+
+The search box matches on `principal_fq_name`, `resource_fq_name`, `platform` and
+`action`, and every column is sortable.
+
 ## Advanced Filtering
 
 Both the principals and resources views carry a **Filters** button next to the search

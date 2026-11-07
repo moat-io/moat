@@ -53,6 +53,29 @@ WHERE platform = 'trino'
   AND active = true;
 ```
 
+## Reading the results
+
+The stored grants are also served by the ACL API and shown in the
+[Access Control List view](ui.md#access-control-list-view), so neither the UI nor a
+client needs to query the table directly.
+
+```bash
+curl -s "http://127.0.0.1:8001/api/acl/v1/grants?search=trino&page_size=2"
+```
+
+| Parameter | Default | Purpose |
+| --- | --- | --- |
+| `page` | `1` | Page to return, from 1. |
+| `page_size` | `20` | Rows per page, at most 100. |
+| `search` | - | Free text match on principal, resource, platform or action. |
+| `sort_key` | `principal_fq_name` | Column to sort on; an unknown column falls back to the default. |
+| `sort_ascending` | `true` | Sort direction. |
+| `active` | `true` | `false` returns the grants that have been revoked. |
+
+The response is `{"page", "page_size", "total", "results"}`, where each result carries
+the columns of the table above. The endpoint is not tagged `mcp`, so it is not exposed
+as an [MCP tool](mcp.md).
+
 ## Invoking from the CLI
 
 The Click CLI command is `evaluate-policy`. Run it in an environment configured
