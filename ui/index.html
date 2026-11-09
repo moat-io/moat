@@ -433,6 +433,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#access-control-lists-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access Control Lists View
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#policies-view" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1131,6 +1142,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#access-control-lists-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access Control Lists View
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#policies-view" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1290,6 +1312,23 @@ a principal must match <em>every</em> term to be listed.</p>
 <h2 id="resources-view">Resources View</h2>
 <p>The search box matches on <code>fq_name</code> and on attribute keys and values.</p>
 <p><img alt="Resources UI" src="../images/ui-resources.png" /></p>
+<h2 id="access-control-lists-view">Access Control Lists View</h2>
+<p>The <strong>Access Control Lists</strong> view is available under <strong>Admin</strong>. It displays the
+policy evaluator's recorded access decisions, with one row per principal and
+resource grant.</p>
+<p>The table includes the platform, principal, resource, current access status,
+and the timestamp when the grant was first recorded. A green tick indicates
+that access is currently granted; a red cross indicates that it has been
+revoked. Revoked entries remain visible so previous decisions can be reviewed.</p>
+<p>Search accepts multiple terms separated by spaces. Every term must match either
+the principal or resource, so terms are combined with <strong>AND</strong>; each term can
+match either field. For example, <code>alice customers</code> returns rows where the
+principal or resource contains <code>alice</code> and the principal or resource contains
+<code>customers</code>.</p>
+<p>Click a column heading to sort the table. Use the table footer to change the
+page size and move between pages. Search, sort order, and pagination are kept
+in the URL so the view can be refreshed or shared.</p>
+<p><img alt="ui-acls.png" src="../images/ui-acls.png" /></p>
 <h2 id="policies-view">Policies View</h2>
 <p><img alt="Policies List" src="../images/ui-policies-list.png" /></p>
 <p><img alt="Policies Detail" src="../images/ui-policies-detail.png" /></p>
