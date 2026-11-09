@@ -1,7 +1,29 @@
 from flask.testing import FlaskClient
+from urllib.parse import parse_qs, urlsplit
 
 from database import Database
 from models import OpaBundleDbo
+
+
+def test_bundles_table_pushes_view_state(
+    flask_test_client: FlaskClient, database_empty: Database
+) -> None:
+    response = flask_test_client.get(
+        "/bundles/table?search_term=trino&scope=platform&page_number=1&page_size=10",
+        headers={"HX-Request": "true"},
+    )
+
+    assert response.status_code == 200
+    pushed_url = response.headers["HX-Push-Url"]
+    assert urlsplit(pushed_url).path == "/bundles/"
+    assert parse_qs(urlsplit(pushed_url).query) == {
+        "search_term": ["trino"],
+        "scope": ["platform"],
+        "sort_key": ["record_updated_date"],
+        "sort_ascending": ["true"],
+        "page_number": ["1"],
+        "page_size": ["10"],
+    }
 
 
 def test_bundle_download(flask_test_client: FlaskClient, database_empty: Database):

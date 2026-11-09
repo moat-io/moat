@@ -1,13 +1,6 @@
 import json
 from app_logger import Logger, get_logger
-from flask import (
-    Blueprint,
-    Response,
-    abort,
-    g,
-    make_response,
-    render_template,
-)
+from flask import Blueprint, Response, abort, make_response, render_template, url_for
 from flask import session as flask_session
 from flask_pydantic import validate
 from views.controllers import PoliciesController
@@ -25,13 +18,14 @@ DEFAULT_SORT_KEY: str = "name"
 
 
 @bp.route("/", methods=["GET"])
-def index():
-    query_state: TableQueryVm = TableQueryVm(sort_key=DEFAULT_SORT_KEY)
+@validate()
+def index(query: TableQueryVm):
+    query.sort_key = query.sort_key or DEFAULT_SORT_KEY
 
     response: Response = make_response(
         render_template(
             "partials/policies/policies-search.html",
-            query_state=query_state,
+            query_state=query,
         )
     )
     return response
@@ -40,6 +34,7 @@ def index():
 @bp.route("/table", methods=["GET"])
 @validate()
 def policies_table(query: TableQueryVm):
+    query.sort_key = query.sort_key or DEFAULT_SORT_KEY
     policies = PoliciesController.get_all_policies()
 
     query.record_count = len(policies)
@@ -52,6 +47,7 @@ def policies_table(query: TableQueryVm):
         )
     )
     response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
+    response.headers.set("HX-Push-Url", query.view_url(url_for("policies.index")))
     return response
 
 

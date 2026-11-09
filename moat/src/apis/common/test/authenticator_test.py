@@ -1,3 +1,5 @@
+import logging
+
 from apis.models import ApiConfig
 from apis.common.src.authenticator import authenticate
 import pytest
@@ -5,6 +7,18 @@ from unittest.mock import patch
 from werkzeug.exceptions import Unauthorized
 import jwt
 import datetime
+
+
+@pytest.fixture(autouse=True)
+def capture_authenticator_logs(caplog: pytest.LogCaptureFixture):
+    logger = logging.getLogger("moat.authenticator")
+    was_disabled = logger.disabled
+    logger.disabled = False
+    logger.addHandler(caplog.handler)
+    caplog.set_level(logging.INFO, logger=logger.name)
+    yield
+    logger.removeHandler(caplog.handler)
+    logger.disabled = was_disabled
 
 
 def test_authenticator():

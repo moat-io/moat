@@ -6,6 +6,7 @@ from flask import (
     render_template,
     send_file,
     abort,
+    url_for,
 )
 from flask_pydantic import validate
 
@@ -20,12 +21,16 @@ SCOPE_ALL: str = "all"
 
 
 @bp.route("/", methods=["GET"])
-def index():
-    query_state: TableQueryVm = TableQueryVm(sort_key=DEFAULT_SORT_KEY, scope=SCOPE_ALL)
+@validate()
+def index(query: TableQueryVm):
+    query.sort_key = query.sort_key or DEFAULT_SORT_KEY
+    query.scope = (
+        query.scope if query.scope in {SCOPE_PLATFORM, SCOPE_ALL} else SCOPE_ALL
+    )
     breadcrumbs: BreadcrumbsVm = BreadcrumbsVm(items=["Bundles"])
     return render_template(
         "partials/bundles/bundles-search.html",
-        query_state=query_state,
+        query_state=query,
         breadcrumbs=breadcrumbs,
     )
 
@@ -33,6 +38,7 @@ def index():
 @bp.route("/table", methods=["GET"])
 @validate()
 def bundles_table(query: TableQueryVm):
+    query.sort_key = query.sort_key or DEFAULT_SORT_KEY
     query.scope = (
         query.scope if query.scope in {SCOPE_PLATFORM, SCOPE_ALL} else SCOPE_ALL
     )
@@ -64,6 +70,7 @@ def bundles_table(query: TableQueryVm):
         )
     )
     response.headers.set("HX-Trigger-After-Swap", "initialiseFlowbite")
+    response.headers.set("HX-Push-Url", query.view_url(url_for("bundles.index")))
     return response
 
 
