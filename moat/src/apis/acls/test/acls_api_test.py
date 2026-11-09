@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta, timezone
 
 from flask.testing import FlaskClient
@@ -53,15 +54,19 @@ def test_list_acls_filters_orders_and_paginates(
     assert response.json["page"] == 1
     assert response.json["page_size"] == 1
     assert response.json["total"] == 1
-    assert response.json["results"] == [
-        {
-            "platform": "acl-api-platform",
-            "principal": "test/alice",
-            "resource": "catalog.sales.customers",
-            "access": True,
-            "granted_at": now.isoformat(),
-        }
-    ]
+    result = response.json["results"][0]
+    assert {
+        key: result[key] for key in ("platform", "principal", "resource", "access")
+    } == {
+        "platform": "acl-api-platform",
+        "principal": "test/alice",
+        "resource": "catalog.sales.customers",
+        "access": True,
+    }
+    assert re.fullmatch(
+        rf"{now.strftime('%Y-%m-%dT%H:%M:%S')}\.\d{{6}}\+0000",
+        response.json["results"][0]["granted_at"],
+    )
 
     second_page = flask_test_client.get(
         "/api/acls/v1?platform=acl-api-platform&sort_by=principal"

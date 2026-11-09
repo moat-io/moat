@@ -23,7 +23,9 @@ class AclResultSchema(Schema):
     resource = fields.String(attribute="resource_fq_name", required=True)
     access = fields.Boolean(attribute="active", required=True)
     granted_at = fields.DateTime(
-        attribute="record_created_date", format="iso", required=True
+        attribute="record_created_date",
+        format="%Y-%m-%dT%H:%M:%S.%f%z",
+        required=True,
     )
 
 
