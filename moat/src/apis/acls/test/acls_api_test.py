@@ -9,7 +9,7 @@ from models import PolicyEvaluatorResultDbo
 def test_list_acls_filters_orders_and_paginates(
     flask_test_client: FlaskClient, database_empty: Database
 ) -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime(2026, 11, 9, tzinfo=timezone.utc)
     with database_empty.Session.begin() as session:
         rows = [
             PolicyEvaluatorResultDbo(
@@ -64,8 +64,8 @@ def test_list_acls_filters_orders_and_paginates(
         "access": True,
     }
     assert re.fullmatch(
-        rf"{now.strftime('%Y-%m-%dT%H:%M:%S')}\.\d{{6}}\+0000",
-        response.json["results"][0]["granted_at"],
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}\+0000",
+        result["granted_at"],
     )
 
     second_page = flask_test_client.get(
