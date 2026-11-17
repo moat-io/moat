@@ -55,9 +55,10 @@ Moat database. Each row represents one principal/resource grant:
 | `record_created_date` | When the row was first created. |
 | `record_updated_date` | When the row was last changed. |
 
-Two indexes cover the lookups: `(platform, action, principal_fq_name,
-resource_fq_name)` for "what can this principal access" and `(platform, action,
-resource_fq_name, principal_fq_name)` for "who can access this resource".
+Indexes back the ACL API's queries: `(record_created_date, id)` for the default
+sort and `newer_than`, `resource_fq_name` for the resource prefix filter, and on
+PostgreSQL trigram (`pg_trgm`) indexes on `principal_fq_name` and
+`resource_fq_name` for search. Search is unindexed on MySQL.
 
 For example, query current grants with:
 

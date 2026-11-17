@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Tuple
 
 from models import OpaBundleDbo, PolicyEvaluatorResultDbo
+from sqlalchemy import desc, or_
 from sqlalchemy.orm import Query
 
 from .repository_base import RepositoryBase

@@ -19,8 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 TABLE_NAME = "policy_evaluator_results"
-# MySQL caps index keys at 3072 bytes, so the 512 char fq_names are prefix indexed there
-MYSQL_LENGTH = {"principal_fq_name": 255, "resource_fq_name": 255}
+TRIGRAM_COLUMNS = ["principal_fq_name", "resource_fq_name"]
 
 
 def upgrade() -> None:
@@ -29,25 +28,45 @@ def upgrade() -> None:
     op.add_column(TABLE_NAME, sa.Column("bundle_e_tag", sa.String(length=255), nullable=True))
     op.add_column(TABLE_NAME, sa.Column("bundle_policy_hash", sa.String(length=255), nullable=True))
 
-    # what can a principal access / the evaluator merge lookup
+    # ACL API default sort and newer_than filter; id matches its tie-break ordering
     op.create_index(
-        f"ix_{TABLE_NAME}_principal",
+        f"ix_{TABLE_NAME}_record_created_date",
         TABLE_NAME,
-        ["platform", "action", "principal_fq_name", "resource_fq_name"],
-        mysql_length=MYSQL_LENGTH,
+        ["record_created_date", "id"],
     )
-    # who can access a resource
+    # ACL API resource_prefix filter (LIKE 'prefix%'). Postgres needs pattern ops
+    # for LIKE under a non-C collation; MySQL caps index keys at 3072 bytes
     op.create_index(
-        f"ix_{TABLE_NAME}_resource",
+        f"ix_{TABLE_NAME}_resource_fq_name",
         TABLE_NAME,
-        ["platform", "action", "resource_fq_name", "principal_fq_name"],
-        mysql_length=MYSQL_LENGTH,
+        ["resource_fq_name"],
+        postgresql_ops={"resource_fq_name": "varchar_pattern_ops"},
+        mysql_length={"resource_fq_name": 255},
     )
+
+    # ACL API search (ILIKE '%term%') can only use trigram indexes, which are Postgres-only
+    if op.get_bind().dialect.name != "postgresql":
+        return
+
+    op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+    for column in TRIGRAM_COLUMNS:
+        op.create_index(
+            f"ix_{TABLE_NAME}_{column}_trgm",
+            TABLE_NAME,
+            [column],
+            postgresql_using="gin",
+            postgresql_ops={column: "gin_trgm_ops"},
+        )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_index(f"ix_{TABLE_NAME}_resource", table_name=TABLE_NAME)
-    op.drop_index(f"ix_{TABLE_NAME}_principal", table_name=TABLE_NAME)
+    if op.get_bind().dialect.name == "postgresql":
+        for column in TRIGRAM_COLUMNS:
+            op.drop_index(f"ix_{TABLE_NAME}_{column}_trgm", table_name=TABLE_NAME)
+        # pg_trgm is left installed as other objects may depend on it
+
+    op.drop_index(f"ix_{TABLE_NAME}_resource_fq_name", table_name=TABLE_NAME)
+    op.drop_index(f"ix_{TABLE_NAME}_record_created_date", table_name=TABLE_NAME)
     op.drop_column(TABLE_NAME, "bundle_policy_hash")
     op.drop_column(TABLE_NAME, "bundle_e_tag")
