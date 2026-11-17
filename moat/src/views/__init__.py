@@ -4,3 +4,4 @@ from .src.principals_view import bp as principals_bp
 from .src.root_view import bp as root_bp
 from .src.policies_view import bp as policies_bp
 from .src.bundles_view import bp as bundles_bp
+from .src.acls_view import bp as acls_bp

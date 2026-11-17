@@ -48,6 +48,11 @@ bundle_generator.default_platform: trino
 
 api.healthcheck.auth_method: none
 
+api.acls.auth_method: api-key
+api.acls.api_key: bearer-token
+api.acls.default_page_size: 1000
+api.acls.max_page_size: 10000
+
 api.opa.auth_method: api-key
 api.opa.api_key: bearer-token
 

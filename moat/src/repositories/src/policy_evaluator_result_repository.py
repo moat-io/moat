@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Tuple
 
 from models import OpaBundleDbo, PolicyEvaluatorResultDbo
@@ -15,6 +16,62 @@ class MergeResultCounts:
 
 
 class PolicyEvaluatorResultRepository(RepositoryBase):
+
+    @staticmethod
+    def get_all_with_search_and_pagination(
+        session,
+        sort_col_name: str,
+        page_number: int,
+        page_size: int,
+        sort_ascending: bool = True,
+        search_term: str = "",
+        platform: str | None = None,
+        resource_prefix: str | None = None,
+        newer_than: datetime | None = None,
+    ) -> Tuple[int, list[PolicyEvaluatorResultDbo]]:
+        sort_columns = {
+            "platform": PolicyEvaluatorResultDbo.platform,
+            "principal_fq_name": PolicyEvaluatorResultDbo.principal_fq_name,
+            "resource_fq_name": PolicyEvaluatorResultDbo.resource_fq_name,
+            "active": PolicyEvaluatorResultDbo.active,
+            "record_created_date": PolicyEvaluatorResultDbo.record_created_date,
+        }
+        sort_column = sort_columns.get(
+            sort_col_name, PolicyEvaluatorResultDbo.record_created_date
+        )
+
+        query: Query = session.query(PolicyEvaluatorResultDbo)
+        if platform:
+            query = query.filter(PolicyEvaluatorResultDbo.platform == platform)
+        if resource_prefix:
+            query = query.filter(
+                PolicyEvaluatorResultDbo.resource_fq_name.startswith(
+                    resource_prefix, autoescape=True
+                )
+            )
+        if newer_than:
+            query = query.filter(
+                PolicyEvaluatorResultDbo.record_created_date > newer_than
+            )
+        if search_term:
+            for term in search_term.split():
+                wildcard: str = f"%{term}%"
+                query = query.filter(
+                    or_(
+                        PolicyEvaluatorResultDbo.principal_fq_name.ilike(wildcard),
+                        PolicyEvaluatorResultDbo.resource_fq_name.ilike(wildcard),
+                    )
+                )
+
+        total_count: int = query.count()
+        ordering = sort_column if sort_ascending else desc(sort_column)
+        rows: list[PolicyEvaluatorResultDbo] = (
+            query.order_by(ordering, PolicyEvaluatorResultDbo.id)
+            .offset(page_number * page_size)
+            .limit(page_size)
+            .all()
+        )
+        return total_count, rows
 
     @staticmethod
     def get_all_active(session) -> Tuple[int, list[PolicyEvaluatorResultDbo]]:

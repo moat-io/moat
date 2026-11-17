@@ -11,6 +11,8 @@ class ApiConfig(AppConfigModelBase):
     oauth2_jwks_uri: str = None
     oauth2_read_scope: str = None
     oauth2_write_scope: str = None
+    default_page_size: int = 1000
+    max_page_size: int = 10000
 
     @classmethod
     def load_by_api_name(cls, api_name: str) -> "ApiConfig":

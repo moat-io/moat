@@ -30,36 +30,7 @@
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">Policy</h1>
         </div>
         <pre>
-            <code class="language-rego">
-package permitta
-import rego.v1
-
-default permit := false
-# deny everything by default
-default allow := false
-
-permit if {
-	# evaluates to true if the principal exists in the array
-	data.principals[input.principal]
-
-	# check the tags on the user match those of the object
-	every k, v in data.data_objects[input.data_object] {
-    	k, v in data.principals[input.principal]
-    }
-}
-
-# user cannot see location commercial if they have network commercial
-deny if {
-	"location", "commercial" in data.data_objects[input.data_object]
-    "network", "commercial" in data.principals[input.principal]
-}
-
-# allow if deny is false/undefined and permit is true
-allow if {
-    permit
-    not deny
-}
-            </code>
+            <code class="language-rego"></code>
         </pre>
     </div>
 </div>
