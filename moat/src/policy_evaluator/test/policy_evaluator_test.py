@@ -1,7 +1,12 @@
+from unittest import mock
+from unittest.mock import Mock
+
 import responses
 from database import Database
-from models import PolicyEvaluatorResultDbo
+from models import OpaBundleDbo, PolicyEvaluatorResultDbo, ResourceDbo
 from repositories import PrincipalRepository, ResourceRepository
+from services.bundle import BundleService
+from services.bundle.src.bundler_config import BundlerConfig
 
 from ..src.policy_evaluator import PolicyEvaluator
 
@@ -44,7 +49,17 @@ def _all_results(database: Database) -> list[PolicyEvaluatorResultDbo]:
         return rows
 
 
-def test_evaluate_merges_and_soft_deletes(database: Database) -> None:
+def _generate_bundle(database: Database, tmp_path) -> OpaBundleDbo:
+    with mock.patch.object(BundlerConfig, "bundle_directory", str(tmp_path)):
+        with database.Session.begin() as session:
+            opa_bundle = BundleService.generate_bundle(session=session, platform="trino")
+            session.flush()
+            session.expunge(opa_bundle)
+    return opa_bundle
+
+
+def test_evaluate_merges_and_soft_deletes(database: Database, tmp_path) -> None:
+    opa_bundle = _generate_bundle(database, tmp_path)
     principal_fq_names, tables = _seed_facts(database)
     assert len(principal_fq_names) > 0
     assert len(tables) >= 3
@@ -73,6 +88,10 @@ def test_evaluate_merges_and_soft_deletes(database: Database) -> None:
     assert all(r.platform == "trino" for r in active_after_first)
     assert all(r.action == "FilterTables" for r in active_after_first)
     assert all(r.record_created_date is not None for r in active_after_first)
+    assert all(r.bundle_e_tag == opa_bundle.e_tag for r in active_after_first)
+    assert all(
+        r.bundle_policy_hash == opa_bundle.policy_hash for r in active_after_first
+    )
 
     # --- second run: OPA now allows only the first table ---
     with responses.RequestsMock() as rsps:
@@ -103,3 +122,47 @@ def test_evaluate_merges_and_soft_deletes(database: Database) -> None:
     assert len(soft_deleted) == len(expected_first) - len(expected_second)
     # the soft-deleted rows are the tables that are no longer allowed
     assert {r.resource_fq_name for r in soft_deleted} == set(tables[1:3])
+
+
+def _principal(attributes: list[str]) -> dict:
+    return {"attributes": attributes, "entitlements": [], "groups": []}
+
+
+def test_evaluate_grants_by_cohort_with_special_users() -> None:
+    # alice and bob share a profile (attribute order differs), carol differs,
+    # dave shares it too but is special
+    principals = {
+        "alice": _principal(["Commercial::Sales", "Privacy::HR"]),
+        "bob": _principal(["Privacy::HR", "Commercial::Sales"]),
+        "carol": _principal(["Commercial::HR"]),
+        "dave": _principal(["Commercial::Sales", "Privacy::HR"]),
+        # in the bundle but no longer in the DB
+        "erin": _principal(["Commercial::HR"]),
+    }
+    fq_names = {name: f"fq.{name}" for name in ["alice", "bob", "carol", "dave"]}
+    tables = [ResourceDbo(fq_name=f"c.s.t{i}", object_type="table") for i in range(3)]
+
+    evaluator = PolicyEvaluator()
+    evaluator.config.batch_size = 2
+    evaluator.config.max_workers = 4
+    evaluator.config.special_users = " dave ,unknown"
+    evaluator.opa_client = Mock()
+    # every user is allowed only the first table of each batch
+    evaluator.opa_client.filter_tables_batch.return_value = [0]
+
+    grants = evaluator._evaluate_grants(
+        principals=principals, fq_names=fq_names, tables=tables
+    )
+
+    called_users = [
+        call.kwargs["username"]
+        for call in evaluator.opa_client.filter_tables_batch.call_args_list
+    ]
+    # 3 cohorts (alice+bob, carol, dave) x 2 batches
+    assert sorted(called_users) == ["alice", "alice", "carol", "carol", "dave", "dave"]
+    assert sorted(grants) == sorted(
+        (f"fq.{name}", table)
+        for name in ["alice", "bob", "carol", "dave"]
+        for table in ["c.s.t0", "c.s.t2"]
+    )
+

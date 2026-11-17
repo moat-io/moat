@@ -1,14 +1,18 @@
+import json
+import tarfile
+from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Tuple
 
 from app_logger import Logger, get_logger
 from database import Database
-from models import PrincipalDbo, ResourceDbo
+from models import OpaBundleDbo, ResourceDbo
 from opa import OpaClient
 from repositories import (
     PolicyEvaluatorResultRepository,
     PrincipalRepository,
     ResourceRepository,
 )
+from services.bundle import BundleService
 
 from .policy_evaluator_config import PolicyEvaluatorConfig
 
@@ -25,12 +29,19 @@ class PolicyEvaluator:
     of resources they are allowed to access according to OPA.
 
     It is CLI driven, probably in a k8s cronjob, and is responsible for:
-    * listing the principals and the resources for the configured platform
+    * reading the principals from the current OPA bundle for the platform, so
+      the evaluation sees exactly what OPA sees; the tables and the
+      user_name -> fq_name mapping come from the DB
+    * grouping principals into cohorts that share the same bundle profile
+      (attributes, entitlements, groups); OPA sees identical data for every
+      member, so one representative is evaluated and its result fanned out.
+      Configured special users are always evaluated on their own
     * batching the resources and asking OPA's batch endpoint which ones each
-      principal may access via the FilterTables action
+      cohort may access via the FilterTables action, with up to max_workers
+      requests in flight
     * merging the allowed (principal, resource) pairs into the
       policy_evaluator_results table, where changed rows get a fresh date and
-      revoked rows are soft-deleted
+      revoked rows are soft-deleted; changed rows are stamped with the bundle
     """
 
     def __init__(self) -> None:
@@ -64,7 +75,10 @@ class PolicyEvaluator:
         database: Database = self._get_database()
 
         with database.Session.begin() as session:
-            _, principals = PrincipalRepository.get_all_active(session=session)
+            opa_bundle, principals = self._load_bundle_principals(session=session)
+            fq_names: dict[str, str] = PrincipalRepository.get_fq_names_by_user_name(
+                session=session
+            )
             _, resources = ResourceRepository.get_all_by_platform(
                 session=session, platform=self.config.platform
             )
@@ -76,11 +90,12 @@ class PolicyEvaluator:
                 and self._split_fq_name(resource.fq_name) is not None
             ]
             logger.info(
-                f"Evaluating {len(principals)} principals against {len(tables)} tables"
+                f"Evaluating {len(principals)} principals from bundle "
+                f"'{opa_bundle.e_tag}' against {len(tables)} tables"
             )
 
             grants: list[Tuple[str, str]] = self._evaluate_grants(
-                principals=principals, tables=tables
+                principals=principals, fq_names=fq_names, tables=tables
             )
 
             counts = PolicyEvaluatorResultRepository.merge_results(
@@ -88,6 +103,7 @@ class PolicyEvaluator:
                 platform=self.config.platform,
                 action=FILTER_TABLES_ACTION,
                 grants=grants,
+                opa_bundle=opa_bundle,
             )
             session.commit()
 
@@ -97,17 +113,83 @@ class PolicyEvaluator:
             f"deactivated={counts.deactivated})"
         )
 
+    def _load_bundle_principals(self, session) -> Tuple[OpaBundleDbo, dict]:
+        """The current bundle and its principals, keyed by user_name."""
+        opa_bundle: OpaBundleDbo | None = BundleService.get_current_bundle_metadata(
+            session=session, platform=self.config.platform
+        )
+        if opa_bundle is None:
+            raise ValueError(f"No bundle found for platform '{self.config.platform}'")
+
+        with tarfile.open(opa_bundle.bundle_path) as tar:
+            # opa build merges all data files into a single root data.json
+            member = next(m for m in tar if m.name.lstrip("/") == "data.json")
+            data: dict = json.load(tar.extractfile(member))
+        return opa_bundle, data[self.config.platform]["principals"]
+
+    @staticmethod
+    def _profile_key(principal: dict) -> str:
+        """Everything the bundle holds about a principal, so equal keys get equal decisions."""
+        return json.dumps(
+            {key: sorted(value or []) for key, value in principal.items()},
+            sort_keys=True,
+        )
+
+    def _group_principals(
+        self, principals: dict, fq_names: dict[str, str]
+    ) -> list[list[Tuple[str, str]]]:
+        """Cohorts of (user_name, fq_name) that share a bundle profile."""
+        special_users: set[str] = {
+            user.strip() for user in self.config.special_users.split(",") if user.strip()
+        }
+        cohorts: dict[str, list[Tuple[str, str]]] = {}
+        for user_name, principal in principals.items():
+            if user_name not in fq_names:
+                logger.warning(f"Skipping bundle principal '{user_name}' missing from the DB")
+                continue
+            key: str = (
+                f"special:{user_name}"
+                if user_name in special_users
+                else self._profile_key(principal)
+            )
+            cohorts.setdefault(key, []).append((user_name, fq_names[user_name]))
+        return list(cohorts.values())
+
     def _evaluate_grants(
-        self, principals: list[PrincipalDbo], tables: list[ResourceDbo]
+        self, principals: dict, fq_names: dict[str, str], tables: list[ResourceDbo]
     ) -> list[Tuple[str, str]]:
+        cohorts: list[list[Tuple[str, str]]] = self._group_principals(
+            principals=principals, fq_names=fq_names
+        )
+        logger.info(
+            f"Grouped {len(principals)} principals into {len(cohorts)} cohorts, "
+            f"evaluating with {self.config.max_workers} workers"
+        )
+
+        batches: list[Tuple[list[ResourceDbo], list]] = [
+            (batch, [self._split_fq_name(table.fq_name) for table in batch])
+            for batch in self._chunk(tables, self.config.batch_size)
+        ]
+        jobs: list[Tuple[list[Tuple[str, str]], list[ResourceDbo], list]] = [
+            (cohort, batch, split_tables)
+            for cohort in cohorts
+            for batch, split_tables in batches
+        ]
+
+        def run(job) -> list[int]:
+            cohort, _, split_tables = job
+            return self.opa_client.filter_tables_batch(
+                username=cohort[0][0],
+                tables=split_tables,
+                path=self.config.opa_batch_path,
+            )
+
         grants: list[Tuple[str, str]] = []
-        for principal in principals:
-            for batch in self._chunk(tables, self.config.batch_size):
-                allowed_indices: list[int] = self.opa_client.filter_tables_batch(
-                    username=principal.user_name,
-                    tables=[self._split_fq_name(table.fq_name) for table in batch],
-                    path=self.config.opa_batch_path,
-                )
+        with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
+            for (cohort, batch, _), allowed_indices in zip(
+                jobs, executor.map(run, jobs)
+            ):
                 for index in allowed_indices:
-                    grants.append((principal.fq_name, batch[index].fq_name))
+                    for _, fq_name in cohort:
+                        grants.append((fq_name, batch[index].fq_name))
         return grants
