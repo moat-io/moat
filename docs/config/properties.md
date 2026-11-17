@@ -314,6 +314,23 @@ The timeout in seconds for OPA client requests.
 The number of resources sent to OPA's batch endpoint in a single request when
 evaluating policy.
 
+## `policy_evaluator.evaluate_on_bundle_change`
+* Type: `boolean`
+* Default: `false`
+* Example: `"true"`
+
+When enabled, the worker runs the policy evaluator after a bundle refresh that
+generated a new bundle for `policy_evaluator.platform`, detected by a change in
+the current bundle's ETag.
+
+## `policy_evaluator.max_workers`
+* Type: `integer`
+* Default: `1`
+* Example: `8`
+
+The number of OPA batch requests the policy evaluator sends concurrently. Size
+it to the cores available to OPA.
+
 ## `policy_evaluator.opa_batch_path`
 * Type: `path`
 * Default: `/v1/data/moat/trino/batch`
@@ -328,6 +345,15 @@ The OPA API path for the batch endpoint used by the policy evaluator's
 * Example: `trino`
 
 The platform whose resources are evaluated by the policy evaluator.
+
+## `policy_evaluator.special_users`
+* Type: `string`
+* Default: `""`
+* Example: `alice,bob`
+
+Comma separated `user_name`s the policy evaluator always evaluates on their
+own instead of sharing the result of their attribute cohort. Use it for users
+whose access the policy decides by name rather than by attributes.
 
 ## `trino_client.host`
 * Type: `string`

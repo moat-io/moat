@@ -43,6 +43,14 @@ class PrincipalRepository(RepositoryBase):
         return query.count(), query.all()
 
     @staticmethod
+    def get_fq_names_by_user_name(session) -> dict[str, str]:
+        # active rows sort last so they win when a user_name is reused
+        rows = session.query(PrincipalDbo.user_name, PrincipalDbo.fq_name).order_by(
+            PrincipalDbo.active
+        )
+        return {user_name: fq_name for user_name, fq_name in rows}
+
+    @staticmethod
     def get_all_active(session) -> Tuple[int, list[PrincipalDbo]]:
         query: Query = session.query(PrincipalDbo).filter(PrincipalDbo.active == True)
         return query.count(), query.all()

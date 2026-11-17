@@ -14,6 +14,9 @@ class PolicyEvaluatorResultDbo(MetadataDboMixin, BaseModel):
     resource_fq_name: Mapped[str] = Column(String(512))
     platform: Mapped[str] = Column(String(100))
     action: Mapped[str] = Column(String(100))
+    # the bundle that produced the row's last change
+    bundle_e_tag: Mapped[str] = Column(String(255))
+    bundle_policy_hash: Mapped[str] = Column(String(255))
     active: Mapped[bool] = Column(
         Boolean, default=True, server_default=expression.true()
     )

@@ -6,6 +6,9 @@ def test_defaults() -> None:
     assert config.batch_size == 500
     assert config.platform == "trino"
     assert config.opa_batch_path == "/v1/data/moat/trino/batch"
+    assert config.special_users == ""
+    assert config.max_workers == 1
+    assert config.evaluate_on_bundle_change is False
 
 
 def test_load_falls_back_to_defaults() -> None:
@@ -15,3 +18,6 @@ def test_load_falls_back_to_defaults() -> None:
     assert config.batch_size == 500
     assert config.platform == "trino"
     assert config.opa_batch_path == "/v1/data/moat/trino/batch"
+    assert config.special_users == ""
+    assert config.max_workers == 1
+    assert config.evaluate_on_bundle_change is False

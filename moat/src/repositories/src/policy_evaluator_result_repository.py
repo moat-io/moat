@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Tuple
 
-from models import PolicyEvaluatorResultDbo
+from models import OpaBundleDbo, PolicyEvaluatorResultDbo
 from sqlalchemy import desc, or_
 from sqlalchemy.orm import Query
 
@@ -87,6 +87,7 @@ class PolicyEvaluatorResultRepository(RepositoryBase):
         platform: str,
         action: str,
         grants: list[Tuple[str, str]],
+        opa_bundle: OpaBundleDbo,
     ) -> MergeResultCounts:
         """
         Reconcile the stored evaluation results for a given platform/action with
@@ -98,7 +99,8 @@ class PolicyEvaluatorResultRepository(RepositoryBase):
         * stored active grants no longer present are soft-deleted
 
         Any change to an existing row is a plain UPDATE, so the Postgres
-        record_updated_date trigger stamps a fresh date on it.
+        record_updated_date trigger stamps a fresh date on it. Inserted and
+        changed rows also record the bundle that produced the change.
         """
         counts: MergeResultCounts = MergeResultCounts()
 
@@ -128,17 +130,23 @@ class PolicyEvaluatorResultRepository(RepositoryBase):
                         platform=platform,
                         action=action,
                         active=True,
+                        bundle_e_tag=opa_bundle.e_tag,
+                        bundle_policy_hash=opa_bundle.policy_hash,
                     )
                 )
                 counts.inserted += 1
             elif not row.active:
                 row.active = True
+                row.bundle_e_tag = opa_bundle.e_tag
+                row.bundle_policy_hash = opa_bundle.policy_hash
                 counts.reactivated += 1
 
         # soft-delete grants that are no longer allowed
         for key, row in existing_by_key.items():
             if key not in desired and row.active:
                 row.active = False
+                row.bundle_e_tag = opa_bundle.e_tag
+                row.bundle_policy_hash = opa_bundle.policy_hash
                 counts.deactivated += 1
 
         return counts
