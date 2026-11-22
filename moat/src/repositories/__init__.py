@@ -8,3 +8,4 @@ from .src.principal_group_repository import PrincipalGroupRepository
 
 from .src.bundle_repository import BundleRepository
 from .src.policy_evaluator_result_repository import PolicyEvaluatorResultRepository
+from .src.role_repository import RoleRepository

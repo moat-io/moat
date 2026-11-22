@@ -53,6 +53,40 @@ WHERE platform = 'trino'
   AND active = true;
 ```
 
+## Mapping ACLs to generic roles
+
+`map-acl-roles` assigns each active ACL row to a generic role and stores the
+assignment in `roles`. The table has one row
+per ACL entry: `policy_evaluator_result_id` references the ACL row's existing
+primary key (`policy_evaluator_results.id`), and `role_id` identifies its
+role. No role spans platform instances or actions.
+
+Roles are formed by grouping each platform/action's sorted distinct principals
+and resources into configured-size buckets. Every mapping in a bucket pair has
+at most the configured number of distinct users and resources. Role IDs are
+derived from the platform, action, and bucket positions; they are opaque and
+may change when ACL changes shift bucket boundaries or when limits change.
+Inactive and incomplete ACL rows are not assigned.
+
+The mapper performs ranking, assignment, upsert, and cleanup in SQL; ACL rows
+are not loaded into Python. Each run recalculates assignments from active ACLs
+in the database, but only inserts, changes, or removes mapping rows whose
+assignments differ. This favors correctness when grants are deactivated or
+changed while keeping the large data operation inside PostgreSQL. It does not
+connect to any of the platforms represented by the ACLs.
+
+Run it after the database migration:
+
+```bash
+python -m cli.src.cli map-acl-roles
+```
+
+The default limits are 500 distinct users and 500 distinct resources per role.
+Set `role_mapper.max_users_per_role` and
+`role_mapper.max_resources_per_role` to positive integers to match a target
+platform's limits. Roles are generic database records; platform-specific
+adapters can read the ACL entries for each role and apply them to their target.
+
 ## Invoking from the CLI
 
 The Click CLI command is `evaluate-policy`. Run it in an environment configured
@@ -86,5 +120,6 @@ The evaluator is suitable for scheduled execution, such as a Kubernetes
 ## Configuration
 
 See [Configuration Properties](config/properties.md) for
-`policy_evaluator.batch_size`, `policy_evaluator.platform`, and
-`policy_evaluator.opa_batch_path`.
+`policy_evaluator.batch_size`, `policy_evaluator.platform`,
+`policy_evaluator.opa_batch_path`, `role_mapper.max_users_per_role`, and
+`role_mapper.max_resources_per_role`.

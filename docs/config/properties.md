@@ -329,6 +329,20 @@ The OPA API path for the batch endpoint used by the policy evaluator's
 
 The platform whose resources are evaluated by the policy evaluator.
 
+## `role_mapper.max_resources_per_role`
+* Type: `integer`
+* Default: `500`
+* Example: `500`
+
+Maximum distinct ACL resources assigned to one generic role. Must be positive.
+
+## `role_mapper.max_users_per_role`
+* Type: `integer`
+* Default: `500`
+* Example: `500`
+
+Maximum distinct principals assigned to one generic role. Must be positive.
+
 ## `trino_client.host`
 * Type: `string`
 * Default: `<none>`

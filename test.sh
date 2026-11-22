@@ -15,6 +15,21 @@ then
 elif [ $1 == 'format' ]
 then
   autoflake --in-place --remove-unused-variables -r moat
+elif [ "${1:-}" == 'db' ]
+then
+  case "${2:-postgres}" in
+    postgres|mysql)
+      services=("${2:-postgres}")
+      ;;
+    all)
+      services=(postgres mysql)
+      ;;
+    *)
+      echo "Usage: $0 db [postgres|mysql|all]" >&2
+      exit 2
+      ;;
+  esac
+  podman-compose up -d "${services[@]}"
 elif [ $1 == 'unit' ]
 then
   export CONFIG_FILE_PATH=moat/config/config.unittest.yaml
