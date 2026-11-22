@@ -50,6 +50,21 @@ Use `npm start` to watch both while developing.
 isort --profile black moat/src
 black moat/src
 ```
+
+## Running unit tests
+Run unit tests from the project root with:
+
+```bash
+./test.sh db        # start PostgreSQL
+./test.sh unit
+```
+
+The `db` command starts only the database containers from the existing
+`docker-compose.yaml`, without starting the application or other services.
+Use `./test.sh db mysql` to start MySQL instead, or `./test.sh db all` to start
+both databases. Run the tests after starting the database selected in the test
+configuration.
+
 ## Running the dev environment
 * Run flask on 8000
 
@@ -58,9 +73,8 @@ black moat/src
 # if using podman
 podman machine init
 podman machine start
-podman-compose up -d
 
-# run dependencies
+# run the full development stack (including databases and supporting services)
 podman-compose up -d
 
 # populate LLDAP:

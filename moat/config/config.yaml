@@ -17,6 +17,9 @@ policy_evaluator.batch_size: "500"
 policy_evaluator.platform: trino
 policy_evaluator.opa_batch_path: /v1/data/moat/trino/batch
 
+role_mapper.max_users_per_role: "500"
+role_mapper.max_resources_per_role: "500"
+
 bundle_generator.temp_directory: /tmp
 bundle_generator.default_platform: trino
 

@@ -2,6 +2,7 @@ import click
 from ingestor import IngestionController
 from models import ObjectTypeEnum
 from policy_evaluator import PolicyEvaluator
+from role_mapper import RoleMapper
 from worker import Worker
 
 
@@ -44,6 +45,12 @@ def ingest(
 def evaluate_policy():
     policy_evaluator: PolicyEvaluator = PolicyEvaluator()
     policy_evaluator.evaluate()
+
+
+@cli.command()
+def map_acl_roles():
+    role_mapper: RoleMapper = RoleMapper()
+    role_mapper.map_roles()
 
 
 @cli.command()
