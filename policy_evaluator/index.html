@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -403,6 +403,17 @@
     <span class="md-ellipsis">
       
         Where results are written
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapping-acls-to-generic-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapping ACLs to generic roles
       
     </span>
   </a>
@@ -1043,6 +1054,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mapping-acls-to-generic-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapping ACLs to generic roles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#invoking-from-the-cli" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1166,6 +1188,32 @@ WHERE platform = 'trino'
   AND action = 'FilterTables'
   AND active = true;
 </code></pre>
+<h2 id="mapping-acls-to-generic-roles">Mapping ACLs to generic roles</h2>
+<p><code>map-acl-roles</code> assigns each active ACL row to a generic role and stores the
+assignment in <code>roles</code>. The table has one row
+per ACL entry: <code>policy_evaluator_result_id</code> references the ACL row's existing
+primary key (<code>policy_evaluator_results.id</code>), and <code>role_id</code> identifies its
+role. No role spans platform instances or actions.</p>
+<p>Roles are formed by grouping each platform/action's sorted distinct principals
+and resources into configured-size buckets. Every mapping in a bucket pair has
+at most the configured number of distinct users and resources. Role IDs are
+derived from the platform, action, and bucket positions; they are opaque and
+may change when ACL changes shift bucket boundaries or when limits change.
+Inactive and incomplete ACL rows are not assigned.</p>
+<p>The mapper performs ranking, assignment, upsert, and cleanup in SQL; ACL rows
+are not loaded into Python. Each run recalculates assignments from active ACLs
+in the database, but only inserts, changes, or removes mapping rows whose
+assignments differ. This favors correctness when grants are deactivated or
+changed while keeping the large data operation inside PostgreSQL. It does not
+connect to any of the platforms represented by the ACLs.</p>
+<p>Run it after the database migration:</p>
+<pre><code class="language-bash">python -m cli.src.cli map-acl-roles
+</code></pre>
+<p>The default limits are 500 distinct users and 500 distinct resources per role.
+Set <code>role_mapper.max_users_per_role</code> and
+<code>role_mapper.max_resources_per_role</code> to positive integers to match a target
+platform's limits. Roles are generic database records; platform-specific
+adapters can read the ACL entries for each role and apply them to their target.</p>
 <h2 id="invoking-from-the-cli">Invoking from the CLI</h2>
 <p>The Click CLI command is <code>evaluate-policy</code>. Run it in an environment configured
 to connect to both PostgreSQL and OPA. For the repository's Docker Compose
@@ -1188,8 +1236,9 @@ environment, invoke the CLI directly:</p>
 <code>CronJob</code>, to keep the stored snapshot current.</p>
 <h2 id="configuration">Configuration</h2>
 <p>See <a href="../config/properties/">Configuration Properties</a> for
-<code>policy_evaluator.batch_size</code>, <code>policy_evaluator.platform</code>, and
-<code>policy_evaluator.opa_batch_path</code>.</p>
+<code>policy_evaluator.batch_size</code>, <code>policy_evaluator.platform</code>,
+<code>policy_evaluator.opa_batch_path</code>, <code>role_mapper.max_users_per_role</code>, and
+<code>role_mapper.max_resources_per_role</code>.</p>
 
 
 
